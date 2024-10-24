@@ -13,3 +13,35 @@
     height: 200px;
     object-fit: cover;
 }
+
+/* Efeito de hover com transição suave */
+.card-hover {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Aumenta o card e adiciona sombra ao passar o mouse */
+.card-hover:hover {
+    transform: scale(1.05); /* Aumenta o card */
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15); /* Sombra suave */
+}
+
+/* Efeito de zoom na imagem dentro do card */
+.card-img-wrapper {
+    height: 60%; /* A imagem ocupará 60% da altura do card */
+    overflow: hidden; /* Esconde o excesso da imagem */
+}
+
+.card-img-top {
+    transition: transform 0.3s ease; /* Suaviza o zoom */
+    height: 100%;
+        object-fit: cover; 
+}
+
+.card-hover:hover .card-img-top {
+    transform: scale(1.05); /* Zoom na imagem */
+}
+
+.custom-card-size {
+    height: 400px; /* Altura maior */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
