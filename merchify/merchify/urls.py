@@ -25,7 +25,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.home, name='home'),
     path('produtos/', views.produtos, name='produtos'),
-    path('artistas/', views.artistas, name='artistas'),
+    path('artists/', views.artistas, name='artistas'),
 ]
 
 if settings.DEBUG:
