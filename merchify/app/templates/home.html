@@ -7,6 +7,9 @@
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
+    {% load static %}
+    <!-- Custom styles for this template -->
+    <link rel="stylesheet" type="text/css" href="{% static 'ccs/estilo.css' %}" />
 </head>
 <body>
     <!-- Navbar -->
@@ -42,14 +45,37 @@
         </div>
     </nav>
 
-    <!-- Banner -->
-    <section class="banner container-fluid p-0">
-        <img src="banner-image.jpg" class="img-fluid w-100" alt="Banner da Coleção RST PVLT 2024">
-        <div class="banner-text text-center">
-            <h1 class="text-white">RST PVLT 2024</h1>
-            <p class="text-white">Frete grátis pra todo Brasil em compras a partir de R$ 200,00</p>
+    <div id="carouselExampleIndicators" class="carousel slide" data-bs-ride="carousel">
+        <!-- Indicadores (os pontos na parte inferior) -->
+        <div class="carousel-indicators">
+          <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+          <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="1" aria-label="Slide 2"></button>
+          <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="2" aria-label="Slide 3"></button>
         </div>
-    </section>
+        
+        <!-- Imagens do carrossel -->
+        <div class="carousel-inner">
+          <div class="carousel-item active">
+            <img src="../media/background_images/gutsTour.jpeg" class="d-block w-100" alt="Imagem 1">
+          </div>
+          <div class="carousel-item">
+            <img src="sua-imagem2.jpg" class="d-block w-100" alt="Imagem 2">
+          </div>
+          <div class="carousel-item">
+            <img src="sua-imagem3.jpg" class="d-block w-100" alt="Imagem 3">
+          </div>
+        </div>
+        
+        <!-- Controles para passar entre as imagens -->
+        <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="prev">
+          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="next">
+          <span class="carousel-control-next-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Next</span>
+        </button>
+      </div>
 
     <!-- Seção de Artistas -->
     <section class="artists container my-5">
