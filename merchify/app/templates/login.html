@@ -1,0 +1,39 @@
+{% extends "layout.html" %}
+{% load static %}
+
+{% block content %}
+<div style="border: 5px;margin: auto; position: static;width: 30%; padding: 30px 0; align-content: center" class="card">
+
+    <div class="card-body">
+        <form action="." method="post" class="form-horizontal justify-content-center">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                {{ form.username.label_tag }}
+                <div class="col-md-10">
+                    {{ form.username }} <!-- Campo para o nome de usuário -->
+                </div>
+            </div>
+            
+            <div class="form-group">
+                {{ form.password.label_tag }}
+                <div class="col-md-10">
+                    {{ form.password }} <!-- Campo para a senha -->
+                </div>
+            </div>
+            
+            {% if form.errors %}
+            <div class="alert alert-danger mt-3">
+                <strong>Error!</strong> Incorrect username or password.
+            </div>
+            {% endif %}
+            
+            <div class="form-group" style="padding-top: 20px;">
+                <div class="col-md-offset-2 col-md-10">
+                    <input type="submit" class="btn btn-primary" value="Log In" style="width: 100%" />
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

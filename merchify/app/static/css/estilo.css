@@ -18,7 +18,7 @@
 /* Aumenta o card e adiciona sombra ao passar o mouse */
 .card-hover:hover {
     transform: scale(1.05); /* Aumenta o card */
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15); /* Sombra suave */
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5); /* Sombra suave */
 }
 
 /* Efeito de zoom na imagem dentro do card */
@@ -55,6 +55,10 @@
     max-width: 100%; /* Garante que o container ocupe toda a largura */
 }
 
+.container-fluid{
+    height: 70px;
+    margin-bottom: 10px;
+}
 
 
 .custom-dropdown {
