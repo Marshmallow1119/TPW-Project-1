@@ -9,10 +9,6 @@
     transform: translate(-50%, -50%);
 }
 
-.card-img-top {
-    height: 200px;
-    object-fit: cover;
-}
 
 /* Efeito de hover com transição suave */
 .card-hover {
@@ -34,7 +30,8 @@
 .card-img-top {
     transition: transform 0.3s ease; /* Suaviza o zoom */
     height: 100%;
-        object-fit: cover; 
+    width: 100%;
+    object-fit: cover; 
 }
 
 .card-hover:hover .card-img-top {
@@ -45,3 +42,60 @@
     height: 400px; /* Altura maior */
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
+
+.card-body {
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 15px 0;
+}
+
+.container.body-content {
+    max-width: 100%; /* Garante que o container ocupe toda a largura */
+}
+
+
+
+.custom-dropdown {
+    background-color: #2d2d2d; /* Cor de fundo escura */
+    border-radius: 12px; /* Bordas arredondadas */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); /* Sombra profunda */
+    padding: 0.75rem; /* Espaçamento interno */
+    opacity: 0; /* Inicialmente invisível */
+    transform: translateY(-10px); /* Efeito de deslocamento inicial */
+    transition: opacity 0.3s ease, transform 0.3s ease; /* Transição suave */
+    min-width: 240px; /* Largura mínima maior */
+}
+
+/* Exibir o dropdown com efeito de fade-in */
+.dropdown-menu.show {
+    opacity: 1; /* Visível ao ser ativado */
+    transform: translateY(0); /* Remove o deslocamento */
+}
+
+/* Estilizando os itens do dropdown */
+.custom-dropdown .dropdown-item {
+    color: #f8f9fa; /* Texto claro */
+    font-size: 1rem; /* Tamanho do texto */
+    padding: 12px 20px; /* Espaçamento dos itens */
+    border-radius: 8px; /* Bordas arredondadas nos itens */
+    display: flex; /* Usa flexbox para alinhar ícones e texto */
+    align-items: center; /* Centraliza verticalmente o conteúdo */
+    gap: 10px; /* Espaçamento entre ícone e texto */
+    transition: background-color 0.3s ease, transform 0.2s ease; /* Transição suave no hover */
+}
+
+/* Efeito de hover nos itens */
+.custom-dropdown .dropdown-item:hover {
+    background-color: #007bff; /* Cor de fundo no hover */
+    transform: scale(1.05); /* Leve aumento no hover */
+    color: white; /* Texto branco no hover */
+}
+
+/* Divisor customizado */
+.custom-dropdown .dropdown-divider {
+    border-color: #444; /* Cor do divisor */
+    margin: 0.8rem 0; /* Espaçamento ao redor do divisor */
+}
+
