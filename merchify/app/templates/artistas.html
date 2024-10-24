@@ -1,4 +1,3 @@
-<!-- music/templates/music/artist_list.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,13 +7,20 @@
     <!-- Bootstrap CSS -->
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        .artist-grid img {
-            width: 100%;
-            height: auto;
-        }
         .artist-grid .artist-item {
             text-align: center;
             margin-bottom: 20px;
+            overflow: hidden; /* Ensures the image doesn't overflow when zooming */
+        }
+        .artist-grid img {
+            width: 100%;
+            height: 300px; /* Set a fixed height for all images */
+            object-fit: cover; /* Ensures images are cropped instead of stretched */
+            transition: transform 0.3s ease-in-out; /* Adds smooth transition for hover */
+        }
+        .artist-grid img:hover {
+            transform: scale(1.1); /* Zoom effect */
+            transform-origin: center center; /* Make the zoom occur on itself */
         }
         .artist-grid h5 {
             margin-top: 10px;
@@ -26,30 +32,13 @@
     <div class="container">
         <h1 class="my-4">Artistas e Bandas</h1>
         <div class="row artist-grid">
+            <!-- Loop through artists -->
+            {% for artist in artists %}
             <div class="col-md-4 artist-item">
-                <img src="/static/images/5aseco.png" alt="5 A Seco">
-                <h5>5 A Seco</h5>
+                <img src="{{ artist.image.url }}" alt="{{ artist.name }}">
+                <h5>{{ artist.name }}</h5>
             </div>
-            <div class="col-md-4 artist-item">
-                <img src="/static/images/abacaxepa.png" alt="Abacaxepa">
-                <h5>Abacaxepa</h5>
-            </div>
-            <div class="col-md-4 artist-item">
-                <img src="/static/images/abraskadabra.png" alt="Abraskadabra">
-                <h5>Abraskadabra</h5>
-            </div>
-            <div class="col-md-4 artist-item">
-                <img src="/static/images/amorf.png" alt="Amorfo">
-                <h5>Amorfo</h5>
-            </div>
-            <div class="col-md-4 artist-item">
-                <img src="/static/images/andarilho.png" alt="Andarilho Cha">
-                <h5>Andarilho Cha</h5>
-            </div>
-            <div class="col-md-4 artist-item">
-                <img src="/static/images/andrematos.png" alt="Andre Matos">
-                <h5>Andre Matos</h5>
-            </div>
+            {% endfor %}
         </div>
     </div>
 

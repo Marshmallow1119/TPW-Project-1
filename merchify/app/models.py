@@ -12,6 +12,8 @@ class User(models.Model):
     def __str__(self):
         return self.username
 
+
+
 class Company(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=50)
@@ -22,6 +24,12 @@ class Company(models.Model):
 
     def __str__(self):
         return self.name
+
+class Artist(models.Model):
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=50)
+    description = models.TextField();
+    image = models.ImageField()
     
 
 class Product(models.Model):
@@ -30,7 +38,7 @@ class Product(models.Model):
     description = models.TextField()
     price = models.FloatField()
     image = models.ImageField(upload_to='products/')
-    artist = models.CharField(max_length=50)
+    artist = models.ForeignKey(Artist, on_delete=models.CASCADE)
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='products')
     stock = models.IntegerField()
     category = models.CharField(max_length=50)
