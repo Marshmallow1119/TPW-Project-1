@@ -1,18 +1,8 @@
-{% extends "layout" %}
+{% extends "layout.html" %}
 {% load static %}
 
 {% block content %}
 <div style="border: 5px;margin: auto; position: static;width: 30%; padding: 30px 0; align-content: center" class="card">
-    <div class="card-header">
-        <ul class="nav nav-tabs card-header-tabs justify-content-center">
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'register' %}">Sign Up</a> <!-- URL reversa para a página de registro -->
-            </li>
-            <li class="nav-item">
-                <a class="nav-link active" aria-current="true" href="{% url 'login' %}">Log In</a> <!-- URL reversa para a página de login -->
-            </li>
-        </ul>
-    </div>
 
     <div class="card-body">
         <form action="." method="post" class="form-horizontal justify-content-center">

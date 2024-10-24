@@ -19,3 +19,6 @@ def artistas(request):
         print(artist.image)
     return render(request, 'artistas.html', {'artists': artists})
 
+def login(request):
+    return render(request, 'login.html')
+
