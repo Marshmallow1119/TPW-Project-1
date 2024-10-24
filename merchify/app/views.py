@@ -7,7 +7,8 @@ from app.models import Artist
 
 
 def home(request):
-    return render(request, 'home.html')
+    artists = Artist.objects.all()  
+    return render(request, 'home.html', {'artists': artists})
 
 def produtos(request):
     return render(request, 'produtos.html')

@@ -37,47 +37,21 @@
 <section class="artists container my-5">
     <h2 class="text-center mb-4">Artistas</h2>
     <div class="row">
-        <!-- Cada card terá uma altura e largura fixas -->
+        {% for artist in artists %}
         <div class="col-6 col-md-4 col-lg-3 mb-4">
             <div class="card card-hover" style="height: 400px;">
                 <div class="card-img-wrapper" style="height: 85%;">
-                    <img src="/media/artistas/Beyonce.jpeg" class="card-img-top" alt="Beyonce" style="height: 100%; object-fit: cover;">
+                    <img src="{{ artist.image.url }}" class="card-img-top" alt="{{ artist.name }}" style="height: 100%; object-fit: cover;">
                 </div>
                 <div class="card-body text-center" style="height: 15%;">
-                    <p class="card-text">Beyoncé</p>
+                    <p class="card-text">{{ artist.name }}</p>
                 </div>
             </div>
         </div>
-        <div class="col-6 col-md-4 col-lg-3 mb-4">
-            <div class="card card-hover" style="height: 400px;">
-                <div class="card-img-wrapper" style="height: 85%;">
-                    <img src="/media/artistas/TaylorSwift.jpg" class="card-img-top" alt="TaylorSwift" style="height: 100%; object-fit: cover;">
-                </div>
-                <div class="card-body text-center" style="height: 15%;">
-                    <p class="card-text">Taylor Swift</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-md-4 col-lg-3 mb-4">
-            <div class="card card-hover" style="height: 400px;">
-                <div class="card-img-wrapper" style="height: 85%;">
-                    <img src="/media/artistas/olivia.jpg" class="card-img-top" alt="olivia" style="height: 100%; object-fit: cover;">
-                </div>
-                <div class="card-body text-center" style="height: 15%;">
-                    <p class="card-text">Olívia Rodrigo</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-md-4 col-lg-3 mb-4">
-            <div class="card card-hover" style="height: 400px;">
-                <div class="card-img-wrapper" style="height: 85%;">
-                    <img src="/media/artistas/JustinBiber.jpeg" class="card-img-top" alt="Justin Biber" style="height: 100%; object-fit: cover;">
-                </div>
-                <div class="card-body text-center" style="height: 15%;">
-                    <p class="card-text">Justin Bieber</p>
-                </div>
-            </div>
-        </div>
+        {% endfor %}
+    </div>
+    <div class="text-center mt-4">
+        <a href="{% url 'artistas' %}" class="btn btn-warning">Ver todos os artistas</a>
     </div>
 </section>
 {% endblock %}
