@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+{% extends "layout.html" %}
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -6,6 +7,7 @@
     <title>Artistas e Bandas</title>
     <!-- Bootstrap CSS -->
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    {% block css %}
     <style>
         .artist-grid .artist-item {
             text-align: center;
@@ -27,24 +29,22 @@
             font-weight: bold;
         }
     </style>
+    {%  endblock %}
 </head>
-<body>
-    <div class="container">
-        <h1 class="my-4">Artistas e Bandas</h1>
-        <div class="row artist-grid">
-            <!-- Loop through artists -->
-            {% for artist in artists %}
-            <div class="col-md-4 artist-item">
-                <img src="{{ artist.image.url }}" alt="{{ artist.name }}">
-                <h5>{{ artist.name }}</h5>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
+{% block title %}
+Artistas e Bandas
+{% endblock %}
 
-    <!-- Bootstrap JS, Popper.js, and jQuery -->
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-</body>
+{% block content %}
+    <h1 class="my-4">Artistas e Bandas</h1>
+    <div class="row artist-grid">
+        <!-- Loop through artists -->
+        {% for artist in artists %}
+        <div class="col-md-4 artist-item">
+            <img src="{{ artist.image.url }}" alt="{{ artist.name }}">
+            <h5>{{ artist.name }}</h5>
+        </div>
+        {% endfor %}
+    </div>
+{% endblock %}
 </html>
