@@ -1,9 +1,9 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 
 # Create your views here.
 from django.shortcuts import render
 
-from app.models import Artist
+from app.models import Artist, Product
 
 
 def home(request):
@@ -21,4 +21,9 @@ def artistas(request):
 
 def login(request):
     return render(request, 'login.html')
+
+def artistsProducts(request, name):
+    artist = get_object_or_404(Artist, name=name)
+    products = Product.objects.filter(artist=artist)
+    return render(request, 'artists_products.html', {'artist': artist, 'products': products})
 

@@ -1,4 +1,6 @@
 from django.db import models
+from django.template.defaultfilters import default
+
 
 # Create your models here.
 class User(models.Model):
@@ -37,45 +39,53 @@ class Product(models.Model):
     description = models.TextField()
     price = models.FloatField()
     image = models.ImageField(upload_to='products/')
-    artist = models.ForeignKey(Artist, on_delete=models.CASCADE)
-    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='products')
-    stock = models.IntegerField()
+    artist = models.ForeignKey('Artist', on_delete=models.CASCADE)
+    company = models.ForeignKey('Company', on_delete=models.CASCADE, related_name='products')
     category = models.CharField(max_length=50)
+    addedProduct = models.DateField(auto_now_add=True)
 
     def __str__(self):
         return self.name
+
+class Size(models.Model):
+    clothing = models.ForeignKey('Clothing', on_delete=models.CASCADE, related_name='sizes')
+    size = models.CharField(max_length=50)
+    stock = models.IntegerField()
+
+    def __str__(self):
+        return f"{self.clothing.name} - Size: {self.size}"
 
 class Vinil(Product):
     genre = models.CharField(max_length=50)
     lpSize = models.CharField(max_length=5)
     releaseDate = models.DateField()
+    stock = models.IntegerField(default=30)
 
     def __str__(self):
-        return self.name + ' - ' + self.artist
-    
+        return f"{self.name} - {self.artist}"
+
 class CD(Product):
     genre = models.CharField(max_length=50)
     releaseDate = models.DateField()
+    stock = models.IntegerField(default=30)
 
     def __str__(self):
-        return self.name + ' - ' + self.artist
-    
+        return f"{self.name} - {self.artist}"
 
 class Clothing(Product):
-    size = models.CharField(max_length=50)
     color = models.CharField(max_length=50)
 
     def __str__(self):
-        return self.name + ' - ' + self.artist
-
+        return f"{self.name} - {self.artist}"
 
 class Accessory(Product):
     material = models.CharField(max_length=50)
     color = models.CharField(max_length=50)
     size = models.CharField(max_length=50)
+    stock = models.IntegerField(default=30)
 
     def __str__(self):
-        return self.name + ' - ' + self.artist
+        return f"{self.name} - {self.artist}"
     
 class Cart(models.Model):
     id = models.AutoField(primary_key=True)
