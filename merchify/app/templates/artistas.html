@@ -37,12 +37,17 @@ Artistas e Bandas
 
 {% block content %}
     <h1 class="my-4">Artistas e Bandas</h1>
-    <div class="row artist-grid">
-        <!-- Loop through artists -->
+    <div class="row">
         {% for artist in artists %}
-        <div class="col-md-4 artist-item">
-            <img src="{{ artist.image.url }}" alt="{{ artist.name }}">
-            <h5>{{ artist.name }}</h5>
+        <div class="col-6 col-md-4 col-lg-3 mb-4">
+            <div class="card card-hover" style="height: 400px;">
+                <div class="card-img-wrapper" style="height: 85%;">
+                    <img src="{{ artist.image.url }}" class="card-img-top" alt="{{ artist.name }}" style="height: 100%; object-fit: cover;">
+                </div>
+                <div class="card-body text-center" style="height: 15%;">
+                    <p class="card-text">{{ artist.name }}</p>
+                </div>
+            </div>
         </div>
         {% endfor %}
     </div>
