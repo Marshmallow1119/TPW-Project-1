@@ -27,7 +27,8 @@ urlpatterns = [
     path('produtos/', views.produtos, name='produtos'),
     path('artists/', views.artistas, name='artistas'),
     path('login/', views.login, name='login'),
-    path('products/<str:name>/', views.artistsProducts, name='artistsProducts'),  # Dynamic URL with 'id'
+    path('products/<str:name>/', views.artistsProducts, name='artistsProducts'),
+    path('product/<int:identifier>/',  views.productDetails, name='productDetails'),
 ]
 
 if settings.DEBUG:

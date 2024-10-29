@@ -3,7 +3,7 @@ from django.shortcuts import render, get_object_or_404
 # Create your views here.
 from django.shortcuts import render
 
-from app.models import Artist, Product
+from app.models import Artist, Product, Vinil, CD
 
 
 def home(request):
@@ -26,4 +26,10 @@ def artistsProducts(request, name):
     artist = get_object_or_404(Artist, name=name)
     products = Product.objects.filter(artist=artist)
     return render(request, 'artists_products.html', {'artist': artist, 'products': products})
+
+def productDetails(request, identifier):
+    product = get_object_or_404(Product, id=identifier)
+    if isinstance(product, Vinil) or isinstance(product, CD):
+        return render(request, 'productDetailsVinil.html', {'product': product})
+    return render(request, 'productDetails.html', {'product': product})
 
