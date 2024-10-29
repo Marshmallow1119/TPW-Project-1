@@ -25,7 +25,11 @@ def artistsProducts(request, name):
     products = Product.objects.filter(artist=artist)
     return render(request, 'artists_products.html', {'artist': artist, 'products': products})
 
-
+def productDetails(request, identifier):
+    product = get_object_or_404(Product, id=identifier)
+    if isinstance(product, Vinil) or isinstance(product, CD):
+        return render(request, 'productDetailsVinil.html', {'product': product})
+    return render(request, 'productDetails.html', {'product': product})
 
 def register(request):
     if request.method == 'POST':

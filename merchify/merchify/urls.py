@@ -27,8 +27,9 @@ urlpatterns = [
     path('', views.home, name='home'),
     path('produtos/', views.produtos, name='produtos'),
     path('artists/', views.artistas, name='artistas'),
-    path("login/", auth_views.LoginView.as_view(template_name="login.html"), name="login"),
-    path('products/<str:name>/', views.artistsProducts, name='artistsProducts'),  # Dynamic URL with 'id'
+    path('login/', views.login, name='login'),
+    path('products/<str:name>/', views.artistsProducts, name='artistsProducts'),
+    path('product/<int:identifier>/',  views.productDetails, name='productDetails'),
 ]
 
 if settings.DEBUG:
