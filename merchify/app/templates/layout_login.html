@@ -52,11 +52,14 @@
                     </button>                
                 </form>
                 <div class="d-flex">
-                    <a href="login" class="btn btn-outline-secondary me-3" >
+                    <a href="{% url 'login' %}" class="btn btn-outline-secondary me-3" >
                         <img src="/media/user.png" alt="Login" width="20" >
                     </a>
                     <a href="#" class="btn btn-outline-secondary me-2">
                         <img src="/media/cart.png" alt="Carrinho" width="25">
+                    </a>
+                    <a href="{% url 'logout' %}" class="btn btn-outline-secondary me-2">
+                        <img src="/media/logout.png" alt="logout" width="20">
                     </a>
                 </div>
             </div>

@@ -13,37 +13,57 @@
 <!-- Custom CSS -->
 {% load static %}
 <link rel="stylesheet" href="{% static 'css/login.css' %}">
-
 {% block content %}
 <div class="uf-form-signin">
     <div class="text-center">
-      <a href="{% url 'home' %}"><img src="/media/logo.png" alt="" width="300" height="300"></a>
-    <h1 class="text-black h3">Account Login</h1>
+        <a href="{% url 'home' %}"><img src="{% static 'media/logo.png' %}" alt="" width="300" height="300"></a> <!-- Corrigi a referência à imagem estática -->
+        <h1 class="text-black h3">Account Login</h1>
     </div>
-    <form class="mt-4">
-      <div class="input-group uf-input-group input-group-lg mb-3">
-        <span class="input-group-text"><i class="fas fa-user" style="color: black;"></i></span>
-        <input type="text" class="form-control" placeholder="Username">
-      </div>
-      <div class="input-group uf-input-group input-group-lg mb-3">
-        <span class="input-group-text"><i class="fas fa-lock" style="color: black;"></i></span>
-        <input type="password" class="form-control" placeholder="Password">
-      </div>
-      <div class="d-flex mb-3 justify-content-between">
-        <div class="form-check">
-          <input type="checkbox" class="form-check-input uf-form-check-input" id="exampleCheck1">
-          <label class="form-check-label text-black" for="exampleCheck1">Remember Me</label>
-        </div>
-        <a href="#">Forgot password?</a>
-      </div>
-      <div class="d-grid mb-4">
-        <button type="submit" class="btn uf-btn-primary btn-lg login">Login</button>
-      </div>
-      <div class="mt-4 text-center">
-        <span class="text-black">Don't have an account?</span>
-        <a href="{% url 'register' %}">Sign Up</a>
-      </div>
-    </form>
-  </div>
+    
+    <!-- Formulário de Login -->
+    <form method="POST" class="mt-4">
+        {% csrf_token %} 
+        
+        {% if error_message %}
+          <div class="alert alert-danger" role="alert" id="error-alert">
+          {{ error_message }}
+            </div>
+            <script>
+                setTimeout(function() {
+                    var alert = document.getElementById('error-alert');
+                    if (alert) {
+                        alert.style.display = 'none';
+                    }
+                }, 5000); 
+            </script>
+          {% endif %}
 
+        <div class="input-group uf-input-group input-group-lg mb-3">
+            <span class="input-group-text"><i class="fas fa-user" style="color: black;"></i></span>
+            <input type="text" name="username" class="form-control" placeholder="Username" required>
+        </div>
+        
+        <div class="input-group uf-input-group input-group-lg mb-3">
+            <span class="input-group-text"><i class="fas fa-lock" style="color: black;"></i></span>
+            <input type="password" name="password" class="form-control" placeholder="Password" required>
+        </div>
+        
+        <div class="d-flex mb-3 justify-content-between">
+            <div class="form-check">
+                <input type="checkbox" class="form-check-input uf-form-check-input" id="exampleCheck1">
+                <label class="form-check-label text-black" for="exampleCheck1">Remember Me</label>
+            </div>
+            <a href="#">Forgot password?</a>
+        </div>
+        
+        <div class="d-grid mb-4">
+            <button type="submit" class="btn uf-btn-primary btn-lg login">Login</button>
+        </div>
+        
+        <div class="mt-4 text-center">
+            <span class="text-black">Don't have an account?</span>
+            <a href="{% url 'register' %}">Sign Up</a>
+        </div>
+    </form>
+</div>
 {% endblock %}

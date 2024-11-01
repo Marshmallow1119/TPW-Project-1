@@ -8,7 +8,7 @@ class User(models.Model):
     username = models.CharField(max_length=50)
     password = models.CharField(max_length=50)
     email = models.EmailField(max_length=50)
-    profile_picture = models.ImageField(upload_to='profile_pictures')
+    profile_picture = models.ImageField(upload_to='profile_pictures',blank=True, null=True)
     numberOfPurchases = models.IntegerField(default=0)
     
     def __str__(self):

@@ -5,11 +5,16 @@ from django.shortcuts import render
 from app.models import *
 from app.forms import RegisterForm
 from django.contrib.auth import authenticate, login as auth_login
+from django.contrib.auth import logout as auth_logout
+from .forms import RegisterForm
+from django.contrib.auth.models import User
 
 def home(request):
     artists = Artist.objects.all()  
     one_week_ago = timezone.now() - timedelta(weeks=1)
     recent_products = Product.objects.filter(addedProduct__gte=one_week_ago)
+    if request.user.is_authenticated:
+        return render(request, 'home_login.html', {'artists': artists,'products':recent_products})
     return render(request, 'home.html', {'artists': artists,'products':recent_products})
 
 def produtos(request):
@@ -21,8 +26,6 @@ def artistas(request):
         print(artist.image)
     return render(request, 'artistas.html', {'artists': artists})
 
-def login(request):
-    return render(request, 'login.html')
 
 def artistsProducts(request, name):
     artist = get_object_or_404(Artist, name=name)
@@ -36,39 +39,57 @@ def productDetails(request, identifier):
     return render(request, 'productDetails.html', {'product': product})
 
 def register(request):
+    print("A view 'register' foi chamada.") 
+
     if request.method == 'POST':
-        form = RegisterForm(request.POST)
-        print(form.errors)
+        form = RegisterForm(request.POST, request.FILES)
 
         if form.is_valid():
-            # Verifica se o usuário já existe
+
             username = form.cleaned_data['username']
+            email = form.cleaned_data['email']
+            raw_password = form.cleaned_data['password1']
+
             if User.objects.filter(username=username).exists():
-                return render(request, 'register_user.html', {'form': form, 'error': True})
+                return render(request, 'register_user.html', {'form': form, 'error': "Usuário já existe."})
 
-            # Cria o usuário com a senha criptografada
-            email = form.cleaned_data.get('email')
-            raw_password = form.cleaned_data.get('password1')
-            profile_picture = form.cleaned_data.get('profile_picture')
-
-            user = User.objects.create(username=username, email=email, password=raw_password)
-            user.set_password(raw_password)
-            user.numberOfPurchases=0
-            if profile_picture:
-                user.profile_pictures = profile_picture
+            user = User.objects.create_user(username=username, email=email, password=raw_password)
             user.save()
 
-            # Autentica e faz login do usuário
-            user = authenticate(username=username, password=raw_password)
+            auth_login(request, user)
 
-            if user is not None:
-                auth_login(request, user)
-
-            return redirect('/')
+            return redirect('login') 
         else:
-            # Renderiza o formulário com erros se houver campos inválidos
-            return render(request, 'register_user.html', {'form': form, 'error': True})
+            return render(request, 'register_user.html', {'form': form, 'error': "Formulário inválido. Verifique os campos."})
     else:
-        # Renderiza o formulário vazio para requisição GET
         form = RegisterForm()
-        return render(request, 'register_user.html', {'form': form, 'error': False})
+        return render(request, 'register_user.html', {'form': form})
+    
+
+def login(request):  
+
+    if request.method == 'POST':
+        
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+
+        if not User.objects.filter(username=username).exists():
+            error_message = "Username does not exist"
+            return render(request, 'login.html', {'error_message': error_message})
+        
+       
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            auth_login(request, user)  
+            return redirect('home_login')
+        else:
+            error_message = "Invalid username or password"
+            return render(request, 'login.html', {'error_message': error_message})
+    else:
+        return render(request, 'login.html')
+
+
+def logout(request):
+    if request.user.is_authenticated:
+        auth_logout(request)  
+    return redirect('home') 

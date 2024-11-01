@@ -25,9 +25,11 @@ from django.contrib.auth import views as auth_views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.home, name='home'),
+    path('home/', views.home, name='home_login'),
     path('produtos/', views.produtos, name='produtos'),
     path('artists/', views.artistas, name='artistas'),
     path('login/', views.login, name='login'),
+    path("logout", views.logout, name="logout"),
     path('products/<str:name>/', views.artistsProducts, name='artistsProducts'),
     path('product/<int:identifier>/',  views.productDetails, name='productDetails'),
     path('register/', views.register, name='register'),
