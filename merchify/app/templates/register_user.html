@@ -13,6 +13,11 @@
 <link rel="stylesheet" href="{% static 'css/register.css' %}">
 
 <div class="container mt-5">
+    <div class="mb-3">
+        <a href="{% url 'login' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Voltar para o Login
+        </a>
+    </div>
     <div class="title text-center mb-4">Registration</div>
     <div class="content bg-light p-5 rounded shadow">
         <!-- Formulário de Registro do Django -->
