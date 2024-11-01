@@ -1,4 +1,4 @@
-{% extends "layout.html" %}
+{% extends "layout_nologin.html" %}
 
 {% block content %}
 <!-- Carrossel ocupando a largura total da página -->
@@ -20,7 +20,7 @@
       </div>
       <div class="carousel-item">
         <img src="/media/background_images/taylor.jpg" class="d-block w-100" alt="Imagem 3" style="height: 600px; width: 100%; object-fit: cover;">
-      </div>
+      </div>ncronização de sessões
     </div>
     <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="prev">
       <span class="carousel-control-prev-icon" aria-hidden="true"></span>
@@ -33,7 +33,6 @@
 </div>
 
 
-<!-- Seção de Artistas com cards de tamanho fixo -->
 <section class="artists container my-5">
     <h2 class="text-center mb-4">Artistas</h2>
     <div class="row">
@@ -54,4 +53,27 @@
         <a href="{% url 'artistas' %}" class="btn btn-warning">Ver todos os artistas</a>
     </div>
 </section>
+
+<section class="artists container my-5">
+  <h2 class="text-center mb-4">Produtos recentemente adicionados </h2>
+  <div class="row">
+      {% for product in products %}
+      <div class="col-6 col-md-4 col-lg-3 mb-4">
+          <div class="card card-hover" style="height: 400px;">
+              <div class="card-img-wrapper" style="height: 85%;">
+                  <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}" style="height: 100%; object-fit: cover;">
+              </div>
+              <div class="card-body text-center" style="height: 15%;">
+                  <p class="card-text">{{ product.name }}</p>
+              </div>
+          </div>
+      </div>
+      {% endfor %}
+  </div>
+  <div class="text-center mt-4">
+      <a href="{% url 'artistas' %}" class="btn btn-warning">Ver todos os produtos</a>
+  </div>
+</section>
+
+
 {% endblock %}

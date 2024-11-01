@@ -1,3 +1,5 @@
+from datetime import timedelta
+from django.utils import timezone
 from django.shortcuts import redirect, render, get_object_or_404
 from django.shortcuts import render
 from app.models import *
@@ -6,7 +8,9 @@ from django.contrib.auth import authenticate, login as auth_login
 
 def home(request):
     artists = Artist.objects.all()  
-    return render(request, 'home.html', {'artists': artists})
+    one_week_ago = timezone.now() - timedelta(weeks=1)
+    recent_products = Product.objects.filter(addedProduct__gte=one_week_ago)
+    return render(request, 'home.html', {'artists': artists,'products':recent_products})
 
 def produtos(request):
     return render(request, 'produtos.html')
@@ -30,6 +34,7 @@ def productDetails(request, identifier):
     if isinstance(product, Vinil) or isinstance(product, CD):
         return render(request, 'productDetailsVinil.html', {'product': product})
     return render(request, 'productDetails.html', {'product': product})
+
 
 def register(request):
     if request.method == 'POST':
