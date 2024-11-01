@@ -29,6 +29,7 @@ urlpatterns = [
     path('login/', views.login, name='login'),
     path('products/<str:name>/', views.artistsProducts, name='artistsProducts'),
     path('product/<int:identifier>/',  views.productDetails, name='productDetails'),
+    path('/search', views.search_products, name='search_products'),
 ]
 
 if settings.DEBUG:
