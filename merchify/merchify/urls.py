@@ -30,7 +30,9 @@ urlpatterns = [
     path('login/', views.login, name='login'),
     path('products/<str:name>/', views.artistsProducts, name='artistsProducts'),
     path('product/<int:identifier>/',  views.productDetails, name='productDetails'),
-]
+    path('register/', views.register, name='register'),
+]   
+
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

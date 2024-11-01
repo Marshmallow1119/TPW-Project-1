@@ -35,37 +35,40 @@ def productDetails(request, identifier):
         return render(request, 'productDetailsVinil.html', {'product': product})
     return render(request, 'productDetails.html', {'product': product})
 
-
 def register(request):
     if request.method == 'POST':
         form = RegisterForm(request.POST)
         print(form.errors)
 
         if form.is_valid():
-            # Check if user already exists
-            u = User.objects.filter(username=form.cleaned_data['username'])
+            # Verifica se o usuário já existe
+            username = form.cleaned_data['username']
+            if User.objects.filter(username=username).exists():
+                return render(request, 'register_user.html', {'form': form, 'error': True})
 
-            if u:
-                return render(request, 'register.html', {'form': form, 'error': True})
+            # Cria o usuário com a senha criptografada
+            email = form.cleaned_data.get('email')
+            raw_password = form.cleaned_data.get('password1')
+            profile_picture = form.cleaned_data.get('profile_picture')
 
-            else:
-                form.save()
-                email = form.cleaned_data.get('email')
-                username = form.cleaned_data.get('username')
-                raw_password = form.cleaned_data.get('password1')
+            user = User.objects.create(username=username, email=email, password=raw_password)
+            user.set_password(raw_password)
+            user.numberOfPurchases=0
+            if profile_picture:
+                user.profile_pictures = profile_picture
+            user.save()
 
-                # Authenticate user then login
-                user = authenticate(username=username, password=raw_password)
+            # Autentica e faz login do usuário
+            user = authenticate(username=username, password=raw_password)
+
+            if user is not None:
                 auth_login(request, user)
 
-                # Create user in our database
-                user = User.objects.create(username=username, email=email, password=raw_password,
-                                           name=form.cleaned_data['name'])
-                user.save()
-
-                return redirect('/')
+            return redirect('/')
         else:
-            return render(request, 'register.html', {'form': form, 'error': True})
+            # Renderiza o formulário com erros se houver campos inválidos
+            return render(request, 'register_user.html', {'form': form, 'error': True})
     else:
+        # Renderiza o formulário vazio para requisição GET
         form = RegisterForm()
-        return render(request, 'register.html', {'form': form, 'error': False})
+        return render(request, 'register_user.html', {'form': form, 'error': False})

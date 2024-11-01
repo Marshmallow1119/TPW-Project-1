@@ -5,8 +5,9 @@
 body{
 	display: flex;
 	align-items: center;
-	background-image: linear-gradient( to bottom, #fae172, #ffffff);
-}
+    background-image: url("../../media/background_images/concerto.jpg");
+    background-size: cover; /* Para ajustar a imagem ao tamanho da tela */
+    background-position: center; /* Para centralizar a imagem */}
 a{
 	color: #842029;
 	text-decoration: none;
@@ -14,14 +15,23 @@ a{
 a:hover{
 	color: #5a1118;
 }
+
 .uf-form-signin {
+    margin: 40px auto;
     width: 100%;
-    max-width: 350px;
-    padding: 15px;
-    margin: auto;
+    max-width: 850px;
+    height: 800px;
+    padding: 150px;
+    padding-left: 200px;
+    padding-right: 200px;
+    padding-top: 100px;
+    margin-left:25%;
+    background-color: rgb(255, 255, 255); /* Fundo da caixa preta */
+    border-radius: 10px; /* Arredondamento das bordas, se desejar */
 }
+
 .uf-input-group .input-group-text {
-    background: #ffffff70;
+    background: #00000070;
     color: #f8f9fa;
     border: unset;
     font-size: 18px;
@@ -33,7 +43,7 @@ a:hover{
     border: unset;
     border-left: 1px solid #ffffff05;
     font-size: 16px;
-    background: #ffffff70;
+    background: #bebebe70;
 }
 
 .uf-input-group .form-control:focus {
@@ -41,12 +51,12 @@ a:hover{
     background: #ffffff;
 }
 .uf-btn-primary {
-    background: #842029;
+    background: #000000;
     color: #fff;
 }
 
 .uf-btn-primary:hover {
-    background: #5a1118;
+    background: #680000;
     color: #fff;
 }
 
@@ -73,3 +83,8 @@ a:hover{
 .uf-social-ic:hover i{
 	color: #fff;
 }
+
+.icon-black {
+    color: black;
+  }
+  
