@@ -52,7 +52,7 @@
 }
 
 .container.body-content {
-    max-width: 100%; /* Garante que o container ocupe toda a largura */
+    max-width: 100%;
 }
 
 .container-fluid{
@@ -72,7 +72,6 @@
     min-width: 240px; /* Largura mínima maior */
 }
 
-/* Exibir o dropdown com efeito de fade-in */
 .dropdown-menu.show {
     opacity: 1; /* Visível ao ser ativado */
     transform: translateY(0); /* Remove o deslocamento */
@@ -102,4 +101,3 @@
     border-color: #444; /* Cor do divisor */
     margin: 0.8rem 0; /* Espaçamento ao redor do divisor */
 }
-

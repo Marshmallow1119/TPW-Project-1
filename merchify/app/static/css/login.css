@@ -1,0 +1,91 @@
+
+ html, body{
+	height: 100%;
+}
+body{
+	display: flex;
+	align-items: center;
+    background-image: url("../../media/background_images/concerto.jpg");
+    background-size: cover; 
+    background-position: center; 
+}
+a{
+	color: #842029;
+	text-decoration: none;
+}
+a:hover{
+	color: #5a1118;
+}
+
+.uf-form-signin {
+    margin: 40px auto;
+    width: 100%;
+    max-width: 850px;
+    height: 800px;
+    padding: 150px;
+    padding-left: 200px;
+    padding-right: 200px;
+    padding-top: 100px;
+    margin-left:25%;
+    background-color: rgb(255, 255, 255); /* Fundo da caixa preta */
+    border-radius: 10px; /* Arredondamento das bordas, se desejar */
+}
+
+.uf-input-group .input-group-text {
+    background: #00000070;
+    color: #f8f9fa;
+    border: unset;
+    font-size: 18px;
+    padding: 15px;
+    width: 50px;
+}
+
+.uf-input-group .form-control {
+    border: unset;
+    border-left: 1px solid #ffffff05;
+    font-size: 16px;
+    background: #bebebe70;
+}
+
+.uf-input-group .form-control:focus {
+    box-shadow: unset;
+    background: #ffffff;
+}
+.uf-btn-primary {
+    background: #000000;
+    color: #fff;
+}
+
+.uf-btn-primary:hover {
+    background: #680000;
+    color: #fff;
+}
+
+.uf-form-check-input:checked {
+    background-color: #842029;
+    border-color: #842029;
+}
+
+.uf-social-login .uf-social-ic+.uf-social-ic{
+	margin-left: 15px;
+}
+.uf-social-ic{
+	width: 40px;
+	height: 40px;
+	background: #fff;
+	border-radius: 50%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+.uf-social-ic:hover{
+	background: #842029;
+}
+.uf-social-ic:hover i{
+	color: #fff;
+}
+
+.icon-black {
+    color: black;
+  }
+  

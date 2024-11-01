@@ -19,18 +19,23 @@ from django.urls import path
 from app import views
 from django.conf import settings
 from django.conf.urls.static import static
+from django.contrib.auth import views as auth_views
 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.home, name='home'),
+    path('home/', views.home, name='home_login'),
     path('produtos/', views.produtos, name='produtos'),
     path('artists/', views.artistas, name='artistas'),
     path('login/', views.login, name='login'),
+    path("logout", views.logout, name="logout"),
     path('products/<str:name>/', views.artistsProducts, name='artistsProducts'),
     path('product/<int:identifier>/',  views.productDetails, name='productDetails'),
     path('/search', views.search_products, name='search_products'),
-]
+    path('register/', views.register, name='register'),
+]   
+
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
