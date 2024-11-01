@@ -59,8 +59,7 @@
         <input type="number" id="quantity" class="form-control" value="1" min="1">
       </div>
 
-      <button class="btn btn-dark w-100">Adicionar ao carrinho</button>
-
+        <button id="add-to-cart-btn" class="btn btn-dark w-100" data-product-id="{{ product.id }}">Adicionar ao carrinho</button>
       <!-- Product Details Table -->
       <div class="mt-4">
         <h5>Detalhes do Produto</h5>
@@ -139,29 +138,58 @@
   </div>
 </div>
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-      const sizeButtons = document.querySelectorAll('.size-btn');
+document.addEventListener("DOMContentLoaded", function () {
+    const addToCartBtn = document.getElementById("add-to-cart-btn");
+    const quantityInput = document.getElementById("quantity");
+    let selectedSize = null;
 
-      sizeButtons.forEach(button => {
-          button.addEventListener('click', function () {
-              // Remove 'btn-success' class from all buttons
-              sizeButtons.forEach(btn => btn.classList.remove('btn-success'));
-              sizeButtons.forEach(btn => btn.classList.add('btn-dark'));
+    const sizeButtons = document.querySelectorAll(".size-btn");
+    sizeButtons.forEach(button => {
+        button.addEventListener("click", function () {
+            sizeButtons.forEach(btn => btn.classList.remove("btn-success"));
+            sizeButtons.forEach(btn => btn.classList.add("btn-dark"));
+            this.classList.add("btn-success");
+            this.classList.remove("btn-dark");
 
-              // Add 'btn-success' class to the clicked button
-              this.classList.remove('btn-dark');
-              this.classList.add('btn-success');
-          });
-      });
-      const stars = document.querySelectorAll('.star-rating .fa-star');
-      stars.forEach((star, index) => {
-          star.addEventListener('click', () => {
-              stars.forEach((s, i) => {
-                  s.classList.toggle('checked', i <= index);
-              });
-          });
-      });
-  });
+            // Set selected size
+            selectedSize = this.getAttribute("data-size-id");
+        });
+    });
+
+    // Handle add-to-cart click
+    addToCartBtn.addEventListener("click", function () {
+        const productId = this.getAttribute("data-product-id");
+        const quantity = quantityInput.value;
+
+        // Check if size is selected
+        if (!selectedSize) {
+            alert("Por favor, selecione um tamanho.");
+            return;
+        }
+
+        // Make the AJAX request to add product to cart
+        fetch(`/add-to-cart/${productId}/`, {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": "{{ csrf_token }}",  // Django CSRF token
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                size: selectedSize,
+                quantity: quantity
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.message) {
+                alert(data.message);  // Success message
+            } else if (data.error) {
+                alert(data.error);  // Error message
+            }
+        })
+        .catch(error => console.error("Error:", error));
+    });
+});
 </script>
 {% endblock %}
 

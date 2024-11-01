@@ -1,19 +1,15 @@
+from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.template.defaultfilters import default
-
+from django.contrib.auth.models import AbstractUser
 
 # Create your models here.
-class User(models.Model):
-    id = models.AutoField(primary_key=True)
-    username = models.CharField(max_length=50)
-    password = models.CharField(max_length=50)
-    email = models.EmailField(max_length=50)
-    profile_picture = models.ImageField(upload_to='profile_pictures',blank=True, null=True)
-    numberOfPurchases = models.IntegerField(default=0)
-    
+class User(AbstractUser):
+    profile_picture = models.ImageField(upload_to='profile_pictures', blank=True, null=True)
+    number_of_purchases = models.IntegerField(default=0)
+
     def __str__(self):
         return self.username
-
 
 class Company(models.Model):
     id = models.AutoField(primary_key=True)
