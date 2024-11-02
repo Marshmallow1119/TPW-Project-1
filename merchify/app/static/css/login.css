@@ -5,9 +5,7 @@
 body{
 	display: flex;
 	align-items: center;
-    background-image: url("../../media/background_images/concerto.jpg");
-    background-size: cover; 
-    background-position: center; 
+    background: linear-gradient(135deg, #850000, #000000);
 }
 a{
 	color: #842029;
@@ -20,13 +18,13 @@ a:hover{
 .uf-form-signin {
     margin: 40px auto;
     width: 100%;
-    max-width: 850px;
-    height: 800px;
+    max-width:750px;
+    height: 700px;
     padding: 150px;
-    padding-left: 200px;
-    padding-right: 200px;
-    padding-top: 100px;
-    margin-left:25%;
+    padding-left: 150px;
+    padding-right: 150px;
+    padding-top: 50px;
+    margin-left:27%;
     background-color: rgb(255, 255, 255); /* Fundo da caixa preta */
     border-radius: 10px; /* Arredondamento das bordas, se desejar */
 }
