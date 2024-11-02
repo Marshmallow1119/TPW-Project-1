@@ -18,14 +18,15 @@ User = get_user_model()
 
 def home(request):
     artists = Artist.objects.all()  
-    one_week_ago = timezone.now() - timedelta(weeks=1)
-    recent_products = Product.objects.filter(addedProduct__gte=one_week_ago)
-    if request.user.is_authenticated:
-        return render(request, 'home_login.html', {'artists': artists,'products':recent_products})
-    return render(request, 'home.html', {'artists': artists,'products':recent_products})
+    one_week_ago = timezone.now() - timedelta()
+    recent_products = Product.objects.filter(addedProduct__gte=one_week_ago).order_by('-addedProduct')[:20]
+    
+    return render(request, 'home.html', {'artists': artists, 'products': recent_products})
+
 
 def produtos(request):
-    return render(request, 'produtos.html')
+    produtos= Product.objects.all()
+    return render(request, 'products.html', {'produtos': produtos})
 
 def artistas(request):
     artists = Artist.objects.all()
