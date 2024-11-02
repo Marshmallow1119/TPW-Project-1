@@ -1,5 +1,4 @@
-<!DOCTYPE html>
-{%  extends "layout.html" %}
+{% extends "layout.html" %}
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -7,8 +6,8 @@
   <title>Product Page</title>
 
   <!-- Bootstrap CSS -->
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 
 {% block css %}
   <style>
@@ -21,7 +20,7 @@
       margin: 0.2rem;
     }
   </style>
-    {%  endblock %}
+{% endblock %}
 </head>
 {% block content %}
 <body>
@@ -59,7 +58,7 @@
         <input type="number" id="quantity" class="form-control" value="1" min="1">
       </div>
 
-        <button id="add-to-cart-btn" class="btn btn-dark w-100" data-product-id="{{ product.id }}">Adicionar ao carrinho</button>
+      <button id="add-to-cart-btn" class="btn btn-dark w-100" data-product-id="{{ product.id }}">Adicionar ao carrinho</button>
       <!-- Product Details Table -->
       <div class="mt-4">
         <h5>Detalhes do Produto</h5>
@@ -90,28 +89,33 @@
       </div>
     </div>
   </div>
+
   <!-- Ratings and Reviews Section -->
   <div class="mt-5">
     <h5>Classificação e Avaliações</h5>
-    
+
     <!-- User Rating Form -->
-    <div class="card p-3 mb-4">
-      <h6>Dê uma Avaliação:</h6>
-      <div class="star-rating">
-        <i class="fa fa-star" data-rating="1"></i>
-        <i class="fa fa-star" data-rating="2"></i>
-        <i class="fa fa-star" data-rating="3"></i>
-        <i class="fa fa-star" data-rating="4"></i>
-        <i class="fa fa-star" data-rating="5"></i>
+    {% if user.is_authenticated %}
+      <div class="card p-3 mb-4">
+        <h6>Dê uma Avaliação:</h6>
+          <div class="star-rating">
+            <i class="fas fa-star" data-rating="1"></i>
+            <i class="fas fa-star" data-rating="2"></i>
+            <i class="fas fa-star" data-rating="3"></i>
+            <i class="fas fa-star" data-rating="4"></i>
+            <i class="fas fa-star" data-rating="5"></i>
+          </div>
+        <form>
+          <div class="form-group mt-3">
+            <label for="review">Escreva uma avaliação:</label>
+            <textarea id="review" class="form-control" rows="3" placeholder="Compartilhe sua experiência com o produto"></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary">Enviar Avaliação</button>
+        </form>
       </div>
-      <form>
-        <div class="form-group mt-3">
-          <label for="review">Escreva uma avaliação:</label>
-          <textarea id="review" class="form-control" rows="3" placeholder="Compartilhe sua experiência com o produto"></textarea>
-        </div>
-        <button type="submit" class="btn btn-primary">Enviar Avaliação</button>
-      </form>
-    </div>
+    {% else %}
+      <p>Por favor, <a href="{% url 'login' %}">faça login</a> para avaliar este produto.</p>
+    {% endif %}
 
     <!-- Display Other Reviews -->
     <div id="reviews">
@@ -150,8 +154,6 @@ document.addEventListener("DOMContentLoaded", function () {
             sizeButtons.forEach(btn => btn.classList.add("btn-dark"));
             this.classList.add("btn-success");
             this.classList.remove("btn-dark");
-
-            // Set selected size
             selectedSize = this.getAttribute("data-size-id");
         });
     });
@@ -198,4 +200,3 @@ document.addEventListener("DOMContentLoaded", function () {
 
 </body>
 </html>
-
