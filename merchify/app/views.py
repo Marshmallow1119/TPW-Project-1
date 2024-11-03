@@ -104,7 +104,7 @@ def login(request):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             auth_login(request, user)
-            return redirect('home_login')  # Adjust this redirect according to your URL names
+            return redirect('home')  # Adjust this redirect according to your URL names
         else:
             error_message = "Invalid username or password"
             return render(request, 'login.html', {'error_message': error_message})
