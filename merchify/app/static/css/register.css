@@ -14,21 +14,21 @@ body {
   justify-content: center;
   align-items: center;
   padding: 10px;
-  background-image: url("../../media/background_images/concerto.jpg");
-  background-size: cover; 
+  background: linear-gradient(135deg, #850000, #000000);
 }
 
 .container {
-  max-width: 700px;
-  width: 100%;
+  max-width: 750px;
+  height: 700px;
   background-color: #fff;
   padding: 25px 30px;
-  border-radius: 5px;
+  border-radius: 10px;
+  margin-left:27%;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
 }
 
 .container .title {
-  font-size: 25px;
+  font-size: 35px;
   font-weight: 500;
   position: relative;
   text-align: center;
