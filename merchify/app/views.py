@@ -16,16 +16,22 @@ from django.contrib.auth.models import User
 
 User = get_user_model()
 
+
 def home(request):
     artists = Artist.objects.all()  
-    one_week_ago = timezone.now() - timedelta()
-    recent_products = Product.objects.filter(addedProduct__gte=one_week_ago).order_by('-addedProduct')[:20]
+    one_week_ago = timezone.now() - timedelta(weeks=1)  # Corrigido para filtrar por uma semana atrás
+    recent_products = Product.objects.filter(addedProduct__gte=one_week_ago).order_by('-addedProduct')
     
     return render(request, 'home.html', {'artists': artists, 'products': recent_products})
 
 
 def produtos(request):
     produtos= Product.objects.all()
+    sort= request.GET.get('sort', 'featured')
+    if sort == 'priceAsc':
+        produtos = produtos.order_by('price')
+    elif sort == 'priceDesc':
+        produtos = produtos.order_by('-price')
     return render(request, 'products.html', {'produtos': produtos})
 
 def artistas(request):
@@ -180,3 +186,22 @@ def update_cart_item(request):
 def remove_from_cart(request, product_id):
     cart_item = get_object_or_404(CartItem, id=product_id)
     cart_item.delete()
+
+
+
+@login_required
+def profile(request):
+    user = request.user
+    purchases = Purchase.objects.filter(user=user)
+    
+    # Calcula o número de compras
+    number_of_purchases = purchases.count()
+
+    # Atualiza o contexto com o número de compras
+    context = {
+        'purchases': purchases,
+        'profile_picture': user.profile_picture.url if user.profile_picture else None,
+        'number_of_purchases': number_of_purchases,
+    }
+    
+    return render(request, 'profile.html', context)

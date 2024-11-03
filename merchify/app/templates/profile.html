@@ -1,0 +1,98 @@
+{% extends "layout.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container rounded bg-white mt-5 mb-5">
+    <div class="row">
+        <div class="col-md-4 border-right">
+            <div class="d-flex flex-column align-items-center text-center p-3 py-5">
+                {% if profile_picture %}
+                    <img class="rounded-circle mt-5" width="150px" src="{{ profile_picture }}">
+                {% else %}
+                    <img class="rounded-circle mt-5" width="150px" src="https://st3.depositphotos.com/15648834/17930/v/600/depositphotos_179308454-stock-illustration-unknown-person-silhouette-glasses-profile.jpg">
+                {% endif %}
+                <span class="font-weight-bold">{{ user.username }}</span>
+                <span class="text-black-50">{{ user.email }}</span>
+                <span>Number of Purchases: {{ number_of_purchases }}</span>
+            </div>
+        </div>
+        <div class="col-md-8">
+            <div class="p-3 py-5">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="text-right">Profile Settings</h4>
+                </div>
+                <div class="row mt-2">
+                    <div class="col-md-6">
+                        <label class="labels">Name</label>
+                        <input type="text" class="form-control" placeholder="first name" value="{{ user.first_name }}" disabled>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="labels">Surname</label>
+                        <input type="text" class="form-control" value="{{ user.last_name }}" placeholder="surname" disabled>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <label class="labels">Email</label>
+                        <input type="text" class="form-control" placeholder="email" value="{{ user.email }}" disabled>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="labels">Username</label>
+                        <input type="text" class="form-control" value="{{ user.username }}" placeholder="username" disabled>
+                    </div>
+                </div>
+                <div class="mt-5 text-end">
+                    <button class="btn btn-primary profile-button" id="editButton" type="button" onclick="toggleEdit()">Edit</button>
+                </div>
+            </div>
+
+            <h4 class="mb-4">Encomendas</h4>
+            <div class="p-3 bg-secondary text-white rounded">
+                {% if purchases %}
+                    <div class="row">
+                        {% for purchase in purchases %}
+                            <div class="col-md-6 mb-4">
+                                <div class="card bg-light text-dark shadow-sm">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Encomenda #{{ purchase.id }}</h5>
+                                        <p class="card-text"><strong>Data:</strong> {{ purchase.date }}</p>
+                                        <p class="card-text"><strong>Total:</strong> {{ purchase.total }}€</p>
+                                        <p class="card-text"><strong>Método de Pagamento:</strong> {{ purchase.paymentMethod }}</p>
+                                        <p class="card-text"><strong>Endereço de Envio:</strong> {{ purchase.shippingAddress }}</p>
+                                        <p class="card-text"><strong>Status:</strong> {{ purchase.status }}</p>
+                                        <hr>
+                                        <h6>Produtos:</h6>
+                                        <ul class="list-unstyled">
+                                            {% for product in purchase.products.all %}
+                                                <li>{{ product.name }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-light">Você ainda não fez nenhuma encomenda.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleEdit() {
+    const inputs = document.querySelectorAll('.form-control');
+    const button = document.getElementById('editButton');
+
+    if (button.innerText === 'Edit') {
+        inputs.forEach(input => input.disabled = false);
+        button.innerText = 'Save';
+    } else {
+        inputs.forEach(input => input.disabled = true);
+        button.innerText = 'Edit';
+        // Aqui você pode adicionar a lógica para salvar as alterações via AJAX ou formulário
+    }
+}
+</script>
+{% endblock %}
