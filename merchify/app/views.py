@@ -234,7 +234,7 @@ def profile(request):
         })
 
     elif request.method == 'POST':
-        if 'edit' in request.POST:
+        if 'save' in request.POST:
             user.first_name = request.POST.get('name', user.first_name)
             user.last_name = request.POST.get('surname', user.last_name)
             user.email = request.POST.get('email', user.email)
@@ -245,10 +245,10 @@ def profile(request):
             
             if 'image' in request.FILES:
                 user.image = request.FILES['image']
-                
+
             user.save()
             messages.success(request, 'Perfil atualizado com sucesso!')
-            return redirect('/account/settings')
+            return redirect('/account/profile')
 
         # Excluir conta
         elif 'delete_account' in request.POST:
