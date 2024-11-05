@@ -4,11 +4,12 @@ import json
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Avg
-from django.http import JsonResponse
+from django.http import JsonResponse, Http404
 from django.utils import timezone
 from django.shortcuts import redirect, render, get_object_or_404
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
 
 from app.models import *
 from app.forms import RegisterForm
@@ -54,14 +55,40 @@ def artistsProducts(request, name):
         products = products.order_by('price')  # Ascending price
     elif sort == 'priceDesc':
         products = products.order_by('-price')  # Descending price
+
+    if request.user.is_authenticated:
+        favorited_product_ids = Favorite.objects.filter(user=request.user).values_list('product_id', flat=True)
+    else:
+        favorited_product_ids = []  # Empty list if user is not authenticated
+
+        # Add a new property to each product indicating if it is favorited by the user
+    for product in products:
+            product.is_favorited = product.id in favorited_product_ids
     return render(request, 'artists_products.html', {'artist': artist, 'products': products})
+
+
+from django.shortcuts import render, get_object_or_404
+from django.db.models import Avg
+from .models import Product, Clothing, CD, Vinil
+
 
 def productDetails(request, identifier):
     product = get_object_or_404(Product, id=identifier)
-    if isinstance(product, Vinil) or isinstance(product, CD):
-        return render(request, 'productDetailsVinil.html', {'product': product})
+
+    context = {
+        'product': product,
+    }
+
+    if isinstance(product, Clothing):
+        sizes = product.sizes.all()  # Get all sizes related to the clothing item
+        context['sizes'] = sizes  # Add sizes to context
+
     average_rating = product.reviews.aggregate(Avg('rating'))['rating__avg'] or 0  # Default to 0 if no reviews
-    return render(request, 'productDetails.html', {'product': product, 'average_rating': average_rating})
+    context['average_rating'] = average_rating  # Add average rating to context
+    print(isinstance(product, Clothing))
+
+    return render(request, 'productDetails.html', context)
+
 
 def search_products(request):
     query = request.GET.get('search', '')  # Get the search term from the query string
@@ -153,16 +180,14 @@ def add_to_cart(request, product_id):
 
             product = get_object_or_404(Product, id=product_id)
             
-            cart, created = Cart.objects.get_or_create(user=request.user, defaults={"date": date.today(), "total": 0.0})
+            cart, created = Cart.objects.get_or_create(user=request.user, defaults={"date": date.today()})
 
-            cart_item, item_created = CartItem.objects.get_or_create(cart=cart, product=product, defaults={"quantity": quantity, "total": product.price * quantity})
+            cart_item, item_created = CartItem.objects.get_or_create(cart=cart, product=product, defaults={"quantity": quantity})
 
             if not item_created:
                 cart_item.quantity += quantity
-                cart_item.total += product.price * quantity
                 cart_item.save()
 
-            cart.total += product.price * quantity
             cart.save()
 
             return JsonResponse({"message": "Produto adicionado ao carrinho!"})
@@ -202,9 +227,12 @@ def update_cart_item(request):
 
 @login_required
 def remove_from_cart(request, product_id):
-    cart_item = get_object_or_404(CartItem, id=product_id)
-    cart_item.delete()
-
+    try:
+        cart_item = CartItem.objects.get(product_id=product_id)
+        cart_item.delete()
+    except CartItem.DoesNotExist:
+        raise Http404("CartItem does not exist")
+    return redirect('cart')
 
 @login_required(login_url='/login')
 def profile(request):
@@ -311,3 +339,48 @@ def submit_review(request, product_id):
 
         # Redirect back to the product page
         return redirect("productDetails", identifier=product_id)
+
+@login_required
+def checkfavorite(request):
+    favorite_products = Favorite.objects.filter(user=request.user).select_related('product')
+    products_list = [{'id': fav.product.id, 'name': fav.product.name, 'price': fav.product.price, 'image': fav.product.image.url} for fav in favorite_products]
+    return render(request, "favorites.html", {"favorite_products": products_list})
+
+
+@require_POST
+@login_required  # Ensure the user is logged in
+def addtofavorite(request, product_id):
+    try:
+        # Fetch the product and user
+        product = Product.objects.get(id=product_id)
+        user = request.user
+
+        # Check if this product is already a favorite
+        favorite, created = Favorite.objects.get_or_create(user=user, product=product)
+
+        if created:
+            # Product was added to favorites
+            favorited = True
+        else:
+            favorite.delete()
+            favorited = False
+
+        return JsonResponse({"success": True, "favorited": favorited})
+
+    except Product.DoesNotExist:
+        # Handle case if product does not exist
+        return JsonResponse({"success": False, "message": "Product not found."}, status=404)
+    except Exception as e:
+        # Handle any other unexpected errors
+        return JsonResponse({"success": False, "message": str(e)}, status=500)
+
+@login_required
+def remove_from_favorites(request, product_id):
+    try:
+        product = Product.objects.get(id=product_id)
+        user = request.user
+        Favorite.objects.filter(user=user, product=product).delete()
+        return redirect( 'favorites')
+    except Product.DoesNotExist:
+        return JsonResponse({"success": False, "message": "Product not found."}, status=404)
+

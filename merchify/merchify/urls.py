@@ -39,6 +39,10 @@ urlpatterns = [
     path('remove/<int:product_id>/', views.remove_from_cart, name='remove_from_cart'),
     path("account/profile", views.profile, name="profile"),
     path("product/<int:product_id>/submit_review/", views.submit_review, name="submit_review"),
+    path("favorites/", views.checkfavorite, name="favorites"),
+    path('favorites/add/<int:product_id>/', views.addtofavorite, name='addtofavorite'),
+    path('favorites/remove/<int:product_id>/', views.remove_from_favorites, name='remove_from_favorites')
+
 ]   
 
 
