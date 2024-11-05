@@ -1,10 +1,12 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
-
-</body>
-</html>
+{% extends "layout.html" %}
+{% block content %}
+<div class="container mt-5">
+    <h2>Editar Produto: {{ product.name }}</h2>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+        <a href="{% url 'company_products' product.company.id %}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

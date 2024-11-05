@@ -11,11 +11,12 @@ from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 
 from app.models import *
-from app.forms import RegisterForm
+from app.forms import RegisterForm, ProductForm
 from django.contrib.auth import authenticate, login as auth_login, get_user_model
 from django.contrib.auth import logout as auth_logout
 from .forms import RegisterForm, UploadUserProfilePicture, UpdatePassword, UpdateProfile
 from django.contrib.auth.models import User
+
 
 User = get_user_model()
 
@@ -311,3 +312,97 @@ def submit_review(request, product_id):
 
         # Redirect back to the product page
         return redirect("productDetails", identifier=product_id)
+
+#@login_required
+def supplier_product_list(request):
+    # Dados de exemplo para testar o layout da página
+    products = [
+        {
+            "name": "Produto Exemplo 1",
+            "price": 20.0,
+            "image": {"url": "https://via.placeholder.com/250"},
+            "artist": {"image": {"url": "https://via.placeholder.com/100"}},
+        },
+        {
+            "name": "Produto Exemplo 2",
+            "price": 35.0,
+            "image": {"url": "https://via.placeholder.com/250"},
+            "artist": {"image": {"url": "https://via.placeholder.com/100"}},
+        },
+    ]
+
+    return render(request, 'supplier/product_list.html', {'products': products})
+
+
+def add_product(request):
+    if request.method == 'POST':
+        form = ProductForm(request.POST, request.FILES)
+        if form.is_valid():
+            product = form.save(commit=False)
+            product.company = request.user.supplier_profile.company
+            product.save()
+            return redirect('supplier_product_list')
+    else:
+        form = ProductForm()
+
+    return render(request, 'supplier/product_form.html', {'form': form, 'is_edit': False})
+
+def edit_product(request, product_id):
+    product = get_object_or_404(Product, id=product_id, company=request.user.supplier_profile.company)
+    if request.method == 'POST':
+        form = ProductForm(request.POST, request.FILES, instance=product)
+        if form.is_valid():
+            form.save()
+            return redirect('supplier_product_list')
+    else:
+        form = ProductForm(instance=product)
+
+    return render(request, 'supplier/product_form.html', {'form': form, 'is_edit': True, 'product': product})
+
+
+def company_products(request, company_id):
+    # Obter a empresa específica usando o ID
+    company = get_object_or_404(Company, id=company_id)
+
+    # Obter todos os produtos associados a esta empresa
+    products = company.products.all()  # Utiliza o related_name definido no modelo Product
+
+    # Renderizar o template com os produtos da empresa
+    return render(request, 'company_products.html', {'company': company, 'products': products})
+
+#@login_required
+def add_product_to_company(request, company_id):
+    company = get_object_or_404(Company, id=company_id)
+
+    if request.method == 'POST':
+        form = ProductForm(request.POST, request.FILES)
+        if form.is_valid():
+            product = form.save(commit=False)
+            product.company = company
+            product.save()
+            return redirect('company_products', company_id=company.id)
+    else:
+        form = ProductForm()
+
+    return render(request, 'add_product_to_company.html', {'form': form, 'company': company})
+
+
+def edit_product(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+
+    if request.method == 'POST':
+        form = ProductForm(request.POST, request.FILES, instance=product)
+        if form.is_valid():
+            form.save()
+            return redirect('company_products', company_id=product.company.id)
+    else:
+        form = ProductForm(instance=product)
+
+    return render(request, 'edit_product.html', {'form': form, 'product': product})
+
+#@login_required
+def delete_product(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    company_id = product.company.id  # Guarda o ID da empresa para redirecionamento
+    product.delete()
+    return redirect('company_products', company_id=company_id)
