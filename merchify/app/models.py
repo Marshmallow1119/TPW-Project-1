@@ -13,6 +13,11 @@ class User(AbstractUser):
     phone = models.CharField(max_length=50, unique=True)
     country=models.CharField(max_length=50, blank=True, null=True)
     image = models.ImageField(upload_to='profile_pics/', blank=True, null=True)
+    ROLE_CHOICES = [
+        ("Company", "Company"),
+        ("User", "User"),
+    ]
+    role = models.CharField(max_length=50, choices=ROLE_CHOICES, default="User")
 
     def __str__(self):
         return self.username
@@ -24,6 +29,7 @@ class Company(models.Model):
     email = models.EmailField(max_length=50, unique=True)
     phone = models.CharField(max_length=50, blank=True, null=True)
     logo = models.ImageField(upload_to='company_logos', blank=True, null=True)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='Company')
 
     def __str__(self):
         return self.name
