@@ -16,13 +16,12 @@ a:hover{
 }
 
 .uf-form-signin {
-    margin: 40px auto;
+    margin: 50px auto;
     width: 100%;
-    max-width:750px;
     height: 800px;
-    padding: 150px;
-    padding-left: 150px;
-    padding-right: 150px;
+    padding: 100px;
+    padding-left: 100px;
+    padding-right: 100px;
     padding-top: 50px;
     margin-left:27%;
     background-color: rgb(255, 255, 255); /* Fundo da caixa preta */
