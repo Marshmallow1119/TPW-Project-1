@@ -1,6 +1,9 @@
 from datetime import timedelta, date
 import json
+
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db.models import Avg
 from django.http import JsonResponse
 from django.utils import timezone
 from django.shortcuts import redirect, render, get_object_or_404
@@ -57,7 +60,8 @@ def productDetails(request, identifier):
     product = get_object_or_404(Product, id=identifier)
     if isinstance(product, Vinil) or isinstance(product, CD):
         return render(request, 'productDetailsVinil.html', {'product': product})
-    return render(request, 'productDetails.html', {'product': product})
+    average_rating = product.reviews.aggregate(Avg('rating'))['rating__avg'] or 0  # Default to 0 if no reviews
+    return render(request, 'productDetails.html', {'product': product, 'average_rating': average_rating})
 
 def search_products(request):
     query = request.GET.get('search', '')  # Get the search term from the query string
@@ -205,3 +209,38 @@ def profile(request):
     }
     
     return render(request, 'profile.html', context)
+
+
+@login_required
+def submit_review(request, product_id):
+    if request.method == "POST":
+        # Get the rating and review text from the form data
+        rating = request.POST.get("rating")
+        review_text = request.POST.get("review")
+        product = get_object_or_404(Product, id=product_id)
+
+        # Validate the rating
+        if rating and review_text:
+            try:
+                rating = int(rating)
+                if not 1 <= rating <= 5:
+                    messages.error(request, "Rating must be between 1 and 5.")
+                    return redirect("productDetails", identifier=product_id)
+            except ValueError:
+                messages.error(request, "Invalid rating.")
+                return redirect("productDetails", identifier=product_id)
+
+            # Save the review with the current date
+            Review.objects.create(
+                product=product,
+                user=request.user,
+                rating=rating,
+                text=review_text,
+                date=timezone.now().date()  # Set the current date
+            )
+            messages.success(request, "Your review has been submitted.")
+        else:
+            messages.error(request, "Please provide both a rating and a review.")
+
+        # Redirect back to the product page
+        return redirect("productDetails", identifier=product_id)
