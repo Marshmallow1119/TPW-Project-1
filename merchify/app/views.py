@@ -200,10 +200,7 @@ def add_to_cart(request, product_id):
 @login_required
 def viewCart(request):
     user = request.user
-    try:
-        cart = Cart.objects.get(user=user)  # Use get() to retrieve a single cart
-    except Cart.DoesNotExist:
-        return redirect('store')  # Redirect to store if cart doesn't exist
+    cart = Cart.objects.get(user=user)  # Use get() to retrieve a single cart
 
     cartitems = CartItem.objects.filter(cart=cart)
     context = {
