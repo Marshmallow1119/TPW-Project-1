@@ -203,7 +203,7 @@ def add_to_cart(request, product_id):
 def viewCart(request):
     user = request.user
     try:
-        cart = Cart.objects.get(user=user)  # Use get() to retrieve a single cart
+        cart = Cart.objects.get(user=user)
     except Cart.DoesNotExist:
         return redirect('store')  # Redirect to store if cart doesn't exist
 

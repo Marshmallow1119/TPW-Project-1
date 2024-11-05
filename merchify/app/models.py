@@ -1,9 +1,7 @@
-from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.template.defaultfilters import default
 from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
-
 
 # Create your models here.
 class User(AbstractUser):
@@ -18,7 +16,6 @@ class User(AbstractUser):
         return self.username
 
 class Company(models.Model):
-    id = models.AutoField(primary_key=True,)
     name = models.CharField(max_length=50)
     address = models.CharField(max_length=50, blank=True, null=True)
     email = models.EmailField(max_length=50, unique=True)
@@ -27,6 +24,27 @@ class Company(models.Model):
 
     def __str__(self):
         return self.name
+
+class User(AbstractUser):
+    USER_TYPES = (
+        ('individual', 'Individual'),
+        ('company', 'Company'),
+        ('admin', 'Admin')
+    )
+
+    user_type = models.CharField(max_length=10, choices=USER_TYPES, default='individual')
+    number_of_purchases = models.IntegerField(default=0)
+    address = models.CharField(max_length=50, blank=True, null=True)
+    email = models.EmailField(max_length=50, unique=True)
+    phone = models.CharField(max_length=50, unique=True)
+    country = models.CharField(max_length=50, blank=True, null=True)
+    image = models.ImageField(upload_to='profile_pics/', blank=True, null=True)
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, blank=True, null=True)
+
+    def __str__(self):
+        return self.username
+
+
 
 class Artist(models.Model):
     id = models.AutoField(primary_key=True)
