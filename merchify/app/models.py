@@ -3,18 +3,6 @@ from django.template.defaultfilters import default
 from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
 
-# Create your models here.
-class User(AbstractUser):
-    number_of_purchases = models.IntegerField(default=0)
-    address = models.CharField(max_length=50, blank=True, null=True)
-    email = models.EmailField(max_length=50, unique=True, blank=True, null=True)
-    phone = models.CharField(max_length=50, unique=True)
-    country=models.CharField(max_length=50, default='', blank=True, null=True)
-    image = models.ImageField(upload_to='profile_pics/', blank=True, null=True)
-
-    def __str__(self):
-        return self.username
-
 class Company(models.Model):
     name = models.CharField(max_length=50)
     address = models.CharField(max_length=50, blank=True, null=True)
