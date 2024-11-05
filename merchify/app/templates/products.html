@@ -53,10 +53,13 @@
             height: 100%;
             object-fit: cover;
         }
+        .container {
+            padding: 0 !important; 
+        }
     </style>    
 </head>
 <body>
-    <div class="container my-5">
+    <div class="container my-5" >
         <h1 class="my-4 text-center">{{ artist.name }}</h1>
         <div class="d-flex justify-content-between align-items-center mb-3">
             <p>{{ produtos.count }} produtos</p>
