@@ -25,10 +25,10 @@ class User(AbstractUser):
     number_of_purchases = models.IntegerField(default=0)
     address = models.CharField(max_length=50, blank=True, null=True)
     email = models.EmailField(max_length=50, unique=True)
-    phone = models.CharField(max_length=50, unique=True)
+    phone = models.CharField(max_length=50, blank=True, unique=True)
     country = models.CharField(max_length=50, blank=True, null=True)
     image = models.ImageField(upload_to='profile_pics/', blank=True, null=True)
-    company = models.ForeignKey(Company, on_delete=models.CASCADE, blank=True, null=True)
+    company = models.ForeignKey(Company, on_delete=models.SET_NULL, blank=True, null=True)
 
     def __str__(self):
         return self.username
