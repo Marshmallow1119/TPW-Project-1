@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Favorite Products</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+          integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg=="
+          crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        /* Add custom styles here if needed */
+        .product-image {
+            width: 100px;
+            height: 100px;
+            object-fit: contain;
+        }
+        .product-info {
+            display: flex;
+            align-items: center;
+        }
+        .product-info h5 {
+            margin-bottom: 0; /* Remove default margin */
+        }
+        .table td { /* Center content in table cells */
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+{% extends 'layout.html' %}
+{% block content %}
+{% load filters %}
+
+    <div class="container">
+        <h1>Meus Produtos Favoritos:</h1>
+
+        {% if favorite_products %}
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">Produto</th>
+                        <th scope="col">Preço</th>
+                        <th scope="col"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for fav in favorite_products %}
+                    <tr>
+                        <td>
+                            <div class="product-info">
+                                <img src="{{ fav.image }}" alt="{{ fav.name }}" class="product-image mr-3">
+                                <div>
+                                    <h5>{{ fav.name }}</h5>
+                                </div>
+                            </div>
+                        </td>
+                        <td>{{ fav.price }}€</td>
+                        <td class="text-right"> <!-- Use text-right instead of d-flex -->
+                            <a href="{% url 'remove_from_favorites' product_id=fav.id %}" class="btn btn-danger mr-2">
+                                <i class="fas fa-trash-alt"></i> Remover
+                            </a>
+                            <a href="{% url 'productDetails' identifier=fav.id %}" class="btn btn-dark">
+                                <i class="fas fa-cart-plus"></i> Adicionar ao carrinho
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="text-muted">Não há produtos favoritos. Adicione produtos aos seus favoritos.</p>
+            <button class="btn btn-dark" type="button" onclick="window.location.href='{% url 'produtos' %}'">Ver Produtos</button>
+        {% endif %}
+    </div>
+{% endblock %}
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

@@ -11,8 +11,10 @@
     <!-- Bootstrap core JavaScript and Popper.js -->
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js" crossorigin="anonymous"></script>
 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <!-- Custom CSS -->
     {% load static %}
+    {% block css %}{% endblock %}
     <link rel="stylesheet" href="{% static 'css/fonts.css' %}">
 </head>
 
@@ -52,6 +54,9 @@
                         </a>
                         <a href="{% url 'cart' %}" class="btn btn-outline-secondary me-2">
                             <img src="/media/cart.png" alt="Carrinho" width="25">
+                        </a>
+                        <a href="{%  url 'favorites' %}" class = "btn btn-outline-secondary me-2">
+                            <span style="color: #cc4e4e" class="fa fa-heart"></span>
                         </a>
                         <a href="{% url 'logout' %}" class="btn btn-outline-secondary me-2">
                             <img src="/media/logout.png" alt="logout" width="20">
