@@ -25,12 +25,10 @@ User = get_user_model()
 
 
 def home(request):
-    artists = Artist.objects.all()  
-    one_week_ago = timezone.now() - timedelta(weeks=1)  # Corrigido para filtrar por uma semana atrás
-    recent_products = Product.objects.filter(addedProduct__gte=one_week_ago).order_by('-addedProduct')
-    
-    return render(request, 'home.html', {'artists': artists, 'products': recent_products})
+    artists = Artist.objects.all()
+    recent_products = Product.objects.order_by('-addedProduct')[:20]  # Limita a 20 produtos mais recentes
 
+    return render(request, 'home.html', {'artists': artists, 'products': recent_products})
 
 def produtos(request):
     produtos= Product.objects.all()
