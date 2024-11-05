@@ -15,7 +15,7 @@ from app.models import *
 from app.forms import RegisterForm
 from django.contrib.auth import authenticate, login as auth_login, get_user_model
 from django.contrib.auth import logout as auth_logout
-from .forms import RegisterForm
+from .forms import RegisterForm, UploadUserProfilePicture, UpdatePassword, UpdateProfile
 from django.contrib.auth.models import User
 
 User = get_user_model()
@@ -96,37 +96,51 @@ def search_products(request):
     return render(request, 'search_results.html', {'products': products, 'query': query})
 
 
+
+
 def register(request):
-    print("A view 'register' foi chamada.")
-
     if request.method == 'POST':
-        form = RegisterForm(request.POST, request.FILES)
-
+        form = RegisterForm(request.POST, request.FILES) 
         if form.is_valid():
+            first_name = form.cleaned_data['first_name']
+            last_name = form.cleaned_data['last_name']
             username = form.cleaned_data['username']
             email = form.cleaned_data['email']
+            phone = form.cleaned_data['phone']
+            address = form.cleaned_data['address']
+            country = form.cleaned_data['country']
             raw_password = form.cleaned_data['password1']
+            image = form.cleaned_data['image']
+            
 
-            # Check if the user already exists
             if User.objects.filter(username=username).exists():
-                return render(request, 'register_user.html', {'form': form, 'error': "Usuário já existe."})
+                messages.error(request, "Usuário já existe.")
+                return render(request, 'register_user.html', {'form': form})
 
-            # Create the user
-            user = User.objects.create_user(username=username, email=email, password=raw_password)
+            user = User.objects.create_user(
+                first_name=first_name,
+                last_name=last_name,
+                username=username,
+                email=email,
+                phone=phone,
+                address=address,
+                country=country,
+                password=raw_password,
+                image=image
+            )
             user.save()
 
-            # Automatically log in the user after registration
             auth_login(request, user)
 
-            return redirect('login')  # Adjust this redirect according to your URL names
+            messages.success(request, "Registro realizado com sucesso! Você está agora logado.")
+            return redirect('home')
         else:
-            return render(request, 'register_user.html',
-                          {'form': form, 'error': "Formulário inválido. Verifique os campos."})
+            messages.error(request, "Formulário inválido. Verifique os campos.")
+            return render(request, 'register_user.html', {'form': form})
     else:
         form = RegisterForm()
         return render(request, 'register_user.html', {'form': form})
-
-
+    
 def login(request):
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -220,34 +234,87 @@ def remove_from_cart(request, product_id):
         raise Http404("CartItem does not exist")
     return redirect('cart')
 
-
-@login_required
+@login_required(login_url='/login')
 def profile(request):
-    user = request.user
-    purchases = Purchase.objects.filter(user=user)
-    
-    # Calcula o número de compras
-    number_of_purchases = purchases.count()
+    user= request.user
 
-    # Atualiza o contexto com o número de compras
-    context = {
+    if request.method == 'GET':
+        image_form = UploadUserProfilePicture()
+        profile_form = UpdateProfile(initial={
+            'name': user.first_name,
+            'surname': user.last_name,
+            'email': user.email,
+            'username': user.username,
+            'address': user.address,
+            'phone': user.phone,
+            'country': user.country
+        })
+        password_form = UpdatePassword()
+        purchases = Purchase.objects.filter(user=user)  # Obter compras para o template
+
+        return render(request, 'profile.html', {
+            'user': user,
+            'image_form': image_form,
+            'profile_form': profile_form,
+            'password_form': password_form,
+            'number_of_purchases': purchases.count(),
+            'purchases': purchases,
+        })
+
+    elif request.method == 'POST':
+        if 'edit' in request.POST:
+            user.first_name = request.POST.get('name', user.first_name)
+            user.last_name = request.POST.get('surname', user.last_name)
+            user.email = request.POST.get('email', user.email)
+            user.username = request.POST.get('username', user.username)
+            user.address = request.POST.get('address', user.address)
+            user.phone = request.POST.get('phone', user.phone)
+            user.country = request.POST.get('country', user.country)
+            
+            if 'image' in request.FILES:
+                user.image = request.FILES['image']
+                
+            user.save()
+            messages.success(request, 'Perfil atualizado com sucesso!')
+            return redirect('/account/settings')
+
+        # Excluir conta
+        elif 'delete_account' in request.POST:
+            user.delete()
+            messages.success(request, 'Conta eliminada com sucesso!')
+            return redirect('/login')
+
+        # Alterar senha
+        elif 'Change_password' in request.POST:
+            old_password = request.POST.get('old_password')
+            new_password = request.POST.get('new_password')
+            confirm_new_password = request.POST.get('confirm_new_password')
+
+            if user.check_password(old_password):
+                if new_password == confirm_new_password:
+                    user.set_password(new_password)
+                    user.save()
+                    messages.success(request, 'Senha alterada com sucesso!')
+                    return redirect('/account/settings')
+                else:
+                    messages.error(request, 'As senhas não coincidem!')
+            else:
+                messages.error(request, 'Senha antiga incorreta!')
+
+    purchases = Purchase.objects.filter(user=user)  # Buscar compras novamente para o template
+    return render(request, 'profile.html', {
+        'user': user,
+        'number_of_purchases': purchases.count(),
         'purchases': purchases,
-        'profile_picture': user.profile_picture.url if user.profile_picture else None,
-        'number_of_purchases': number_of_purchases,
-    }
-    
-    return render(request, 'profile.html', context)
-
+    })
 
 @login_required
 def submit_review(request, product_id):
     if request.method == "POST":
-        # Get the rating and review text from the form data
         rating = request.POST.get("rating")
         review_text = request.POST.get("review")
         product = get_object_or_404(Product, id=product_id)
 
-        # Validate the rating
         if rating and review_text:
             try:
                 rating = int(rating)

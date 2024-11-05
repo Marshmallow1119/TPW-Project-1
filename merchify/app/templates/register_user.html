@@ -46,6 +46,14 @@
 
             <div class="user-details">
                 <div class="input-box">
+                    <span class="details">First Name</span>
+                    {{ form.first_name }}
+                </div>
+                <div class="input-box">
+                    <span class="details">Last Name</span>
+                    {{ form.last_name }}
+                </div>
+                <div class="input-box">
                     <span class="details">Username</span>
                     {{ form.username }}
                 </div>
@@ -53,6 +61,19 @@
                     <span class="details">Email</span>
                     {{ form.email }}
                 </div>
+                <div class="input-box">
+                    <span class="details">Address</span>
+                    {{ form.address }}
+                </div>
+                <div class="input-box">
+                    <span class="details">Phone</span>
+                    {{ form.phone }}
+                </div>
+                <div class="input-box">
+                    <span class="details">Country</span>
+                    {{ form.country }}
+                </div>
+
                 <div class="input-box">
                     <span class="details">Password</span>
                     {{ form.password1 }}

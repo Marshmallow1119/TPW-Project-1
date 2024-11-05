@@ -7,26 +7,30 @@ from django.utils import timezone
 
 # Create your models here.
 class User(AbstractUser):
-    profile_picture = models.ImageField(upload_to='profile_pictures', blank=True, null=True)
     number_of_purchases = models.IntegerField(default=0)
+    address = models.CharField(max_length=50, blank=True, null=True)
+    email = models.EmailField(max_length=50, unique=True)
+    phone = models.CharField(max_length=50, unique=True)
+    country=models.CharField(max_length=50, blank=True, null=True)
+    image = models.ImageField(upload_to='profile_pics/', blank=True, null=True)
 
     def __str__(self):
         return self.username
 
 class Company(models.Model):
-    id = models.AutoField(primary_key=True)
+    id = models.AutoField(primary_key=True,)
     name = models.CharField(max_length=50)
-    address = models.CharField(max_length=50)
-    email = models.EmailField(max_length=50)
-    phone = models.CharField(max_length=50)
-    logo = models.ImageField(upload_to='company_logos')
+    address = models.CharField(max_length=50, blank=True, null=True)
+    email = models.EmailField(max_length=50, unique=True)
+    phone = models.CharField(max_length=50, blank=True, null=True)
+    logo = models.ImageField(upload_to='company_logos', blank=True, null=True)
 
     def __str__(self):
         return self.name
 
 class Artist(models.Model):
     id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=50)
+    name = models.CharField(max_length=50, unique=True)
     description = models.TextField();
     image = models.ImageField()
     
