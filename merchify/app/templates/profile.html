@@ -6,7 +6,7 @@
         <div class="col-md-4 border-right">
             <div class="d-flex flex-column align-items-center text-center p-3 py-5">
                 {% if user.image %}
-                    <img class="rounded-circle mt-5" width="200px" src="{{ user.image.url }}">
+                    <img class="profile-picture rounded-circle mt-5" width="200px" height="200px" src="{{ user.image.url }}" style="object-fit: cover;">
                 {% else %}
                     <img class="rounded-circle mt-5" width="200px" src="https://st3.depositphotos.com/15648834/17930/v/600/depositphotos_179308454-stock-illustration-unknown-person-silhouette-glasses-profile.jpg">
                 {% endif %}
@@ -62,6 +62,7 @@
                         </div>
                     </div>
                     <hr class="my-4" />
+                    <input type="file" id="id_image" name="image" style="display: none;">
                     <div class="mt-5 text-end">
                         <button class="btn btn-primary profile-button" name="edit" id="editButton" type="button">Editar</button>
                         <button class="btn btn-danger profile-button" name="delete_account" type="submit">Eliminar Conta</button>
@@ -107,6 +108,9 @@
 
 
 <script>
+    document.getElementById('editimage').addEventListener('click', function() {
+        document.getElementById('id_image').click();
+    });
     
     document.getElementById('editButton').addEventListener('click', function() {
         const inputs = document.querySelectorAll('input[readonly]');
