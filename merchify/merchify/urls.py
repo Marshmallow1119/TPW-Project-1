@@ -26,6 +26,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.home, name='home'),
     path('home/', views.home, name='home'),
+    path('admin_home.html/', views.admin_home, name='admin_home.html'),
     path('produtos/', views.produtos, name='produtos'),
     path('artists/', views.artistas, name='artistas'),
     path('login/', views.login, name='login'),
@@ -50,6 +51,8 @@ urlpatterns = [
     path('favorites/add/<int:product_id>/', views.addtofavorite, name='addtofavorite'),
     path('favorites/remove/<int:product_id>/', views.remove_from_favorites, name='remove_from_favorites'),
     path('payment/', views.payment, name='payment'),
+    path('delete_user/<int:user_id>/', views.delete_user, name='delete_user'),
+
 ]   
 
 

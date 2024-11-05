@@ -152,11 +152,20 @@ def login(request):
             error_message = "Username does not exist"
             return render(request, 'login.html', {'error_message': error_message})
 
-        # Authenticate the user
         user = authenticate(request, username=username, password=password)
         if user is not None:
             auth_login(request, user)
-            return redirect('home')  # Adjust this redirect according to your URL names
+            if hasattr(user, 'user_type'):
+                if user.user_type == 'individual':
+                    return redirect('home')
+                elif user.user_type == 'company':
+                    return redirect('company_home')
+                elif user.user_type == 'admin':
+                    return redirect('admin_home.html')
+                else:
+                    return redirect('home')
+            else:
+                return redirect('home')
         else:
             error_message = "Invalid username or password"
             return render(request, 'login.html', {'error_message': error_message})
@@ -305,7 +314,6 @@ def profile(request):
             new_password = request.POST.get('new_password')
             confirm_new_password = request.POST.get('confirm_new_password')
 
-            # Verificar se todos os campos de senha estão preenchidos
             if not old_password or not new_password or not confirm_new_password:
                 logger.warning("Campos de senha não preenchidos.")
                 messages.error(request, 'Todos os campos de senha são obrigatórios.')
@@ -538,3 +546,13 @@ def delete_product(request, product_id):
     company_id = product.company.id  # Guarda o ID da empresa para redirecionamento
     product.delete()
     return redirect('company_products', company_id=company_id)
+
+def admin_home(request):
+    users = User.objects.all()
+    products = Product.objects.all()
+    for product in products:
+        product.review_count = Review.objects.filter(product=product).count()  # Count reviews for this product
+    return render(request, 'admin_home.html', {'users': users, 'products': products})
+def delete_user(request, user_id):
+    user = get_object_or_404(User, id=user_id)
+    return redirect('admin_home')

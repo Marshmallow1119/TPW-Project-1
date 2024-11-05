@@ -20,10 +20,12 @@ class User(AbstractUser):
         ('admin', 'Admin')
     )
 
+    firstname = models.CharField(max_length=50, blank=True, null=True)
+    lastname = models.CharField(max_length=50, blank=True, null=True)
     user_type = models.CharField(max_length=10, choices=USER_TYPES, default='individual')
     number_of_purchases = models.IntegerField(default=0)
     address = models.CharField(max_length=50, blank=True, null=True)
-    email = models.EmailField(max_length=50, unique=True)
+    email = models.EmailField(max_length=50, unique=True, blank=True, null=True)
     phone = models.CharField(max_length=50, blank=True, unique=True)
     country = models.CharField(max_length=50, blank=True, null=True)
     image = models.ImageField(upload_to='profile_pics/', blank=True, null=True)
