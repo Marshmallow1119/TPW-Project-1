@@ -284,22 +284,26 @@ def profile(request):
             messages.success(request, 'Conta eliminada com sucesso!')
             return redirect('/login')
 
-        # Alterar senha
-        elif 'Change_password' in request.POST:
-            old_password = request.POST.get('old_password')
-            new_password = request.POST.get('new_password')
-            confirm_new_password = request.POST.get('confirm_new_password')
+    elif 'change_password' in request.POST:
+        user=request.user
+        old_password = request.POST.get('old_password')
+        new_password = request.POST.get('new_password')
+        confirm_new_password = request.POST.get('confirm_new_password')
 
+        if not old_password or not new_password or not confirm_new_password:
+            messages.error(request, 'Todos os campos de senha são obrigatórios.')
+        else:
             if user.check_password(old_password):
                 if new_password == confirm_new_password:
                     user.set_password(new_password)
                     user.save()
                     messages.success(request, 'Senha alterada com sucesso!')
-                    return redirect('/account/settings')
+                    return redirect('/account/profile/')
                 else:
                     messages.error(request, 'As senhas não coincidem!')
             else:
                 messages.error(request, 'Senha antiga incorreta!')
+
 
     purchases = Purchase.objects.filter(user=user)  # Buscar compras novamente para o template
     return render(request, 'profile.html', {
