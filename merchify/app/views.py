@@ -204,7 +204,7 @@ def viewCart(request):
     try:
         cart = Cart.objects.get(user=user)
     except Cart.DoesNotExist:
-        return redirect('store')  # Redirect to store if cart doesn't exist
+        cart = Cart.objects.create(user=user)
 
     cartitems = CartItem.objects.filter(cart=cart)
     context = {
