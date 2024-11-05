@@ -381,3 +381,26 @@ def remove_from_favorites(request, product_id):
     except Product.DoesNotExist:
         return JsonResponse({"success": False, "message": "Product not found."}, status=404)
 
+
+@login_required
+def payment(request):
+    user = request.user
+    cart = Cart.objects.get(user=user)
+    cart_items = CartItem.objects.filter(cart=cart)
+    total = cart.total
+    if request.method == 'POST':
+        payment_method = request.POST.get('payment_method')
+        shipping_address = request.POST.get('shipping_address')
+        purchase = Purchase.objects.create(
+            user=user,
+            date=timezone.now().date(),
+            total=total,
+            paymentMethod=payment_method,
+            shippingAddress=shipping_address,
+            status='Processing'
+        )
+        purchase.products.set([item.product for item in cart_items])
+        cart_items.delete()
+        cart.delete()
+        return redirect('home')
+    return render(request, 'payment.html', {"carrinho":cart_items,'total': total})

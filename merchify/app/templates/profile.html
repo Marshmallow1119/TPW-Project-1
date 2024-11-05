@@ -66,8 +66,9 @@
                     <div class="mt-5 text-end">
                         <button class="btn btn-primary profile-button" name="edit" id="editButton" type="button">Editar</button>
                         <button class="btn btn-danger profile-button" name="delete_account" type="submit">Eliminar Conta</button>
-                        <button class="btn btn-secondary profile-button" name="Change_password" type="submit">Alterar Senha</button>
+                        <button class="btn btn-secondary profile-button" name="Change_password" id="change_password" type="submit">Alterar Senha</button>
                         <button class="btn btn-success profile-button" name="save" id="saveButton" type="submit" style="display: none;">Salvar</button>
+                        <button class="btn btn-success profile-button" name="submit_password" id="submit_password" type="submit" style="display: none;">Mudar Password</button>
                     </div>
                 </form>
             </div>
@@ -126,5 +127,19 @@
         // Mostrar o botão de Salvar
         document.getElementById('saveButton').style.display = 'inline-block';
         document.getElementById('editImageLink').style.display = 'block';    });
+
+        document.getElementById('change_password').addEventListener('click', function() {
+            const inputs = document.querySelectorAll('input[readonly]');
+            inputs.forEach(input => {
+                input.removeAttribute('readonly');
+            });
+    
+            // Esconder os botões de Editar, Eliminar Conta e Alterar Senha
+            document.getElementById('editButton').style.display = 'none';
+            document.querySelector('button[name="delete_account"]').style.display = 'none';
+            document.querySelector('button[name="Change_password"]').style.display = 'none';
+    
+            // Mostrar o botão de Salvar
+            document.getElementById('submit_password').style.display = 'inline-block';
 </script>
 {% endblock %}
