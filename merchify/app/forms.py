@@ -1,8 +1,11 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import get_user_model
+from .models import Product
+
 
 User = get_user_model()
+
 
 class RegisterForm(UserCreationForm):
     username = forms.CharField(max_length=100, required=True)
@@ -63,3 +66,7 @@ class UpdateProfile(forms.Form):
             raise forms.ValidationError("Preencha pelo menos um campo.")
         
 
+class ProductForm(forms.ModelForm):
+    class Meta:
+        model = Product
+        fields = ['name', 'description', 'price', 'image', 'artist', 'category']  # Exclui o campo 'company' porque será preenchido na view

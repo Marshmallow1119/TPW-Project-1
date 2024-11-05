@@ -10,13 +10,16 @@ from django.shortcuts import redirect, render, get_object_or_404
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
+from django.contrib.auth import password_validation
+from django.core.exceptions import ValidationError
 
 from app.models import *
-from app.forms import RegisterForm
+from app.forms import RegisterForm, ProductForm
 from django.contrib.auth import authenticate, login as auth_login, get_user_model
 from django.contrib.auth import logout as auth_logout
 from .forms import RegisterForm, UploadUserProfilePicture, UpdatePassword, UpdateProfile
 from django.contrib.auth.models import User
+
 
 User = get_user_model()
 
@@ -203,7 +206,7 @@ def viewCart(request):
     try:
         cart = Cart.objects.get(user=user)
     except Cart.DoesNotExist:
-        cart = Cart.objects.create(user=user)
+        return redirect('store')  # Redirect to store if cart doesn't exist
 
     cartitems = CartItem.objects.filter(cart=cart)
     context = {
@@ -233,12 +236,24 @@ def remove_from_cart(request, product_id):
     except CartItem.DoesNotExist:
         raise Http404("CartItem does not exist")
     return redirect('cart')
+import logging
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import password_validation
+from django.core.exceptions import ValidationError
+from django.shortcuts import render, redirect
+from .forms import UploadUserProfilePicture, UpdateProfile, UpdatePassword
+from .models import Purchase
+
+# Configuração básica do logger
+logger = logging.getLogger(__name__)
 
 @login_required(login_url='/login')
 def profile(request):
-    user= request.user
+    user = request.user
 
     if request.method == 'GET':
+        logger.debug("Método GET acionado, carregando formulário.")
         image_form = UploadUserProfilePicture()
         profile_form = UpdateProfile(initial={
             'name': user.first_name,
@@ -250,7 +265,7 @@ def profile(request):
             'country': user.country
         })
         password_form = UpdatePassword()
-        purchases = Purchase.objects.filter(user=user)  # Obter compras para o template
+        purchases = Purchase.objects.filter(user=user)
 
         return render(request, 'profile.html', {
             'user': user,
@@ -263,6 +278,7 @@ def profile(request):
 
     elif request.method == 'POST':
         if 'save' in request.POST:
+            logger.debug("Salvando alterações no perfil do usuário.")
             user.first_name = request.POST.get('name', user.first_name)
             user.last_name = request.POST.get('surname', user.last_name)
             user.email = request.POST.get('email', user.email)
@@ -272,45 +288,61 @@ def profile(request):
             user.country = request.POST.get('country', user.country)
             
             if 'image' in request.FILES:
+                logger.debug("Imagem de perfil recebida.")
                 user.image = request.FILES['image']
 
             user.save()
             messages.success(request, 'Perfil atualizado com sucesso!')
             return redirect('/account/profile')
 
-        # Excluir conta
         elif 'delete_account' in request.POST:
+            logger.debug("Solicitação para eliminar a conta recebida.")
             user.delete()
             messages.success(request, 'Conta eliminada com sucesso!')
             return redirect('/login')
 
-    elif 'change_password' in request.POST:
-        user=request.user
-        old_password = request.POST.get('old_password')
-        new_password = request.POST.get('new_password')
-        confirm_new_password = request.POST.get('confirm_new_password')
+        elif 'submit_password' in request.POST:
+            logger.debug("Solicitação para mudar a senha recebida.")
+            old_password = request.POST.get('old_password')
+            new_password = request.POST.get('new_password')
+            confirm_new_password = request.POST.get('confirm_new_password')
 
-        if not old_password or not new_password or not confirm_new_password:
-            messages.error(request, 'Todos os campos de senha são obrigatórios.')
-        else:
-            if user.check_password(old_password):
-                if new_password == confirm_new_password:
-                    user.set_password(new_password)
-                    user.save()
-                    messages.success(request, 'Senha alterada com sucesso!')
-                    return redirect('/account/profile/')
-                else:
-                    messages.error(request, 'As senhas não coincidem!')
+            # Verificar se todos os campos de senha estão preenchidos
+            if not old_password or not new_password or not confirm_new_password:
+                logger.warning("Campos de senha não preenchidos.")
+                messages.error(request, 'Todos os campos de senha são obrigatórios.')
             else:
-                messages.error(request, 'Senha antiga incorreta!')
+                if user.check_password(old_password):
+                    logger.debug("Senha antiga correta.")
+                    if new_password == confirm_new_password:
+                        logger.debug("Novas senhas coincidem.")
+                        try:
+                            # Validar a nova senha
+                            password_validation.validate_password(new_password, user)
+                            logger.debug("Nova senha válida.")
+                            user.set_password(new_password)
+                            user.save()
+                            messages.success(request, 'Senha alterada com sucesso!')
+                            return redirect('/account/profile')
+                        except ValidationError as e:
+                            logger.error("Erro de validação de senha: %s", e)
+                            for error in e.messages:
+                                messages.error(request, error)
+                    else:
+                        logger.warning("As novas senhas não coincidem.")
+                        messages.error(request, 'As senhas não coincidem!')
+                else:
+                    logger.warning("Senha antiga incorreta.")
+                    messages.error(request, 'Senha antiga incorreta!')
 
-
-    purchases = Purchase.objects.filter(user=user)  # Buscar compras novamente para o template
+    logger.debug("Carregando informações do usuário para a renderização.")
+    purchases = Purchase.objects.filter(user=user)
     return render(request, 'profile.html', {
         'user': user,
         'number_of_purchases': purchases.count(),
         'purchases': purchases,
     })
+
 
 @login_required
 def submit_review(request, product_id):
@@ -343,7 +375,7 @@ def submit_review(request, product_id):
 
         # Redirect back to the product page
         return redirect("productDetails", identifier=product_id)
-
+    
 @login_required
 def checkfavorite(request):
     favorite_products = Favorite.objects.filter(user=request.user).select_related('product')
@@ -411,3 +443,100 @@ def payment(request):
         cart.delete()
         return redirect('home')
     return render(request, 'payment.html', {"carrinho":cart_items,'total': total})
+
+
+
+
+#@login_required
+def supplier_product_list(request):
+    # Dados de exemplo para testar o layout da página
+    products = [
+        {
+            "name": "Produto Exemplo 1",
+            "price": 20.0,
+            "image": {"url": "https://via.placeholder.com/250"},
+            "artist": {"image": {"url": "https://via.placeholder.com/100"}},
+        },
+        {
+            "name": "Produto Exemplo 2",
+            "price": 35.0,
+            "image": {"url": "https://via.placeholder.com/250"},
+            "artist": {"image": {"url": "https://via.placeholder.com/100"}},
+        },
+    ]
+
+    return render(request, 'supplier/product_list.html', {'products': products})
+
+
+def add_product(request):
+    if request.method == 'POST':
+        form = ProductForm(request.POST, request.FILES)
+        if form.is_valid():
+            product = form.save(commit=False)
+            product.company = request.user.supplier_profile.company
+            product.save()
+            return redirect('supplier_product_list')
+    else:
+        form = ProductForm()
+
+    return render(request, 'supplier/product_form.html', {'form': form, 'is_edit': False})
+
+def edit_product(request, product_id):
+    product = get_object_or_404(Product, id=product_id, company=request.user.supplier_profile.company)
+    if request.method == 'POST':
+        form = ProductForm(request.POST, request.FILES, instance=product)
+        if form.is_valid():
+            form.save()
+            return redirect('supplier_product_list')
+    else:
+        form = ProductForm(instance=product)
+
+    return render(request, 'supplier/product_form.html', {'form': form, 'is_edit': True, 'product': product})
+
+
+def company_products(request, company_id):
+    # Obter a empresa específica usando o ID
+    company = get_object_or_404(Company, id=company_id)
+
+    # Obter todos os produtos associados a esta empresa
+    products = company.products.all()  # Utiliza o related_name definido no modelo Product
+
+    # Renderizar o template com os produtos da empresa
+    return render(request, 'company_products.html', {'company': company, 'products': products})
+
+#@login_required
+def add_product_to_company(request, company_id):
+    company = get_object_or_404(Company, id=company_id)
+
+    if request.method == 'POST':
+        form = ProductForm(request.POST, request.FILES)
+        if form.is_valid():
+            product = form.save(commit=False)
+            product.company = company
+            product.save()
+            return redirect('company_products', company_id=company.id)
+    else:
+        form = ProductForm()
+
+    return render(request, 'add_product_to_company.html', {'form': form, 'company': company})
+
+
+def edit_product(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+
+    if request.method == 'POST':
+        form = ProductForm(request.POST, request.FILES, instance=product)
+        if form.is_valid():
+            form.save()
+            return redirect('company_products', company_id=product.company.id)
+    else:
+        form = ProductForm(instance=product)
+
+    return render(request, 'edit_product.html', {'form': form, 'product': product})
+
+#@login_required
+def delete_product(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    company_id = product.company.id  # Guarda o ID da empresa para redirecionamento
+    product.delete()
+    return redirect('company_products', company_id=company_id)
