@@ -10,6 +10,8 @@ from django.shortcuts import redirect, render, get_object_or_404
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
+from django.contrib.auth import password_validation
+from django.core.exceptions import ValidationError
 
 from app.models import *
 from app.forms import RegisterForm
@@ -203,7 +205,7 @@ def viewCart(request):
     try:
         cart = Cart.objects.get(user=user)  # Use get() to retrieve a single cart
     except Cart.DoesNotExist:
-        cart = Cart.objects.create(user=user)
+        return redirect('store')  # Redirect to store if cart doesn't exist
 
     cartitems = CartItem.objects.filter(cart=cart)
     context = {
@@ -233,12 +235,24 @@ def remove_from_cart(request, product_id):
     except CartItem.DoesNotExist:
         raise Http404("CartItem does not exist")
     return redirect('cart')
+import logging
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import password_validation
+from django.core.exceptions import ValidationError
+from django.shortcuts import render, redirect
+from .forms import UploadUserProfilePicture, UpdateProfile, UpdatePassword
+from .models import Purchase
+
+# Configuração básica do logger
+logger = logging.getLogger(__name__)
 
 @login_required(login_url='/login')
 def profile(request):
-    user= request.user
+    user = request.user
 
     if request.method == 'GET':
+        logger.debug("Método GET acionado, carregando formulário.")
         image_form = UploadUserProfilePicture()
         profile_form = UpdateProfile(initial={
             'name': user.first_name,
@@ -250,7 +264,7 @@ def profile(request):
             'country': user.country
         })
         password_form = UpdatePassword()
-        purchases = Purchase.objects.filter(user=user)  # Obter compras para o template
+        purchases = Purchase.objects.filter(user=user)
 
         return render(request, 'profile.html', {
             'user': user,
@@ -263,6 +277,7 @@ def profile(request):
 
     elif request.method == 'POST':
         if 'save' in request.POST:
+            logger.debug("Salvando alterações no perfil do usuário.")
             user.first_name = request.POST.get('name', user.first_name)
             user.last_name = request.POST.get('surname', user.last_name)
             user.email = request.POST.get('email', user.email)
@@ -272,45 +287,61 @@ def profile(request):
             user.country = request.POST.get('country', user.country)
             
             if 'image' in request.FILES:
+                logger.debug("Imagem de perfil recebida.")
                 user.image = request.FILES['image']
 
             user.save()
             messages.success(request, 'Perfil atualizado com sucesso!')
             return redirect('/account/profile')
 
-        # Excluir conta
         elif 'delete_account' in request.POST:
+            logger.debug("Solicitação para eliminar a conta recebida.")
             user.delete()
             messages.success(request, 'Conta eliminada com sucesso!')
             return redirect('/login')
 
-    elif 'change_password' in request.POST:
-        user=request.user
-        old_password = request.POST.get('old_password')
-        new_password = request.POST.get('new_password')
-        confirm_new_password = request.POST.get('confirm_new_password')
+        elif 'submit_password' in request.POST:
+            logger.debug("Solicitação para mudar a senha recebida.")
+            old_password = request.POST.get('old_password')
+            new_password = request.POST.get('new_password')
+            confirm_new_password = request.POST.get('confirm_new_password')
 
-        if not old_password or not new_password or not confirm_new_password:
-            messages.error(request, 'Todos os campos de senha são obrigatórios.')
-        else:
-            if user.check_password(old_password):
-                if new_password == confirm_new_password:
-                    user.set_password(new_password)
-                    user.save()
-                    messages.success(request, 'Senha alterada com sucesso!')
-                    return redirect('/account/profile/')
-                else:
-                    messages.error(request, 'As senhas não coincidem!')
+            # Verificar se todos os campos de senha estão preenchidos
+            if not old_password or not new_password or not confirm_new_password:
+                logger.warning("Campos de senha não preenchidos.")
+                messages.error(request, 'Todos os campos de senha são obrigatórios.')
             else:
-                messages.error(request, 'Senha antiga incorreta!')
+                if user.check_password(old_password):
+                    logger.debug("Senha antiga correta.")
+                    if new_password == confirm_new_password:
+                        logger.debug("Novas senhas coincidem.")
+                        try:
+                            # Validar a nova senha
+                            password_validation.validate_password(new_password, user)
+                            logger.debug("Nova senha válida.")
+                            user.set_password(new_password)
+                            user.save()
+                            messages.success(request, 'Senha alterada com sucesso!')
+                            return redirect('/account/profile')
+                        except ValidationError as e:
+                            logger.error("Erro de validação de senha: %s", e)
+                            for error in e.messages:
+                                messages.error(request, error)
+                    else:
+                        logger.warning("As novas senhas não coincidem.")
+                        messages.error(request, 'As senhas não coincidem!')
+                else:
+                    logger.warning("Senha antiga incorreta.")
+                    messages.error(request, 'Senha antiga incorreta!')
 
-
-    purchases = Purchase.objects.filter(user=user)  # Buscar compras novamente para o template
+    logger.debug("Carregando informações do usuário para a renderização.")
+    purchases = Purchase.objects.filter(user=user)
     return render(request, 'profile.html', {
         'user': user,
         'number_of_purchases': purchases.count(),
         'purchases': purchases,
     })
+
 
 @login_required
 def submit_review(request, product_id):
