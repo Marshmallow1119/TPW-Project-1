@@ -4,11 +4,14 @@ import json
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Avg
-from django.http import JsonResponse
+from django.http import JsonResponse, Http404
 from django.utils import timezone
 from django.shortcuts import redirect, render, get_object_or_404
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
+from django.contrib.auth import password_validation
+from django.core.exceptions import ValidationError
 
 from app.models import *
 from app.forms import RegisterForm, ProductForm
@@ -55,14 +58,40 @@ def artistsProducts(request, name):
         products = products.order_by('price')  # Ascending price
     elif sort == 'priceDesc':
         products = products.order_by('-price')  # Descending price
+
+    if request.user.is_authenticated:
+        favorited_product_ids = Favorite.objects.filter(user=request.user).values_list('product_id', flat=True)
+    else:
+        favorited_product_ids = []  # Empty list if user is not authenticated
+
+        # Add a new property to each product indicating if it is favorited by the user
+    for product in products:
+            product.is_favorited = product.id in favorited_product_ids
     return render(request, 'artists_products.html', {'artist': artist, 'products': products})
+
+
+from django.shortcuts import render, get_object_or_404
+from django.db.models import Avg
+from .models import Product, Clothing, CD, Vinil
+
 
 def productDetails(request, identifier):
     product = get_object_or_404(Product, id=identifier)
-    if isinstance(product, Vinil) or isinstance(product, CD):
-        return render(request, 'productDetailsVinil.html', {'product': product})
+
+    context = {
+        'product': product,
+    }
+
+    if isinstance(product, Clothing):
+        sizes = product.sizes.all()  # Get all sizes related to the clothing item
+        context['sizes'] = sizes  # Add sizes to context
+
     average_rating = product.reviews.aggregate(Avg('rating'))['rating__avg'] or 0  # Default to 0 if no reviews
-    return render(request, 'productDetails.html', {'product': product, 'average_rating': average_rating})
+    context['average_rating'] = average_rating  # Add average rating to context
+    print(isinstance(product, Clothing))
+
+    return render(request, 'productDetails.html', context)
+
 
 def search_products(request):
     query = request.GET.get('search', '')  # Get the search term from the query string
@@ -154,16 +183,14 @@ def add_to_cart(request, product_id):
 
             product = get_object_or_404(Product, id=product_id)
             
-            cart, created = Cart.objects.get_or_create(user=request.user, defaults={"date": date.today(), "total": 0.0})
+            cart, created = Cart.objects.get_or_create(user=request.user, defaults={"date": date.today()})
 
-            cart_item, item_created = CartItem.objects.get_or_create(cart=cart, product=product, defaults={"quantity": quantity, "total": product.price * quantity})
+            cart_item, item_created = CartItem.objects.get_or_create(cart=cart, product=product, defaults={"quantity": quantity})
 
             if not item_created:
                 cart_item.quantity += quantity
-                cart_item.total += product.price * quantity
                 cart_item.save()
 
-            cart.total += product.price * quantity
             cart.save()
 
             return JsonResponse({"message": "Produto adicionado ao carrinho!"})
@@ -177,7 +204,7 @@ def add_to_cart(request, product_id):
 def viewCart(request):
     user = request.user
     try:
-        cart = Cart.objects.get(user=user)  # Use get() to retrieve a single cart
+        cart = Cart.objects.get(user=user)
     except Cart.DoesNotExist:
         return redirect('store')  # Redirect to store if cart doesn't exist
 
@@ -203,15 +230,30 @@ def update_cart_item(request):
 
 @login_required
 def remove_from_cart(request, product_id):
-    cart_item = get_object_or_404(CartItem, id=product_id)
-    cart_item.delete()
+    try:
+        cart_item = CartItem.objects.get(product_id=product_id)
+        cart_item.delete()
+    except CartItem.DoesNotExist:
+        raise Http404("CartItem does not exist")
+    return redirect('cart')
+import logging
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import password_validation
+from django.core.exceptions import ValidationError
+from django.shortcuts import render, redirect
+from .forms import UploadUserProfilePicture, UpdateProfile, UpdatePassword
+from .models import Purchase
 
+# Configuração básica do logger
+logger = logging.getLogger(__name__)
 
 @login_required(login_url='/login')
 def profile(request):
-    user= request.user
+    user = request.user
 
     if request.method == 'GET':
+        logger.debug("Método GET acionado, carregando formulário.")
         image_form = UploadUserProfilePicture()
         profile_form = UpdateProfile(initial={
             'name': user.first_name,
@@ -223,7 +265,7 @@ def profile(request):
             'country': user.country
         })
         password_form = UpdatePassword()
-        purchases = Purchase.objects.filter(user=user)  # Obter compras para o template
+        purchases = Purchase.objects.filter(user=user)
 
         return render(request, 'profile.html', {
             'user': user,
@@ -235,7 +277,8 @@ def profile(request):
         })
 
     elif request.method == 'POST':
-        if 'edit' in request.POST:
+        if 'save' in request.POST:
+            logger.debug("Salvando alterações no perfil do usuário.")
             user.first_name = request.POST.get('name', user.first_name)
             user.last_name = request.POST.get('surname', user.last_name)
             user.email = request.POST.get('email', user.email)
@@ -245,41 +288,61 @@ def profile(request):
             user.country = request.POST.get('country', user.country)
             
             if 'image' in request.FILES:
+                logger.debug("Imagem de perfil recebida.")
                 user.image = request.FILES['image']
-                
+
             user.save()
             messages.success(request, 'Perfil atualizado com sucesso!')
-            return redirect('/account/settings')
+            return redirect('/account/profile')
 
-        # Excluir conta
         elif 'delete_account' in request.POST:
+            logger.debug("Solicitação para eliminar a conta recebida.")
             user.delete()
             messages.success(request, 'Conta eliminada com sucesso!')
             return redirect('/login')
 
-        # Alterar senha
-        elif 'Change_password' in request.POST:
+        elif 'submit_password' in request.POST:
+            logger.debug("Solicitação para mudar a senha recebida.")
             old_password = request.POST.get('old_password')
             new_password = request.POST.get('new_password')
             confirm_new_password = request.POST.get('confirm_new_password')
 
-            if user.check_password(old_password):
-                if new_password == confirm_new_password:
-                    user.set_password(new_password)
-                    user.save()
-                    messages.success(request, 'Senha alterada com sucesso!')
-                    return redirect('/account/settings')
-                else:
-                    messages.error(request, 'As senhas não coincidem!')
+            # Verificar se todos os campos de senha estão preenchidos
+            if not old_password or not new_password or not confirm_new_password:
+                logger.warning("Campos de senha não preenchidos.")
+                messages.error(request, 'Todos os campos de senha são obrigatórios.')
             else:
-                messages.error(request, 'Senha antiga incorreta!')
+                if user.check_password(old_password):
+                    logger.debug("Senha antiga correta.")
+                    if new_password == confirm_new_password:
+                        logger.debug("Novas senhas coincidem.")
+                        try:
+                            # Validar a nova senha
+                            password_validation.validate_password(new_password, user)
+                            logger.debug("Nova senha válida.")
+                            user.set_password(new_password)
+                            user.save()
+                            messages.success(request, 'Senha alterada com sucesso!')
+                            return redirect('/account/profile')
+                        except ValidationError as e:
+                            logger.error("Erro de validação de senha: %s", e)
+                            for error in e.messages:
+                                messages.error(request, error)
+                    else:
+                        logger.warning("As novas senhas não coincidem.")
+                        messages.error(request, 'As senhas não coincidem!')
+                else:
+                    logger.warning("Senha antiga incorreta.")
+                    messages.error(request, 'Senha antiga incorreta!')
 
-    purchases = Purchase.objects.filter(user=user)  # Buscar compras novamente para o template
+    logger.debug("Carregando informações do usuário para a renderização.")
+    purchases = Purchase.objects.filter(user=user)
     return render(request, 'profile.html', {
         'user': user,
         'number_of_purchases': purchases.count(),
         'purchases': purchases,
     })
+
 
 @login_required
 def submit_review(request, product_id):
@@ -312,6 +375,77 @@ def submit_review(request, product_id):
 
         # Redirect back to the product page
         return redirect("productDetails", identifier=product_id)
+    
+@login_required
+def checkfavorite(request):
+    favorite_products = Favorite.objects.filter(user=request.user).select_related('product')
+    products_list = [{'id': fav.product.id, 'name': fav.product.name, 'price': fav.product.price, 'image': fav.product.image.url} for fav in favorite_products]
+    return render(request, "favorites.html", {"favorite_products": products_list})
+
+
+@require_POST
+@login_required  # Ensure the user is logged in
+def addtofavorite(request, product_id):
+    try:
+        # Fetch the product and user
+        product = Product.objects.get(id=product_id)
+        user = request.user
+
+        # Check if this product is already a favorite
+        favorite, created = Favorite.objects.get_or_create(user=user, product=product)
+
+        if created:
+            # Product was added to favorites
+            favorited = True
+        else:
+            favorite.delete()
+            favorited = False
+
+        return JsonResponse({"success": True, "favorited": favorited})
+
+    except Product.DoesNotExist:
+        # Handle case if product does not exist
+        return JsonResponse({"success": False, "message": "Product not found."}, status=404)
+    except Exception as e:
+        # Handle any other unexpected errors
+        return JsonResponse({"success": False, "message": str(e)}, status=500)
+
+@login_required
+def remove_from_favorites(request, product_id):
+    try:
+        product = Product.objects.get(id=product_id)
+        user = request.user
+        Favorite.objects.filter(user=user, product=product).delete()
+        return redirect( 'favorites')
+    except Product.DoesNotExist:
+        return JsonResponse({"success": False, "message": "Product not found."}, status=404)
+
+
+@login_required
+def payment(request):
+    user = request.user
+    cart = Cart.objects.get(user=user)
+    cart_items = CartItem.objects.filter(cart=cart)
+    total = cart.total
+    if request.method == 'POST':
+        payment_method = request.POST.get('payment_method')
+        shipping_address = request.POST.get('shipping_address')
+        purchase = Purchase.objects.create(
+            user=user,
+            date=timezone.now().date(),
+            total=total,
+            paymentMethod=payment_method,
+            shippingAddress=shipping_address,
+            status='Processing'
+        )
+        purchase.products.set([item.product for item in cart_items])
+        cart_items.delete()
+        cart.delete()
+        return redirect('home')
+    return render(request, 'payment.html', {"carrinho":cart_items,'total': total})
+
+
+
 
 #@login_required
 def supplier_product_list(request):

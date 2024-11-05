@@ -36,38 +36,46 @@
 {% load filters %}
 
     <div class="container">
-        <h1>Your Shopping Cart</h1>
-        <table class="table">
-            <thead>
-                <tr>
-                    <th scope="col">Product</th>
-                    <th scope="col">Price</th>
-                    <th scope="col">Total</th>
-                    <th scope="col">Delete</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in cart_items %}
-                <tr>
-                    <td>
-                        <div class="product-info">
-                            <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="product-image mr-3">
-                            <div>
-                                <h5>{{ item.product.name }}</h5>
+        <h1>O meu carrinho:</h1>
+
+        {% if cart_items %}
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">Product</th>
+                        <th scope="col">Preço</th>
+                        <th scope="col">Quantidade</th>
+                        <th scope="col">Total</th>
+                        <th scope="col">Apagar</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in cart_items %}
+                    <tr>
+                        <td>
+                            <div class="product-info">
+                                <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="product-image mr-3">
+                                <div>
+                                    <h5>{{ item.product.name }}</h5>
+                                </div>
                             </div>
-                        </div>
-                    </td>
-                    <td>${{ item.product.price }}</td>
-                    <td>${{ item.product.price|multiply:item.quantity }}</td>
-                    <td>
-                        <a href="{% url 'remove_from_cart' item.id %}" class="btn btn-danger btn-sm">
-                            <i class="fas fa-trash-alt"></i>
-                        </a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                        </td>
+                        <td>${{ item.product.price }}</td>
+                        <td>{{ item.quantity }}</td>
+                        <td>${{ item.product.price|multiply:item.quantity }}</td>
+                        <td>
+                            <a href="{% url 'remove_from_cart' item.product.id %}" class="btn btn-danger btn-sm">
+                                <i class="fas fa-trash-alt"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="text-muted">O carrinho está vazio. Adicione produtos ao seu carrinho.</p>
+<button class="btn btn-dark" type="button" onclick="window.location.href='{% url 'produtos' %}'">Ver Produtos</button>
+        {% endif %}
     </div>
 {% endblock %}
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>

@@ -1,0 +1,281 @@
+{% extends "layout.html" %}
+{% load filters %}
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Page</title>
+
+  <!-- Bootstrap CSS -->
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+{% block css %}
+  <style>
+    .product-img {
+      max-height: 300px !important;
+      object-fit: contain !important;
+    }
+
+    .size-selector .btn {
+      margin: 0.2rem;
+    }
+    .star-rating .star.selected {
+        color: gold; /* Gold color for filled stars */
+    }
+
+    .star-rating .star {
+        font-size: 2rem; /* Adjust as needed */
+        color: gray; /* Default gray color for empty stars */
+    }
+
+    /* Half star styling for .half-star */
+    .star-rating .half-star {
+        position: relative;
+        color: gold;
+    }
+
+    .star-rating .half-star::after {
+        content: "★";
+        position: absolute;
+        left: 0;
+        width: 50%;
+        overflow: hidden;
+        color: gray;
+    }
+
+
+  </style>
+{% endblock %}
+</head>
+{% block content %}
+<body>
+
+<div class="container my-5">
+  <div class="row">
+    <!-- Product Image -->
+    <div class="col-md-6 d-flex justify-content-center align-items-center">
+      <div class="image-container">
+        <img src="{{ product.image.url }}" alt="{{ product.name }}" class="img-fluid product-img">
+      </div>
+    </div>
+
+    <!-- Product Details -->
+    <div class="col-md-6">
+      <h1 class="display-6">{{ product.name }}</h1>
+      <p class="text-muted">{{ product.artist.name }}</p>
+      <h3 class="text-success">{{ product.price|floatformat:2 }}€</h3>
+      <p class="lead">{{ product.description }}</p>
+
+      <!-- Size Selector -->
+      <div class="mb-3">
+        <label class="form-label fw-bold">Tamanho</label>
+        <div class="size-selector">
+          {% for size in product.clothing.sizes.all %}
+            <button type="button" class="btn size-btn btn-dark "
+                    data-size-id="{{ size.id }}" {% if size.stock == 0 %}disabled{% endif %}>
+              {{ size.size }} - {{ size.stock }} Unidades Disponíveis
+            </button>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Add to Cart -->
+      <div class="mb-3">
+        <label for="quantity" class="form-label fw-bold">Quantidade</label>
+        <input type="number" id="quantity" class="form-control" value="1" min="1">
+      </div>
+
+      <button id="add-to-cart-btn" class="btn btn-dark w-100" data-product-id="{{ product.id }}">Adicionar ao carrinho</button>
+      <!-- Product Details Table -->
+      <div class="mt-4">
+        <h5>Detalhes do Produto</h5>
+        <table class="table table-bordered">
+          <tbody>
+            <tr>
+              <th>Categoria</th>
+              <td>{{ product.category }}</td>
+            </tr>
+            <tr>
+              <th>Cor</th>
+              <td>{{ product.clothing.color }}</td>
+            </tr>
+            <tr>
+              <th>Artista</th>
+              <td>{{ product.artist.name }}</td>
+            </tr>
+            <tr>
+              <th>Empresa</th>
+              <td>{{ product.company.name }}</td>
+            </tr>
+            <tr>
+              <th>Data de Adição</th>
+              <td>{{ product.addedProduct }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Average Rating Display -->
+  <div class="d-flex align-items-center mb-3" style="gap: 5px;">
+    <h5 class="m-0">Classificação Média:</h5>
+    <div class="star-rating d-flex align-items-center">
+      {% for i in "12345" %}
+        {% if i <= average_rating|stringformat:"0" %}
+          <span class="star selected">★</span>
+        {% elif i == average_rating|stringformat:"0" and average_rating|stringformat:"1.1" != i|stringformat:"1.0" %}
+          <span class="star selected half-star">★</span>
+        {% else %}
+          <span class="star">★</span>
+        {% endif %}
+      {% endfor %}
+    </div>
+    <span>({{ average_rating }})</span> <!-- Display the numerical value of the average rating -->
+  </div>
+    <!-- Ratings and Reviews Section -->
+  <div class="mt-5">
+    <h5>Classificação e Avaliações</h5>
+
+    <!-- User Rating Form -->
+    {% if user.is_authenticated %}
+      <div class="card p-3 mb-4">
+        <h6>Dê uma Avaliação: </h6>
+        <div class="star-rating" id="user-star-rating">
+            <span class="star" data-rating="1">☆</span>
+            <span class="star" data-rating="2">☆</span>
+            <span class="star" data-rating="3">☆</span>
+            <span class="star" data-rating="4">☆</span>
+            <span class="star" data-rating="5">☆</span>
+        </div>
+        <form method="post" action="{% url 'submit_review' product.id %}">
+            {% csrf_token %}
+            <input type="hidden" id="rating-input" name="rating" value="0">
+            <div class="form-group mt-3">
+                <label for="review">Escreva uma avaliação:</label>
+                <textarea id="review" name="review" class="form-control" rows="3" placeholder="Partilha a tua experiência com este produto"></textarea>
+            </div>
+            <button type="submit" class="btn btn-dark" style="margin-top: 20px">Enviar Avaliação</button>
+        </form>
+      </div>
+    {% else %}
+      <p>Por favor, <a href="{% url 'login' %}">faça login</a> para avaliar este produto.</p>
+    {% endif %}
+
+    <div id="reviews">
+      <h6>Avaliações dos Usuários:</h6>
+      {% for review in product.reviews.all %}
+        <div class="card p-3 mb-3">
+          <div class="d-flex justify-content-between align-items-center">
+            <h6>{{ review.user.username }}<small class="text-muted"> - {{ review.date|date:"d/m/Y" }}</small></h6>
+            <div class="star-rating">
+            {% for i in "12345" %}
+                {% if forloop.counter <= review.rating %}
+                    <span class="star selected">★</span>
+                {% else %}
+                    <span class="star">☆</span>
+                {% endif %}
+            {% endfor %}
+            </div>
+          </div>
+          <p class="mb-0">{{ review.text }}</p>
+        </div>
+      {% empty %}
+        <p>Seja o primeiro a avaliar este produto!</p>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const addToCartBtn = document.getElementById("add-to-cart-btn");
+    const quantityInput = document.getElementById("quantity");
+    let selectedSize = null;
+
+    const sizeButtons = document.querySelectorAll(".size-btn");
+    sizeButtons.forEach(button => {
+        button.addEventListener("click", function () {
+            sizeButtons.forEach(btn => btn.classList.remove("btn-success"));
+            sizeButtons.forEach(btn => btn.classList.add("btn-dark"));
+            this.classList.add("btn-success");
+            this.classList.remove("btn-dark");
+            selectedSize = this.getAttribute("data-size-id");
+        });
+    });
+
+    // Handle add-to-cart click
+    addToCartBtn.addEventListener("click", function () {
+        const productId = this.getAttribute("data-product-id");
+        const quantity = quantityInput.value;
+
+        // Check if size is selected
+        if (!selectedSize) {
+            alert("Por favor, selecione um tamanho.");
+            return;
+        }
+
+        // Make the AJAX request to add product to cart
+        fetch(`/add-to-cart/${productId}/`, {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": "{{ csrf_token }}",  // Django CSRF token
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                size: selectedSize,
+                quantity: quantity
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.message) {
+                alert(data.message);  // Success message
+            } else if (data.error) {
+                alert(data.error);  // Error message
+            }
+        })
+        .catch(error => console.error("Error:", error));
+    });
+
+});
+document.addEventListener("DOMContentLoaded", function () {
+    const starRating = document.querySelectorAll("#user-star-rating .star");
+    let userRating = 0; // Initialize selected rating
+
+    starRating.forEach(star => {
+        // Highlight stars on hover
+        star.addEventListener("mouseover", function () {
+            const rating = this.getAttribute("data-rating");
+            highlightStars(rating); // Temporarily highlight based on hover
+        });
+
+        // Reset highlight when not hovering
+        star.addEventListener("mouseout", function () {
+            highlightStars(userRating); // Reflect user’s saved rating
+        });
+
+        // Toggle selected rating on click
+        star.addEventListener("click", function () {
+            const rating = this.getAttribute("data-rating");
+            userRating = rating; // Update saved rating based on click
+            highlightStars(userRating); // Reflect the saved rating
+            document.getElementById("rating-input").value = userRating; // Save rating to hidden input field
+        });
+    });
+
+    function highlightStars(rating) {
+        starRating.forEach(star => {
+            const starRating = star.getAttribute("data-rating");
+            star.textContent = (starRating <= rating) ? "★" : "☆"; // Filled for selected, outlined for unselected
+        });
+    }
+});
+
+</script>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
+{% endblock %}

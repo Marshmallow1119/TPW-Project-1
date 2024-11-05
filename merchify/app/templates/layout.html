@@ -11,9 +11,24 @@
     <!-- Bootstrap core JavaScript and Popper.js -->
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js" crossorigin="anonymous"></script>
 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <!-- Custom CSS -->
     {% load static %}
+    {% block css %}
+
+    {% endblock %}
     <link rel="stylesheet" href="{% static 'css/fonts.css' %}">
+    <style>
+                .nav-icon {
+            width: 20px;  /* Set the width you prefer */
+            height: 25px; /* Set the height you prefer */
+            object-fit: contain; /* Maintain aspect ratio */
+            margin-top: 5px; /* Remove any default margins */
+            font-size: 20px;
+                    color: black;
+        }
+
+    </style>
 </head>
 
 <body>
@@ -43,18 +58,21 @@
                     <form class="d-flex me-3" method="GET" action="{% url 'search_products' %}">
                         <input class="form-control me-2" type="search" name="search" placeholder="Search" aria-label="Search" value="{{ query|default:'' }}">
                         <button class="btn btn-outline-secondary me-1" type="submit">
-                            <i class="bi bi-search"></i> 
+                            <span class="fa fa-search nav-icon" alt="Pesquisar" ></span> 
                         </button>                
                     </form>
                     <div class="d-flex">
-                        <a href="{% url 'profile' %}" class="btn btn-outline-secondary me-3">
-                            <img src="/media/user.png" alt="Login" width="20">
+                        <a href="{% url 'profile' %}" class="btn btn-outline-secondary me-2">
+                            <span class="fa fa-user nav-icon" alt="Carrinho"></span>
                         </a>
                         <a href="{% url 'cart' %}" class="btn btn-outline-secondary me-2">
-                            <img src="/media/cart.png" alt="Carrinho" width="25">
+                            <span class="fa fa-shopping-cart nav-icon" alt="Carrinho"></span>
+                        </a>
+                        <a href="{% url 'favorites' %}" class="btn btn-outline-secondary me-2">
+                            <span class="fa fa-heart nav-icon" style="color: #cc4e4e;"></span>
                         </a>
                         <a href="{% url 'logout' %}" class="btn btn-outline-secondary me-2">
-                            <img src="/media/logout.png" alt="logout" width="20">
+                            <span class="fas fa-sign-out-alt nav-icon" alt="Carrinho"></span>
                         </a>
                     </div>
                 </div>

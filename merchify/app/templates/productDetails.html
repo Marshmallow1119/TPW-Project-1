@@ -9,55 +9,31 @@
   <!-- Bootstrap CSS -->
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-
 {% block css %}
   <style>
+    .product-container {
+      display: flex;
+      align-items: center; /* Aligns items to start */
+    }
+
     .product-img {
-      max-height: 300px !important;
-      object-fit: contain !important;
+      width: 95% !important;
+      height: auto;
+      object-fit: cover;
     }
-
-    .size-selector .btn {
-      margin: 0.2rem;
-    }
-    .star-rating .star.selected {
-        color: gold; /* Gold color for filled stars */
-    }
-
-    .star-rating .star {
-        font-size: 2rem; /* Adjust as needed */
-        color: gray; /* Default gray color for empty stars */
-    }
-
-    /* Half star styling for .half-star */
-    .star-rating .half-star {
-        position: relative;
-        color: gold;
-    }
-
-    .star-rating .half-star::after {
-        content: "★";
-        position: absolute;
-        left: 0;
-        width: 50%;
-        overflow: hidden;
-        color: gray;
-    }
-
 
   </style>
 {% endblock %}
 </head>
+
 {% block content %}
 <body>
 
 <div class="container my-5">
-  <div class="row">
+  <div class="row product-container">
     <!-- Product Image -->
-    <div class="col-md-6 d-flex justify-content-center align-items-center">
-      <div class="image-container">
-        <img src="{{ product.image.url }}" alt="{{ product.name }}" class="img-fluid product-img">
-      </div>
+    <div class="col-md-6 d-flex justify-content-center">
+        <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-img imagem">
     </div>
 
     <!-- Product Details -->
@@ -67,54 +43,57 @@
       <h3 class="text-success">{{ product.price|floatformat:2 }}€</h3>
       <p class="lead">{{ product.description }}</p>
 
-      <!-- Size Selector -->
-      <div class="mb-3">
-        <label class="form-label fw-bold">Tamanho</label>
-        <div class="size-selector">
-          {% for size in product.clothing.sizes.all %}
-            <button type="button" class="btn size-btn btn-dark "
-                    data-size-id="{{ size.id }}" {% if size.stock == 0 %}disabled{% endif %}>
-              {{ size.size }} - {{ size.stock }} Unidades Disponíveis
-            </button>
-          {% endfor %}
-        </div>
-      </div>
+      <!-- Product-Specific Table -->
+      <h5>Detalhes do Produto</h5>
+      <table class="table table-bordered">
+        <tbody>
+          <!-- Common Fields -->
+          <tr><th>Categoria</th><td>{{ product.category }}</td></tr>
+          <tr><th>Artista</th><td>{{ product.artist.name }}</td></tr>
+          <tr><th>Empresa</th><td>{{ product.company.name }}</td></tr>
+          <tr><th>Data de Adição</th><td>{{ product.addedProduct|date:"d/m/Y" }}</td></tr>
 
-      <!-- Add to Cart -->
+          <!-- Dynamic Fields Based on Product Type -->
+          {% if product.get_product_type == "Vinil" %}
+            <tr><th>Gênero</th><td>{{ product.vinil.genre }}</td></tr>
+            <tr><th>Tamanho do LP</th><td>{{ product.vinil.lpSize }}</td></tr>
+            <tr><th>Data de Lançamento</th><td>{{ product.vinil.releaseDate|date:"d/m/Y" }}</td></tr>
+            <tr><th>Stock</th><td>{{ product.vinil.stock }}</td></tr>
+          {% elif product.get_product_type == "CD" %}
+            <tr><th>Gênero</th><td>{{ product.cd.genre }}</td></tr>
+            <tr><th>Data de Lançamento</th><td>{{ product.cd.releaseDate|date:"d/m/Y" }}</td></tr>
+            <tr><th>Stock</th><td>{{ product.cd.stock }}</td></tr>
+          {% elif product.get_product_type == "Clothing" %}
+            <tr><th>Cor</th><td>{{ product.clothing.color }}</td></tr>
+          {% elif product.get_product_type == "Accessory" %}
+            <tr><th>Material</th><td>{{ product.accessory.material }}</td></tr>
+            <tr><th>Cor</th><td>{{ product.accessory.color }}</td></tr>
+            <tr><th>Tamanho</th><td>{{ product.accessory.size }}</td></tr>
+            <tr><th>Stock</th><td>{{ product.accessory.stock }}</td></tr>
+          {% endif %}
+        </tbody>
+      </table>
+
+      {% if product.get_product_type == "Clothing" %}
+        <div class="mb-3">
+          <label class="form-label fw-bold">Tamanho</label>
+          <div class="size-selector">
+            {% for size in product.clothing.sizes.all %}
+              <button type="button" class="btn size-btn btn-dark"
+                      data-size-id="{{ size.id }}" {% if size.stock == 0 %}disabled{% endif %}>
+                {{ size.size }} - {{ size.stock }} Unidades Disponíveis
+              </button>
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+
+      <!-- Add to Cart Button -->
       <div class="mb-3">
-        <label for="quantity" class="form-label fw-bold">Quantidade</label>
+        <label for="quantity" class="form-label">Quantidade</label>
         <input type="number" id="quantity" class="form-control" value="1" min="1">
       </div>
-
       <button id="add-to-cart-btn" class="btn btn-dark w-100" data-product-id="{{ product.id }}">Adicionar ao carrinho</button>
-      <!-- Product Details Table -->
-      <div class="mt-4">
-        <h5>Detalhes do Produto</h5>
-        <table class="table table-bordered">
-          <tbody>
-            <tr>
-              <th>Categoria</th>
-              <td>{{ product.category }}</td>
-            </tr>
-            <tr>
-              <th>Cor</th>
-              <td>{{ product.clothing.color }}</td>
-            </tr>
-            <tr>
-              <th>Artista</th>
-              <td>{{ product.artist.name }}</td>
-            </tr>
-            <tr>
-              <th>Empresa</th>
-              <td>{{ product.company.name }}</td>
-            </tr>
-            <tr>
-              <th>Data de Adição</th>
-              <td>{{ product.addedProduct }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
     </div>
   </div>
 
@@ -122,18 +101,18 @@
   <div class="d-flex align-items-center mb-3" style="gap: 5px;">
     <h5 class="m-0">Classificação Média:</h5>
     <div class="star-rating d-flex align-items-center">
-      {% for i in "12345" %}
-        {% if i <= average_rating|stringformat:"0" %}
-          <span class="star selected">★</span>
-        {% elif i == average_rating|stringformat:"0" and average_rating|stringformat:"1.1" != i|stringformat:"1.0" %}
-          <span class="star selected half-star">★</span>
-        {% else %}
-          <span class="star">★</span>
-        {% endif %}
-      {% endfor %}
+            {% for i in "12345" %}
+                {% if forloop.counter <= average_rating %}
+                    <span class="star selected">★</span>
+                {% else %}
+                    <span class="star">☆</span>
+                {% endif %}
+            {% endfor %}
     </div>
-    <span>({{ average_rating }})</span> <!-- Display the numerical value of the average rating -->
+      <span>({{ average_rating|floatformat:1 }})</span>
   </div>
+
+
     <!-- Ratings and Reviews Section -->
   <div class="mt-5">
     <h5>Classificação e Avaliações</h5>
@@ -187,6 +166,7 @@
     </div>
   </div>
 </div>
+
 <script>
 document.addEventListener("DOMContentLoaded", function () {
     const addToCartBtn = document.getElementById("add-to-cart-btn");
@@ -204,18 +184,16 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
-    // Handle add-to-cart click
     addToCartBtn.addEventListener("click", function () {
         const productId = this.getAttribute("data-product-id");
         const quantity = quantityInput.value;
+        const productType = "{{ product.get_product_type }}"; // Fetch the product type from Django template
 
-        // Check if size is selected
-        if (!selectedSize) {
+        if (productType === "Clothing" && !selectedSize) {
             alert("Por favor, selecione um tamanho.");
             return;
         }
 
-        // Make the AJAX request to add product to cart
         fetch(`/add-to-cart/${productId}/`, {
             method: "POST",
             headers: {
@@ -237,6 +215,7 @@ document.addEventListener("DOMContentLoaded", function () {
         })
         .catch(error => console.error("Error:", error));
     });
+
 
 });
 document.addEventListener("DOMContentLoaded", function () {

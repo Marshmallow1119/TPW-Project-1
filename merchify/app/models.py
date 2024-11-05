@@ -1,22 +1,21 @@
-from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.template.defaultfilters import default
 from django.contrib.auth.models import AbstractUser
+from django.utils import timezone
 
 # Create your models here.
 class User(AbstractUser):
     number_of_purchases = models.IntegerField(default=0)
     address = models.CharField(max_length=50, blank=True, null=True)
-    email = models.EmailField(max_length=50, unique=True)
+    email = models.EmailField(max_length=50, unique=True, blank=True, null=True)
     phone = models.CharField(max_length=50, unique=True)
-    country=models.CharField(max_length=50, blank=True, null=True)
+    country=models.CharField(max_length=50, default='', blank=True, null=True)
     image = models.ImageField(upload_to='profile_pics/', blank=True, null=True)
 
     def __str__(self):
         return self.username
 
 class Company(models.Model):
-    id = models.AutoField(primary_key=True,)
     name = models.CharField(max_length=50)
     address = models.CharField(max_length=50, blank=True, null=True)
     email = models.EmailField(max_length=50, unique=True)
@@ -25,6 +24,27 @@ class Company(models.Model):
 
     def __str__(self):
         return self.name
+
+class User(AbstractUser):
+    USER_TYPES = (
+        ('individual', 'Individual'),
+        ('company', 'Company'),
+        ('admin', 'Admin')
+    )
+
+    user_type = models.CharField(max_length=10, choices=USER_TYPES, default='individual')
+    number_of_purchases = models.IntegerField(default=0)
+    address = models.CharField(max_length=50, blank=True, null=True)
+    email = models.EmailField(max_length=50, unique=True)
+    phone = models.CharField(max_length=50, unique=True)
+    country = models.CharField(max_length=50, blank=True, null=True)
+    image = models.ImageField(upload_to='profile_pics/', blank=True, null=True)
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, blank=True, null=True)
+
+    def __str__(self):
+        return self.username
+
+
 
 class Artist(models.Model):
     id = models.AutoField(primary_key=True)
@@ -45,6 +65,17 @@ class Product(models.Model):
     company = models.ForeignKey('Company', on_delete=models.CASCADE, related_name='products')
     category = models.CharField(max_length=50)
     addedProduct = models.DateField(auto_now_add=True)
+
+    def get_product_type(self):
+        if hasattr(self, 'vinil'):
+            return 'Vinil'
+        elif hasattr(self, 'cd'):
+            return 'CD'
+        elif hasattr(self, 'clothing'):
+            return 'Clothing'
+        elif hasattr(self, 'accessory'):
+            return 'Accessory'
+        return 'Product'
 
     def __str__(self):
         return self.name
@@ -92,22 +123,28 @@ class Accessory(Product):
 class Cart(models.Model):
     id = models.AutoField(primary_key=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='carts')
-    products = models.ManyToManyField(Product, related_name='carts')
-    date = models.DateField()
-    total = models.FloatField()
+    date = models.DateField(default=timezone.now)
 
     def __str__(self):
-        return self.user.username + ' - ' + str(self.date)
+        return f"{self.user.username} - {self.date}"
+
+    @property
+    def total(self):
+        return sum(item.total for item in self.items.all())
+
 
 class CartItem(models.Model):
     id = models.AutoField(primary_key=True)
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='items')
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='items')
     quantity = models.IntegerField()
-    total = models.FloatField()
+
+    @property
+    def total(self):
+        return self.quantity * self.product.price
 
     def __str__(self):
-        return self.product.name + ' - ' + str(self.quantity)
+        return f"{self.product.name} - {self.quantity}"
 
 class Favorite(models.Model):
     id = models.AutoField(primary_key=True)

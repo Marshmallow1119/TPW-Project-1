@@ -1,12 +1,22 @@
 {% extends "layout.html" %}
 {% load static %}
 {% block content %}
+{% if messages %}
+    <div class="alert-messages">
+        {% for message in messages %}
+            <div class="alert {{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
 <div class="container rounded bg-white mt-5 mb-5">
     <div class="row">
         <div class="col-md-4 border-right">
             <div class="d-flex flex-column align-items-center text-center p-3 py-5">
                 {% if user.image %}
-                    <img class="rounded-circle mt-5" width="200px" src="{{ user.image.url }}">
+                    <img class="profile-picture rounded-circle mt-5" width="200px" height="200px" src="{{ user.image.url }}" style="object-fit: cover;">
                 {% else %}
                     <img class="rounded-circle mt-5" width="200px" src="https://st3.depositphotos.com/15648834/17930/v/600/depositphotos_179308454-stock-illustration-unknown-person-silhouette-glasses-profile.jpg">
                 {% endif %}
@@ -61,12 +71,28 @@
                             <input type="text" class="form-control" name="country" placeholder="País" value="{{ user.country }}" readonly>
                         </div>
                     </div>
+                    <div class="row mt-3" id="passwordFields" style="display: none;">
+                        <div class="col-md-12">
+                            <label class="labels">Senha Antiga</label>
+                            <input type="password" class="form-control" name="old_password" placeholder="Senha Antiga">
+                        </div>
+                        <div class="col-md-12 mt-2">
+                            <label class="labels">Nova Senha</label>
+                            <input type="password" class="form-control" name="new_password" placeholder="Nova Senha">
+                        </div>
+                        <div class="col-md-12 mt-2">
+                            <label class="labels">Repetir Nova Senha</label>
+                            <input type="password" class="form-control" name="confirm_new_password" placeholder="Repetir Nova Senha">
+                        </div>
+                    </div>
                     <hr class="my-4" />
+                    <input type="file" id="id_image" name="image" style="display: none;">
                     <div class="mt-5 text-end">
                         <button class="btn btn-primary profile-button" name="edit" id="editButton" type="button">Editar</button>
                         <button class="btn btn-danger profile-button" name="delete_account" type="submit">Eliminar Conta</button>
-                        <button class="btn btn-secondary profile-button" name="Change_password" type="submit">Alterar Senha</button>
                         <button class="btn btn-success profile-button" name="save" id="saveButton" type="submit" style="display: none;">Salvar</button>
+                        <button class="btn btn-secondary profile-button" name="Change_password" id="change_password" type="button">Alterar Senha</button>
+                        <button class="btn btn-success profile-button" name="submit_password" id="submit_password" type="submit" style="display: none;">Mudar Palavra Passe</button>
                     </div>
                 </form>
             </div>
@@ -105,22 +131,43 @@
     </div>
 </div>
 
-
 <script>
-    
+    // Mostrar o seletor de imagem ao clicar no botão "Alterar foto de perfil"
+    document.getElementById('editimage').addEventListener('click', function() {
+        document.getElementById('id_image').click();
+    });
+
+    // Habilitar os campos de entrada para edição ao clicar no botão "Editar"
     document.getElementById('editButton').addEventListener('click', function() {
+        // Selecionar todos os campos que estão em modo somente leitura
         const inputs = document.querySelectorAll('input[readonly]');
         inputs.forEach(input => {
             input.removeAttribute('readonly');
         });
 
-        // Esconder os botões de Editar, Eliminar Conta e Alterar Senha
+        // Esconder os botões de "Editar", "Eliminar Conta" e "Alterar Senha"
         document.getElementById('editButton').style.display = 'none';
         document.querySelector('button[name="delete_account"]').style.display = 'none';
         document.querySelector('button[name="Change_password"]').style.display = 'none';
 
-        // Mostrar o botão de Salvar
+        // Mostrar o botão "Salvar"
         document.getElementById('saveButton').style.display = 'inline-block';
-        document.getElementById('editImageLink').style.display = 'block';    });
+        document.getElementById('editImageLink').style.display = 'block';
+    });
+
+    // Mostrar os campos de senha e ajustar os botões ao clicar em "Alterar Senha"
+    document.getElementById('change_password').addEventListener('click', function() {
+        // Mostrar os campos de senha
+        document.getElementById('passwordFields').style.display = 'block';
+
+        // Esconder os botões de "Editar", "Eliminar Conta" e "Alterar Senha"
+        document.getElementById('editButton').style.display = 'none';
+        document.querySelector('button[name="delete_account"]').style.display = 'none';
+        document.getElementById('change_password').style.display = 'none';
+
+        // Mostrar o botão "Mudar Palavra Passe"
+        document.getElementById('submit_password').style.display = 'inline-block';
+    });
+
 </script>
 {% endblock %}

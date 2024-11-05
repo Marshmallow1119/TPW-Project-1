@@ -1,5 +1,5 @@
 {% extends "layout.html" %}
-{%  block content %}
+{% block content %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,8 +8,11 @@
     <title>{{ artist.name }}</title>
     <!-- Bootstrap CSS -->
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <style>
         .product-card {
+            position: relative; /* Make it relative to position the heart */
             border: 1px solid #e0e0e0;
             border-radius: 8px;
             overflow: hidden;
@@ -23,8 +26,42 @@
             height: 250px;
             object-fit: cover;
         }
+        .product-card a {
+        text-decoration: none; /* Removes the underline */
+        color: inherit; /* Keeps the text color consistent with the parent */
+        }
+        .product-card a:hover {
+            color: inherit; /* Optional: Ensures hover color is also consistent */
+        }
+        .favorite-icon {
+            position: absolute; /* Position the heart icon absolutely */
+            top: 10px; /* Distance from the top */
+            right: 10px; /* Distance from the right */
+            color: white; /* Make the icon color transparent */
+            font-size: 24px; /* Increase the icon size */
+            cursor: pointer; /* Pointer on hover */
+            -webkit-text-stroke: 3px #434343; /* Outline width and color */
+
+            text-shadow: 2px 2px 1px rgba(0, 0, 0, 0.3);
+
+
+
+
+        }
+        .favorite-icon:hover {
+            color: #a6a6a6; /* Change icon color on hover */
+            -webkit-text-stroke: 0px black; /* Outline width and color */
+            transition: ease-in-out 0.3s;
+            scale: 1.2;
+        }
+        .favorite-icon.filled {
+            color: #e85454; /* Color when the item is favorited */
+            -webkit-text-stroke: 0px black; /* Outline width and color */
+
+        }
         .product-name {
             font-weight: bold;
+            text-align: center; /* Center align the text */
         }
         .product-price {
             color: #888;
@@ -73,14 +110,17 @@
         <div class="row">
             {% for product in products %}
             <div class="col-6 col-md-4 col-lg-3">
-                <a href="/product/{{ product.id }}" class="product-card"> <!-- Link to the product page -->
-                    <img src="{{ product.image.url }}" alt="{{ product.name }}">
-                    <div class="p-3 text-center">
-                        <p class="product-name">{{ product.name }}</p>
-                        <p class="product-price">{{ product.price }}€</p>
-                        <button class="btn btn-add-to-cart w-100">Adicionar ao carrinho</button>
-                    </div>
-                </a>
+                    <div class="product-card">
+                    <i class="fa fa-heart favorite-icon {% if product.is_favorited %}filled{% endif %}" data-id="{{ product.id }}" onclick="addToFavorite({{ product.id }})"></i>
+                    <a href="/product/{{ product.id }}">
+                        <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                        <div class="p-3 text-center">
+                            <p class="product-name">{{ product.name }}</p>
+                            <p class="product-price">{{ product.price }}€</p>
+                            <button class="btn btn-add-to-cart w-100">Adicionar ao carrinho</button>
+                        </div>
+                    </a>
+                </div>
             </div>
             {% endfor %}
         </div>
@@ -92,6 +132,36 @@
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
     <!-- Bootstrap JS -->
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+        function addToFavorite(productId) {
+            fetch(`/favorites/add/${productId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'  // Include CSRF token for Django
+                },
+                body: JSON.stringify({ product_id: productId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Find the heart icon for the given product ID
+                    const favoriteIcon = document.querySelector(`.favorite-icon[data-id="${productId}"]`);
+
+                    if (data.favorited) {
+                        favoriteIcon.classList.add('filled');
+                    } else {
+                        favoriteIcon.classList.remove('filled');
+                    }
+                } else {
+                    alert(data.message || "Failed to update favorites.");
+                }
+            })
+            .catch(error => console.error("Error:", error));
+        }
+
+    </script>
 </body>
 </html>
 {% endblock %}
