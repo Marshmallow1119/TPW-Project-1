@@ -1,49 +1,74 @@
 {% extends "layout.html" %}
 {% load static %}
-
 {% block content %}
 <div class="container rounded bg-white mt-5 mb-5">
     <div class="row">
         <div class="col-md-4 border-right">
             <div class="d-flex flex-column align-items-center text-center p-3 py-5">
-                {% if profile_picture %}
-                    <img class="rounded-circle mt-5" width="150px" src="{{ profile_picture }}">
+                {% if user.image %}
+                    <img class="rounded-circle mt-5" width="200px" src="{{ user.image.url }}">
                 {% else %}
-                    <img class="rounded-circle mt-5" width="150px" src="https://st3.depositphotos.com/15648834/17930/v/600/depositphotos_179308454-stock-illustration-unknown-person-silhouette-glasses-profile.jpg">
+                    <img class="rounded-circle mt-5" width="200px" src="https://st3.depositphotos.com/15648834/17930/v/600/depositphotos_179308454-stock-illustration-unknown-person-silhouette-glasses-profile.jpg">
                 {% endif %}
+                <div class="mt-2" id="editImageLink" style="display: none;">
+                    <button class="btn btn-link" name="editimage" id="editimage" type="button">Alterar foto de perfil</button>
+                </div>
                 <span class="font-weight-bold">{{ user.username }}</span>
                 <span class="text-black-50">{{ user.email }}</span>
-                <span>Number of Purchases: {{ number_of_purchases }}</span>
-            </div>
+                <span>Número de Compras: {{ number_of_purchases }}</span>
+            </div>            
         </div>
         <div class="col-md-8">
             <div class="p-3 py-5">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h4 class="text-right">Profile Settings</h4>
+                    <h4 class="text-right">Configurações do Perfil</h4>
                 </div>
-                <div class="row mt-2">
-                    <div class="col-md-6">
-                        <label class="labels">Name</label>
-                        <input type="text" class="form-control" placeholder="first name" value="{{ user.first_name }}" disabled>
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="row mt-2">
+                        <div class="col-md-6">
+                            <label class="labels">Primeiro Nome</label>
+                            <input type="text" class="form-control" name="name" placeholder="Primeiro Nome" value="{{ user.first_name }}" readonly>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="labels">Último Nome</label>
+                            <input type="text" class="form-control" name="surname" value="{{ user.last_name }}" placeholder="Último Nome" readonly>
+                        </div>
                     </div>
-                    <div class="col-md-6">
-                        <label class="labels">Surname</label>
-                        <input type="text" class="form-control" value="{{ user.last_name }}" placeholder="surname" disabled>
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <label class="labels">Email</label>
+                            <input type="text" class="form-control" name="email" placeholder="Email" value="{{ user.email }}" readonly>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="labels">Username</label>
+                            <input type="text" class="form-control" name="username" value="{{ user.username }}" placeholder="Username" readonly>
+                        </div>
                     </div>
-                </div>
-                <div class="row mt-3">
-                    <div class="col-md-6">
-                        <label class="labels">Email</label>
-                        <input type="text" class="form-control" placeholder="email" value="{{ user.email }}" disabled>
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <label class="labels">Endereço</label>
+                            <input type="text" class="form-control" name="address" placeholder="Endereço" value="{{ user.address }}" readonly>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="labels">Telefone</label>
+                            <input type="text" class="form-control" name="phone" value="{{ user.phone }}" placeholder="Telefone" readonly>
+                        </div>
                     </div>
-                    <div class="col-md-6">
-                        <label class="labels">Username</label>
-                        <input type="text" class="form-control" value="{{ user.username }}" placeholder="username" disabled>
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <label class="labels">País</label>
+                            <input type="text" class="form-control" name="country" placeholder="País" value="{{ user.country }}" readonly>
+                        </div>
                     </div>
-                </div>
-                <div class="mt-5 text-end">
-                    <button class="btn btn-primary profile-button" id="editButton" type="button" onclick="toggleEdit()">Edit</button>
-                </div>
+                    <hr class="my-4" />
+                    <div class="mt-5 text-end">
+                        <button class="btn btn-primary profile-button" name="edit" id="editButton" type="button">Editar</button>
+                        <button class="btn btn-danger profile-button" name="delete_account" type="submit">Eliminar Conta</button>
+                        <button class="btn btn-secondary profile-button" name="Change_password" type="submit">Alterar Senha</button>
+                        <button class="btn btn-success profile-button" name="save" id="saveButton" type="submit" style="display: none;">Salvar</button>
+                    </div>
+                </form>
             </div>
 
             <h4 class="mb-4">Encomendas</h4>
@@ -80,19 +105,22 @@
     </div>
 </div>
 
-<script>
-function toggleEdit() {
-    const inputs = document.querySelectorAll('.form-control');
-    const button = document.getElementById('editButton');
 
-    if (button.innerText === 'Edit') {
-        inputs.forEach(input => input.disabled = false);
-        button.innerText = 'Save';
-    } else {
-        inputs.forEach(input => input.disabled = true);
-        button.innerText = 'Edit';
-        // Aqui você pode adicionar a lógica para salvar as alterações via AJAX ou formulário
-    }
-}
+<script>
+    
+    document.getElementById('editButton').addEventListener('click', function() {
+        const inputs = document.querySelectorAll('input[readonly]');
+        inputs.forEach(input => {
+            input.removeAttribute('readonly');
+        });
+
+        // Esconder os botões de Editar, Eliminar Conta e Alterar Senha
+        document.getElementById('editButton').style.display = 'none';
+        document.querySelector('button[name="delete_account"]').style.display = 'none';
+        document.querySelector('button[name="Change_password"]').style.display = 'none';
+
+        // Mostrar o botão de Salvar
+        document.getElementById('saveButton').style.display = 'inline-block';
+        document.getElementById('editImageLink').style.display = 'block';    });
 </script>
 {% endblock %}
