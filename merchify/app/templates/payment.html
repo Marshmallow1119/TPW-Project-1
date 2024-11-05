@@ -3,36 +3,53 @@
 <link rel="stylesheet" href="{% static 'css/payment.css' %}">
 {% block content %}
 <div class="container mt-5">
-    <h3>Payment</h3>
+    <h3 class="mb-4">Payment</h3>
     <div class="row">
-        <div class="col-md-8">
-            <h4>Your Cart</h4>
+        <div class="col-md-8 cart shadow-sm rounded bg-white p-4">
+            <div class="title mb-3">
+                <div class="row">
+                    <div class="col"><h4><b>Your Cart</b></h4></div>
+                    <div class="col align-self-center text-right text-muted">{{ cart_items|length }} items</div>
+                </div>
+            </div>
             <div class="cart-items">
                 {% for item in cart_items %}
-                    <div class="row border-top border-bottom py-2">
+                    <div class="row border-top border-bottom py-3">
                         <div class="col-3">
-                            <img class="img-fluid" src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+                            <img class="img-fluid rounded" src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
                         </div>
-                        <div class="col-6">
-                            <h5>{{ item.product.name }}</h5>
-                            <p>Quantity: {{ item.quantity }}</p>
+                        <div class="col-5">
+                            <div class="text-muted small">{{ item.product.category }}</div>
+                            <h5 class="font-weight-bold">{{ item.product.name }}</h5>
+                            <div class="d-flex align-items-center mt-2">
+                                <button class="btn btn-sm btn-outline-secondary mr-2">-</button>
+                                <span class="border px-3 py-1 rounded">{{ item.quantity }}</span>
+                                <button class="btn btn-sm btn-outline-secondary ml-2">+</button>
+                            </div>
                         </div>
                         <div class="col-3 text-right">
-                            <h5>&euro; {{ item.product.price|floatformat:2 }}</h5>
+                            <h5 class="text-success">&euro; {{ item.product.price|floatformat:2 }}</h5>
+                        </div>
+                        <div class="col-1 text-right">
+                            <a href="{% url 'remove_from_cart' item.product.id %}" class="close text-danger">&#10005;</a>
                         </div>
                     </div>
                 {% empty %}
-                    <p>Your cart is empty.</p>
+                    <p class="text-center text-muted">Your cart is empty.</p>
                 {% endfor %}
+            </div>
+            <div class="back-to-shop mt-4">
+                <a href="{% url 'produtos' %}" class="text-decoration-none"><i class="fas fa-arrow-left"></i> <span class="text-muted">Back to shop</span></a>
             </div>
             <div class="row mt-4">
                 <div class="col text-right">
-                    <h4>Total: &euro; {{ total|floatformat:2 }}</h4>
+                    <h4 class="font-weight-bold">Total: <span class="text-primary">&euro; {{ total|floatformat:2 }}</span></h4>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <h4>Payment Details</h4>
+        <div class="col-md-4 summary shadow-sm rounded bg-light p-4">
+            <h4 class="mb-4">Payment Details</h4>
+            <hr>
             <form method="POST">
                 {% csrf_token %}
                 <div class="form-group">
@@ -47,7 +64,11 @@
                     <label for="shipping_address">Shipping Address</label>
                     <input type="text" class="form-control" id="shipping_address" name="shipping_address" required>
                 </div>
-                <button type="submit" class="btn btn-primary mt-4">Complete Payment</button>
+                <div class="row border-top pt-3 mt-3">
+                    <div class="col font-weight-bold">TOTAL PRICE</div>
+                    <div class="col text-right font-weight-bold text-primary">&euro; {{ total|floatformat:2 }}</div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-lg btn-block mt-4">Complete Payment</button>
             </form>
         </div>
     </div>

@@ -35,51 +35,56 @@
 {% block content %}
 {% load filters %}
 
-    <div class="container">
-        <h1>O meu carrinho:</h1>
+<div class="container">
+    <h1>O meu carrinho:</h1>
 
-        {% if cart_items %}
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th scope="col">Product</th>
-                        <th scope="col">Preço</th>
-                        <th scope="col">Quantidade</th>
-                        <th scope="col">Total</th>
-                        <th scope="col">Apagar</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for item in cart_items %}
-                    <tr>
-                        <td>
-                            <div class="product-info">
-                                <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="product-image mr-3">
-                                <div>
-                                    <h5>{{ item.product.name }}</h5>
-                                </div>
+    {% if cart_items %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">Product</th>
+                    <th scope="col">Preço</th>
+                    <th scope="col">Quantidade</th>
+                    <th scope="col">Total</th>
+                    <th scope="col">Apagar</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in cart_items %}
+                <tr>
+                    <td>
+                        <div class="product-info">
+                            <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="product-image mr-3">
+                            <div>
+                                <h5>{{ item.product.name }}</h5>
                             </div>
-                        </td>
-                        <td>${{ item.product.price }}</td>
-                        <td>{{ item.quantity }}</td>
-                        <td>${{ item.product.price|multiply:item.quantity }}</td>
-                        <td>
-                            <a href="{% url 'remove_from_cart' item.product.id %}" class="btn btn-danger btn-sm">
-                                <i class="fas fa-trash-alt"></i>
-                            </a>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        {% else %}
-            <p class="text-muted">O carrinho está vazio. Adicione produtos ao seu carrinho.</p>
-<button class="btn btn-dark" type="button" onclick="window.location.href='{% url 'produtos' %}'">Ver Produtos</button>
-        {% endif %}
-    </div>
+                        </div>
+                    </td>
+                    <td>${{ item.product.price }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>${{ item.product.price|multiply:item.quantity }}</td>
+                    <td>
+                        <a href="{% url 'remove_from_cart' item.product.id %}" class="btn btn-danger btn-sm">
+                            <i class="fas fa-trash-alt"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <!-- Botão para finalizar compra -->
+        <div class="text-right">
+            <a href="{% url 'payment' %}" class="btn btn-success btn-lg">Finalizar Compra</a>
+        </div>
+    {% else %}
+        <p class="text-muted">O carrinho está vazio. Adicione produtos ao seu carrinho.</p>
+        <button class="btn btn-dark" type="button" onclick="window.location.href='{% url 'produtos' %}'">Ver Produtos</button>
+    {% endif %}
+</div>
 {% endblock %}
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>
