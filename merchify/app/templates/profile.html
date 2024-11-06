@@ -4,7 +4,9 @@
 {% if messages %}
     <div class="alert-messages">
         {% for message in messages %}
-            <div class="alert {{ message.tags }} alert-dismissible fade show" role="alert">
+            <div class="alert 
+                {% if message.tags %}{{ message.tags }}{% else %}alert-info{% endif %} 
+                alert-dismissible fade show" role="alert">
                 {{ message }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
@@ -13,7 +15,6 @@
 {% endif %}
 <div class="container rounded bg-white mt-5 mb-5">
     <div class="row">
-        <!-- Coluna de Perfil e Configurações -->
         <div class="col-md-4 border-right" style="max-height: 500px; overflow-y: auto;">
             <div class="d-flex flex-column align-items-center text-center p-3 py-5">
                 {% if user.image %}
@@ -30,7 +31,6 @@
             </div>            
         </div>
         
-        <!-- Coluna de Configurações e Encomendas -->
         <div class="col-md-8">
             <div class="p-3 py-5">
                 <!-- Configurações do Perfil -->
@@ -160,7 +160,6 @@
         document.getElementById('id_image').click();
     });
 
-    // Habilitar os campos de entrada para edição ao clicar no botão "Editar"
     document.getElementById('editButton').addEventListener('click', function() {
         // Selecionar todos os campos que estão em modo somente leitura
         const inputs = document.querySelectorAll('input[readonly]');
@@ -168,7 +167,6 @@
             input.removeAttribute('readonly');
         });
 
-        // Esconder os botões de "Editar", "Eliminar Conta" e "Alterar Senha"
         document.getElementById('editButton').style.display = 'none';
         document.querySelector('button[name="delete_account"]').style.display = 'none';
         document.querySelector('button[name="Change_password"]').style.display = 'none';
@@ -178,19 +176,23 @@
         document.getElementById('editImageLink').style.display = 'block';
     });
 
-    // Mostrar os campos de senha e ajustar os botões ao clicar em "Alterar Senha"
     document.getElementById('change_password').addEventListener('click', function() {
-        // Mostrar os campos de senha
         document.getElementById('passwordFields').style.display = 'block';
 
-        // Esconder os botões de "Editar", "Eliminar Conta" e "Alterar Senha"
         document.getElementById('editButton').style.display = 'none';
         document.querySelector('button[name="delete_account"]').style.display = 'none';
         document.getElementById('change_password').style.display = 'none';
 
-        // Mostrar o botão "Mudar Palavra Passe"
         document.getElementById('submit_password').style.display = 'inline-block';
     });
+
+    setTimeout(function() {
+        const alertMessages = document.querySelectorAll('.alert-messages .alert');
+        alertMessages.forEach(alert => {
+            alert.classList.remove('show'); 
+            alert.classList.add('fade'); 
+        });
+    }, 5000);
 
 </script>
 

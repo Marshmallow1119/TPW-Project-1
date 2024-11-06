@@ -58,20 +58,18 @@ def artistas(request):
 def artistsProducts(request, name):
     artist = get_object_or_404(Artist, name=name)
     products = Product.objects.filter(artist=artist)
-    sort = request.GET.get('sort', 'featured')  # Default to 'featured' sorting
+    sort = request.GET.get('sort', 'featured')
 
-    # Define sorting logic based on the 'sort' parameter
     if sort == 'priceAsc':
-        products = products.order_by('price')  # Ascending price
+        products = products.order_by('price') 
     elif sort == 'priceDesc':
-        products = products.order_by('-price')  # Descending price
+        products = products.order_by('-price')  
 
     if request.user.is_authenticated:
         favorited_product_ids = Favorite.objects.filter(user=request.user).values_list('product_id', flat=True)
     else:
-        favorited_product_ids = []  # Empty list if user is not authenticated
+        favorited_product_ids = [] 
 
-        # Add a new property to each product indicating if it is favorited by the user
     for product in products:
             product.is_favorited = product.id in favorited_product_ids
     return render(request, 'artists_products.html', {'artist': artist, 'products': products})
@@ -90,19 +88,19 @@ def productDetails(request, identifier):
     }
 
     if isinstance(product, Clothing):
-        sizes = product.sizes.all()  # Get all sizes related to the clothing item
-        context['sizes'] = sizes  # Add sizes to context
+        sizes = product.sizes.all() 
+        context['sizes'] = sizes 
 
-    average_rating = product.reviews.aggregate(Avg('rating'))['rating__avg'] or 0  # Default to 0 if no reviews
-    context['average_rating'] = average_rating  # Add average rating to context
+    average_rating = product.reviews.aggregate(Avg('rating'))['rating__avg'] or 0 
+    context['average_rating'] = average_rating  
     print(isinstance(product, Clothing))
 
     return render(request, 'productDetails.html', context)
 
 
 def search_products(request):
-    query = request.GET.get('search', '')  # Get the search term from the query string
-    products = Product.objects.filter(name__icontains=query) if query else Product.objects.none()  # Filter products if a query exists
+    query = request.GET.get('search', '')  
+    products = Product.objects.filter(name__icontains=query) if query else Product.objects.none()  
     return render(request, 'search_results.html', {'products': products, 'query': query})
 
 
@@ -405,18 +403,15 @@ def checkfavorite(request):
 
 
 @require_POST
-@login_required  # Ensure the user is logged in
+@login_required  
 def addtofavorite(request, product_id):
     try:
-        # Fetch the product and user
         product = Product.objects.get(id=product_id)
         user = request.user
 
-        # Check if this product is already a favorite
         favorite, created = Favorite.objects.get_or_create(user=user, product=product)
 
         if created:
-            # Product was added to favorites
             favorited = True
         else:
             favorite.delete()
@@ -425,10 +420,8 @@ def addtofavorite(request, product_id):
         return JsonResponse({"success": True, "favorited": favorited})
 
     except Product.DoesNotExist:
-        # Handle case if product does not exist
         return JsonResponse({"success": False, "message": "Product not found."}, status=404)
     except Exception as e:
-        # Handle any other unexpected errors
         return JsonResponse({"success": False, "message": str(e)}, status=500)
 
 @login_required
@@ -447,20 +440,17 @@ def process_payment(request):
     if request.method == 'POST' and 'complete_payment' in request.POST:
         user = request.user
         try:
-            # Recupera o carrinho e os itens do carrinho
             cart = Cart.objects.get(user=user)
             cart_items = CartItem.objects.filter(cart=cart)
 
             payment_method = request.POST.get('payment_method')
             shipping_address = request.POST.get('shipping_address')
 
-            # Valida os campos obrigatórios
             if not payment_method or not shipping_address:
                 messages.error(request, "Por favor, preencha todos os campos obrigatórios.")
                 return redirect('payment_page')
             
             with transaction.atomic():
-                # Cria a instância de Purchase
                 purchase = Purchase.objects.create(
                     user=user,
                     date=timezone.now().date(),
@@ -473,10 +463,8 @@ def process_payment(request):
                     product = item.product
                     product_type = product.get_product_type()
 
-                    # Verificação e diminuição do estoque com base no tipo de produto
                     if product_type == 'Clothing':
-                        # Verifica se há um tamanho selecionado para o item
-                        size = item.size  # Supondo que CartItem tenha um campo `size` para armazenar o tamanho
+                        size = item.size  
                         if size and size.stock >= item.quantity:
                             size.stock -= item.quantity
                             size.save()
@@ -485,7 +473,6 @@ def process_payment(request):
                             return redirect('payment_page')
 
                     elif product_type in ['Vinil', 'CD', 'Accessory'] and hasattr(product, 'stock'):
-                        # Produtos que possuem o campo `stock` diretamente no modelo
                         if product.stock >= item.quantity:
                             product.stock -= item.quantity
                             product.save()
