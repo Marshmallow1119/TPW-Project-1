@@ -1,5 +1,5 @@
 *app/pycache
 *webproj/pycache
-*db.sqlite3
 *app/migrations/pycache
 *venv/
+merchify/db.sqlite3
