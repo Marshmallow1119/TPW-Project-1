@@ -26,7 +26,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.home, name='home'),
     path('home/', views.home, name='home'),
-    path('admin_home.html/', views.admin_home, name='admin_home.html'),
+    path('admin_home/', views.admin_home, name='admin_home'),
     path('produtos/', views.produtos, name='produtos'),
     path('artists/', views.artistas, name='artistas'),
     path('login/', views.login, name='login'),
@@ -54,6 +54,7 @@ urlpatterns = [
     path('delete_user/<int:user_id>/', views.delete_user, name='delete_user'),
     path('process_payment/', views.process_payment, name='process_payment'),
     path('payment-confirmation/', views.payment_confirmation, name='payment_confirmation'),
+    path('admin_home/delete/<int:product_id>', views.admin_product_delete, name='admin_product_delete'),
 ]   
 
 

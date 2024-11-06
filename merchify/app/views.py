@@ -36,6 +36,13 @@ def home(request):
             cart.delete()
 
         del request.session['clear_cart']
+    user = request.user
+    if user.is_authenticated:
+        print(user.user_type)
+        if user.user_type == 'admin':
+            return redirect('admin_home')
+        elif user.user_type == 'company':
+            return redirect( 'home')
 
     return render(request, 'home.html', {'artists': artists, 'products': recent_products})
 
@@ -168,7 +175,7 @@ def login(request):
                 elif user.user_type == 'company':
                     return redirect('company_home')
                 elif user.user_type == 'admin':
-                    return redirect('admin_home.html')
+                    return redirect('admin_home')
                 else:
                     return redirect('home')
             else:
@@ -621,4 +628,9 @@ def admin_home(request):
     return render(request, 'admin_home.html', {'users': users, 'products': products})
 def delete_user(request, user_id):
     user = get_object_or_404(User, id=user_id)
+    return redirect('admin_home')
+
+def admin_product_delete(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    product.delete()
     return redirect('admin_home')
