@@ -3,3 +3,4 @@
 *db.sqlite3
 *app/migrations/pycache
 *venv/
+*app/db.sqlite3
