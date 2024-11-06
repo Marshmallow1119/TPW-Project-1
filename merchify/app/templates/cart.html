@@ -72,10 +72,13 @@
                 {% endfor %}
             </tbody>
         </table>
-        <!-- Botão para finalizar compra -->
         <div class="text-right">
-            <a href="{% url 'payment' %}" class="btn btn-success btn-lg">Finalizar Compra</a>
-        </div>
+            <form action="{% url 'payment_page' %}" method="get">
+                <button type="submit" id="finalizar_compra" name="finalizar_compra" class="btn btn-success btn-lg">
+                    Finalizar Compra
+                </button>
+            </form>
+        </div>        
     {% else %}
         <p class="text-muted">O carrinho está vazio. Adicione produtos ao seu carrinho.</p>
         <button class="btn btn-dark" type="button" onclick="window.location.href='{% url 'produtos' %}'">Ver Produtos</button>

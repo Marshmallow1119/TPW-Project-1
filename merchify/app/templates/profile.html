@@ -13,7 +13,8 @@
 {% endif %}
 <div class="container rounded bg-white mt-5 mb-5">
     <div class="row">
-        <div class="col-md-4 border-right">
+        <!-- Coluna de Perfil e Configurações -->
+        <div class="col-md-4 border-right" style="max-height: 500px; overflow-y: auto;">
             <div class="d-flex flex-column align-items-center text-center p-3 py-5">
                 {% if user.image %}
                     <img class="profile-picture rounded-circle mt-5" width="200px" height="200px" src="{{ user.image.url }}" style="object-fit: cover;">
@@ -28,8 +29,11 @@
                 <span>Número de Compras: {{ number_of_purchases }}</span>
             </div>            
         </div>
+        
+        <!-- Coluna de Configurações e Encomendas -->
         <div class="col-md-8">
             <div class="p-3 py-5">
+                <!-- Configurações do Perfil -->
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h4 class="text-right">Configurações do Perfil</h4>
                 </div>
@@ -97,27 +101,46 @@
                 </form>
             </div>
 
-            <h4 class="mb-4">Encomendas</h4>
-            <div class="p-3 bg-secondary text-white rounded">
+            <!-- Encomendas -->
+            <div class="p-3 bg-secondary text-white rounded mt-4">
+                <h4 class="mb-4">Encomendas</h4>
                 {% if purchases %}
                     <div class="row">
                         {% for purchase in purchases %}
-                            <div class="col-md-6 mb-4">
-                                <div class="card bg-light text-dark shadow-sm">
-                                    <div class="card-body">
-                                        <h5 class="card-title">Encomenda #{{ purchase.id }}</h5>
-                                        <p class="card-text"><strong>Data:</strong> {{ purchase.date }}</p>
-                                        <p class="card-text"><strong>Total:</strong> {{ purchase.total }}€</p>
-                                        <p class="card-text"><strong>Método de Pagamento:</strong> {{ purchase.paymentMethod }}</p>
-                                        <p class="card-text"><strong>Endereço de Envio:</strong> {{ purchase.shippingAddress }}</p>
-                                        <p class="card-text"><strong>Status:</strong> {{ purchase.status }}</p>
-                                        <hr>
-                                        <h6>Produtos:</h6>
-                                        <ul class="list-unstyled">
-                                            {% for product in purchase.products.all %}
-                                                <li>{{ product.name }}</li>
-                                            {% endfor %}
-                                        </ul>
+                            <div class="col-12 col-md-6 col-lg-4 mb-4">
+                                <div class="card bg-light text-dark shadow-sm h-100">
+                                    <div class="card-header">
+                                        <h5 class="mb-0">Encomenda #{{ purchase.id }}</h5>
+                                    </div>
+                                    <div class="card-body" style="text-align:left">
+                                        <div class="info-grid">
+                                            <div class="info-item">
+                                                <span class="text-muted"><strong>Data:</strong></span>
+                                                <span>{{ purchase.date }}</span>
+                                            </div>
+                                            <div class="info-item">
+                                                <span class="text-muted"><strong>Total:</strong></span>
+                                                <span>{{ purchase.total }}€</span>
+                                            </div>
+                                            <div class="info-item">
+                                                <span class="text-muted"><strong>Método de Pagamento:</strong></span>
+                                                <span>{{ purchase.paymentMethod }}</span>
+                                            </div>
+                                            <div class="info-item">
+                                                <span class="text-muted"><strong>Endereço de Envio:</strong></span>
+                                                <span>{{ purchase.shippingAddress }}</span>
+                                            </div>
+                                            <div class="info-item">
+                                                <span class="text-muted"><strong>Status:</strong></span>
+                                                <span>{{ purchase.status }}</span>
+                                            </div>
+                                            <h6 class="mb-3 text-muted"><strong>Produtos:</strong></h6>
+                                            <ul class="list-unstyled">
+                                                {% for item in purchase.purchase_products.all %}
+                                                    <li>- {{ item.product.name }} (Quantidade: {{ item.quantity }})</li>
+                                                {% endfor %}
+                                            </ul>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -170,4 +193,6 @@
     });
 
 </script>
+
+
 {% endblock %}

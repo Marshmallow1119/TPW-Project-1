@@ -1,6 +1,6 @@
 from datetime import timedelta, date
 import json
-
+import logging
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Avg
@@ -19,6 +19,7 @@ from django.contrib.auth import authenticate, login as auth_login, get_user_mode
 from django.contrib.auth import logout as auth_logout
 from .forms import RegisterForm, UploadUserProfilePicture, UpdatePassword, UpdateProfile
 from django.contrib.auth.models import User
+from django.db import transaction
 
 
 User = get_user_model()
@@ -26,7 +27,15 @@ User = get_user_model()
 
 def home(request):
     artists = Artist.objects.all()
-    recent_products = Product.objects.order_by('-addedProduct')[:20]  # Limita a 20 produtos mais recentes
+    recent_products = Product.objects.order_by('-addedProduct')[:20]  
+
+    if request.session.get('clear_cart'):
+        cart = Cart.objects.filter(user=request.user).first()
+        if cart:
+            cart.items.all().delete()
+            cart.delete()
+
+        del request.session['clear_cart']
 
     return render(request, 'home.html', {'artists': artists, 'products': recent_products})
 
@@ -178,27 +187,37 @@ def logout(request):
     return redirect('home') 
 
 @login_required
-@csrf_exempt  # This decorator is needed if CSRF token is not provided in request headers.
+@csrf_exempt  
 def add_to_cart(request, product_id):
     if request.method == "POST":
         try:
             if not isinstance(request.user, User):
                 return JsonResponse({"error": "User is not authenticated."}, status=400)
+            
             data = json.loads(request.body)
             quantity = int(data.get("quantity", 1))
-            size_id = data.get("size")
+            size_id = data.get("size") 
 
             product = get_object_or_404(Product, id=product_id)
             
+            size = None
+            if product.get_product_type() == 'Clothing':
+                if not size_id:
+                    return JsonResponse({"error": "Size is required for clothing items."}, status=400)
+                size = get_object_or_404(Size, id=size_id)
+            
             cart, created = Cart.objects.get_or_create(user=request.user, defaults={"date": date.today()})
-
-            cart_item, item_created = CartItem.objects.get_or_create(cart=cart, product=product, defaults={"quantity": quantity})
+            
+            cart_item, item_created = CartItem.objects.get_or_create(
+                cart=cart, 
+                product=product, 
+                size=size,  
+                defaults={"quantity": quantity}
+            )
 
             if not item_created:
                 cart_item.quantity += quantity
                 cart_item.save()
-
-            cart.save()
 
             return JsonResponse({"message": "Produto adicionado ao carrinho!"})
 
@@ -206,6 +225,7 @@ def add_to_cart(request, product_id):
             return JsonResponse({"error": "Invalid JSON data"}, status=400)
 
     return JsonResponse({"error": "Invalid request"}, status=400)
+
 
 @login_required
 def viewCart(request):
@@ -238,21 +258,16 @@ def update_cart_item(request):
 @login_required
 def remove_from_cart(request, product_id):
     try:
-        cart_item = CartItem.objects.get(product_id=product_id)
+        cart = Cart.objects.get(user=request.user)
+        cart_item = CartItem.objects.get(cart=cart, product_id=product_id)
         cart_item.delete()
     except CartItem.DoesNotExist:
         raise Http404("CartItem does not exist")
     return redirect('cart')
-import logging
-from django.contrib import messages
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth import password_validation
-from django.core.exceptions import ValidationError
-from django.shortcuts import render, redirect
-from .forms import UploadUserProfilePicture, UpdateProfile, UpdatePassword
-from .models import Purchase
 
-# Configuração básica do logger
+
+
+
 logger = logging.getLogger(__name__)
 
 @login_required(login_url='/login')
@@ -428,27 +443,91 @@ def remove_from_favorites(request, product_id):
 
 
 @login_required
-def payment(request):
+def process_payment(request):
+    if request.method == 'POST' and 'complete_payment' in request.POST:
+        user = request.user
+        try:
+            # Recupera o carrinho e os itens do carrinho
+            cart = Cart.objects.get(user=user)
+            cart_items = CartItem.objects.filter(cart=cart)
+
+            payment_method = request.POST.get('payment_method')
+            shipping_address = request.POST.get('shipping_address')
+
+            # Valida os campos obrigatórios
+            if not payment_method or not shipping_address:
+                messages.error(request, "Por favor, preencha todos os campos obrigatórios.")
+                return redirect('payment_page')
+            
+            with transaction.atomic():
+                # Cria a instância de Purchase
+                purchase = Purchase.objects.create(
+                    user=user,
+                    date=timezone.now().date(),
+                    paymentMethod=payment_method,
+                    shippingAddress=shipping_address,
+                    status='Processing'
+                )
+
+                for item in cart_items:
+                    product = item.product
+                    product_type = product.get_product_type()
+
+                    # Verificação e diminuição do estoque com base no tipo de produto
+                    if product_type == 'Clothing':
+                        # Verifica se há um tamanho selecionado para o item
+                        size = item.size  # Supondo que CartItem tenha um campo `size` para armazenar o tamanho
+                        if size and size.stock >= item.quantity:
+                            size.stock -= item.quantity
+                            size.save()
+                        else:
+                            messages.error(request, f"Estoque insuficiente para {product.name} no tamanho {size.size}. Disponível: {size.stock}")
+                            return redirect('payment_page')
+
+                    elif product_type in ['Vinil', 'CD', 'Accessory'] and hasattr(product, 'stock'):
+                        # Produtos que possuem o campo `stock` diretamente no modelo
+                        if product.stock >= item.quantity:
+                            product.stock -= item.quantity
+                            product.save()
+                        else:
+                            messages.error(request, f"Estoque insuficiente para {product.name}. Disponível: {product.stock}")
+                            return redirect('payment_page')
+                    else:
+                        messages.error(request, f"Produto não encontrado ou estoque insuficiente para {product.name}.")
+                        return redirect('payment_page')
+
+                    PurchaseProduct.objects.create(
+                        purchase=purchase,
+                        product=product,
+                        quantity=item.quantity
+                    )
+
+                request.session['clear_cart'] = True  
+                messages.success(request, "Sua compra foi realizada com sucesso!")
+
+            return redirect('payment_confirmation')
+
+        except Cart.DoesNotExist:
+            messages.error(request, "Carrinho não encontrado.")
+            return redirect('cart')
+        except Exception as e:
+            messages.error(request, f"Ocorreu um erro durante o processamento do pagamento: {str(e)}")
+            return redirect('payment_page')
+
+    return redirect('payment_page')
+
+@login_required
+def payment_confirmation(request):
+    return render(request, 'payment_confirmation.html')
+
+@login_required
+def payment_page(request):
     user = request.user
     cart = Cart.objects.get(user=user)
     cart_items = CartItem.objects.filter(cart=cart)
     total = cart.total
-    if request.method == 'POST':
-        payment_method = request.POST.get('payment_method')
-        shipping_address = request.POST.get('shipping_address')
-        purchase = Purchase.objects.create(
-            user=user,
-            date=timezone.now().date(),
-            total=total,
-            paymentMethod=payment_method,
-            shippingAddress=shipping_address,
-            status='Processing'
-        )
-        purchase.products.set([item.product for item in cart_items])
-        cart_items.delete()
-        cart.delete()
-        return redirect('home')
-    return render(request, 'payment.html', {"carrinho":cart_items,'total': total})
+
+    return render(request, 'payment.html', {"cart_items": cart_items, 'total': total})
 
 
 

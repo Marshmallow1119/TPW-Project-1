@@ -128,6 +128,7 @@ class CartItem(models.Model):
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='items')
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='items')
     quantity = models.IntegerField()
+    size = models.ForeignKey(Size, on_delete=models.CASCADE, null=True, blank=True)
 
     @property
     def total(self):
@@ -147,15 +148,17 @@ class Favorite(models.Model):
 class Purchase(models.Model):
     id = models.AutoField(primary_key=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='purchases')
-    products = models.ManyToManyField(Product, related_name='purchases')
     date = models.DateField()
-    total = models.FloatField()
     paymentMethod = models.CharField(max_length=50)
     shippingAddress = models.CharField(max_length=50)
     status = models.CharField(max_length=50)
 
     def __str__(self):
         return self.user.username + ' - ' + str(self.date)
+    
+    @property
+    def total(self):
+        return sum(item.total for item in self.purchase_products.all())
 
 class Review(models.Model):
     id = models.AutoField(primary_key=True)
@@ -170,4 +173,14 @@ class Review(models.Model):
 
 
 
+class PurchaseProduct(models.Model):
+    purchase = models.ForeignKey(Purchase, on_delete=models.CASCADE, related_name='purchase_products')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='product_purchases')
+    quantity = models.PositiveIntegerField()
 
+    def __str__(self):
+        return f"{self.purchase} - {self.product.name} x {self.quantity}"
+    
+    @property
+    def total(self):
+        return self.quantity * self.product.price
