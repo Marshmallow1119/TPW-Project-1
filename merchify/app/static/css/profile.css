@@ -49,3 +49,51 @@ body {
     object-fit: cover;
     border-radius: 50%; 
 }
+
+.card-body .info-grid {
+    display: grid;
+    grid-template-columns: 1fr; /* Coluna 1 para o rótulo, coluna 2 para o valor */
+    row-gap: 10px; /* Espaço entre as linhas */
+    column-gap: 20px; /* Espaço entre as colunas */
+    text-align: left;
+}
+
+.card-body .info-item {
+    display: contents; /* Permite que o conteúdo ocupe as colunas do grid */
+}
+
+
+.card-body .text-muted {
+    font-weight: 600;
+    color: #6c757d;
+}
+
+.card-body hr {
+    border-top: 1px solid #ddd;
+    margin-bottom: 1rem;
+}
+
+.card-body ul.list-unstyled li {
+    padding-left: 10px;
+    color: #333;
+}
+
+
+.card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: scale(1.02); /* Aumenta levemente o card para dar destaque */
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2); /* Adiciona uma sombra suave */
+    z-index: 10; /* Garante que o card fique acima dos outros durante o hover */
+}
+
+.card-header, .card-body {
+    transition: background-color 0.3s ease;
+}
+
+.card:hover .card-header, 
+.card:hover .card-body {
+    background-color: #f8f9fa; /* Leve mudança na cor de fundo para destacar */
+}

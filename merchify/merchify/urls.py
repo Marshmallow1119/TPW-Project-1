@@ -50,9 +50,10 @@ urlpatterns = [
     path("favorites/", views.checkfavorite, name="favorites"),
     path('favorites/add/<int:product_id>/', views.addtofavorite, name='addtofavorite'),
     path('favorites/remove/<int:product_id>/', views.remove_from_favorites, name='remove_from_favorites'),
-    path('payment/', views.payment, name='payment'),
+    path('payment/', views.payment_page, name='payment_page'),
     path('delete_user/<int:user_id>/', views.delete_user, name='delete_user'),
-
+    path('process_payment/', views.process_payment, name='process_payment'),
+    path('payment-confirmation/', views.payment_confirmation, name='payment_confirmation'),
 ]   
 
 
