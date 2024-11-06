@@ -434,7 +434,6 @@ def remove_from_favorites(request, product_id):
     except Product.DoesNotExist:
         return JsonResponse({"success": False, "message": "Product not found."}, status=404)
 
-
 @login_required
 def process_payment(request):
     if request.method == 'POST' and 'complete_payment' in request.POST:
@@ -450,6 +449,7 @@ def process_payment(request):
                 messages.error(request, "Por favor, preencha todos os campos obrigatórios.")
                 return redirect('payment_page')
             
+            total = 0  # Inicializa o total
             with transaction.atomic():
                 purchase = Purchase.objects.create(
                     user=user,
@@ -461,9 +461,9 @@ def process_payment(request):
 
                 for item in cart_items:
                     product = item.product
-                    product_type = product.get_product_type()
 
-                    if product_type == 'Clothing':
+                    # Verifica se o produto é de roupa e se o estoque é suficiente
+                    if isinstance(product, Clothing):
                         size = item.size  
                         if size and size.stock >= item.quantity:
                             size.stock -= item.quantity
@@ -472,28 +472,37 @@ def process_payment(request):
                             messages.error(request, f"Estoque insuficiente para {product.name} no tamanho {size.size}. Disponível: {size.stock}")
                             return redirect('payment_page')
 
-                    elif product_type in ['Vinil', 'CD', 'Accessory'] and hasattr(product, 'stock'):
+                    # Verifica os outros tipos de produtos
+                    elif isinstance(product, (Vinil, CD, Accessory)):
                         if product.stock >= item.quantity:
                             product.stock -= item.quantity
                             product.save()
                         else:
                             messages.error(request, f"Estoque insuficiente para {product.name}. Disponível: {product.stock}")
                             return redirect('payment_page')
+
                     else:
                         messages.error(request, f"Produto não encontrado ou estoque insuficiente para {product.name}.")
                         return redirect('payment_page')
 
-                    PurchaseProduct.objects.create(
+                    # Cria a associação do produto com a compra
+                    purchase_product = PurchaseProduct.objects.create(
                         purchase=purchase,
                         product=product,
                         quantity=item.quantity
                     )
 
+                    # Atualiza o total
+                    total += purchase_product.total
+
+                # Atualiza o total da compra
+                purchase.total = total
+                purchase.save()
+
                 request.session['clear_cart'] = True  
                 messages.success(request, "Sua compra foi realizada com sucesso!")
-
-            return redirect('payment_confirmation')
-
+                return redirect('payment_confirmation')
+                
         except Cart.DoesNotExist:
             messages.error(request, "Carrinho não encontrado.")
             return redirect('cart')
@@ -502,6 +511,7 @@ def process_payment(request):
             return redirect('payment_page')
 
     return redirect('payment_page')
+
 
 @login_required
 def payment_confirmation(request):
