@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Avg
 from django.template.defaultfilters import default
 from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
@@ -9,6 +10,14 @@ class Company(models.Model):
     email = models.EmailField(max_length=50, unique=True)
     phone = models.CharField(max_length=50, blank=True, null=True)
     logo = models.ImageField(upload_to='company_logos', blank=True, null=True)
+
+    def getNumberOfProducts(self):
+        return self.products.count()
+
+    def get_average_rating(self):
+        average_rating = self.products.aggregate(avg_rating=Avg('reviews__rating'))['avg_rating']
+        return average_rating if average_rating is not None else "Sem Avaliações"
+
 
     def __str__(self):
         return self.name
@@ -30,6 +39,7 @@ class User(AbstractUser):
     country = models.CharField(max_length=50, blank=True, null=True)
     image = models.ImageField(upload_to='profile_pics/', blank=True, null=True)
     company = models.ForeignKey(Company, on_delete=models.SET_NULL, blank=True, null=True)
+
 
     def __str__(self):
         return self.username
@@ -55,6 +65,11 @@ class Product(models.Model):
     company = models.ForeignKey('Company', on_delete=models.CASCADE, related_name='products')
     category = models.CharField(max_length=50)
     addedProduct = models.DateField(auto_now_add=True)
+
+    def get_average_rating(self):
+        average_rating = self.reviews.aggregate(avg_rating=Avg('rating'))['avg_rating']
+        return average_rating if average_rating is not None else "Sem Avaliações"
+
 
     def get_product_type(self):
         if hasattr(self, 'vinil'):

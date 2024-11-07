@@ -1,0 +1,70 @@
+{% extends "layout.html" %}
+{%  block content %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add New Company</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container mt-4">
+    <h2>Add New Company</h2>
+    <form method="post" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+
+        <!-- Display form errors at the top -->
+        {% if messages %}
+            <div>
+                {% for message in messages %}
+                    <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <div class="card p-4">
+            <h4>Company Information</h4>
+            <div class="form-row">
+                {% for field in company_form %}
+                    <div class="col-md-6 mb-3">
+                        {{ field.label_tag }}
+                        {{ field }}
+                        {% if field.errors %}
+                            <div class="text-danger small">{{ field.errors|join:" " }}</div>
+                            <script>
+                                document.getElementById("{{ field.id_for_label }}").classList.add("is-invalid");
+                            </script>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+
+                {% for field in user_form %}
+                    <div class="col-md-6 mb-3">
+                        {{ field.label_tag }}
+                        {{ field }}
+                        {% if field.errors %}
+                            <div class="invalid-feedback">{{ field.errors|join:" " }}</div>
+                            <script>
+                                document.getElementById("{{ field.id_for_label }}").classList.add("is-invalid");
+                            </script>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+                <button type="submit" class="btn btn-success mt-3" style="fill: #88cc88 !important;">Submeter</button>
+
+        </div>
+
+    </form>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
+{%  endblock %}

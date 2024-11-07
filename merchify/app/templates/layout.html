@@ -9,6 +9,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.8.1/font/bootstrap-icons.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="/media/logo.ico">
+
     {% load static %}
     {% block css %}
     <style>
@@ -18,6 +20,10 @@
             font-family: 'Nunito Sans', sans-serif !important;
         }
 
+        /* Change icon color to white on button hover */
+        .btn-outline-dark:hover i {
+            color: white !important;
+        }
     </style>
 
     {% endblock %}
@@ -41,24 +47,25 @@
                 </ul>
                 <form class="d-flex me-3" method="GET" action="{% url 'search_products' %}">
                     <input class="form-control me-2" type="search" name="search" placeholder="Search">
-                    <button class="btn btn-outline-secondary" type="submit">
-                        <i style="color: black;" class="fa fa-search"></i>
-                    </button>                
+                    <button class="btn btn-outline-dark" type="submit">
+                        <i   class="fa fa-search"></i>
+                    </button>
                 </form>
                 <div class="d-flex">
                     {% if user.is_authenticated %}
                         {%  if user.user_type == 'individual' %}
-                        <a href="{% url 'profile' %}" class="btn btn-outline-secondary me-2"><i style="color: black;" class="fa fa-user"></i></a>
-                        <a href="{% url 'cart' %}" class="btn btn-outline-secondary me-2"><i style="color: black;" class="fa fa-shopping-cart"></i></a>
-                        <a href="{% url 'favorites' %}" class="btn btn-outline-secondary me-2"><i style="color: black;" class="fa fa-heart text-danger"></i></a>
-                        <a href="{% url 'logout' %}" class="btn btn-outline-secondary"><i style="color: black;" class="fas fa-sign-out-alt"></i></a>
+                        <a href="{% url 'profile' %}" class="btn btn-outline-dark me-2"><i   class="fa fa-user"></i></a>
+                        <a href="{% url 'cart' %}" class="btn btn-outline-dark me-2"><i   class="fa fa-shopping-cart"></i></a>
+                        <a href="{% url 'favorites' %}" class="btn btn-outline-dark me-2"><i   class="fa fa-heart text-danger"></i></a>
+                        <a href="{% url 'logout' %}" class="btn btn-outline-dark"><i   class="fas fa-sign-out-alt"></i></a>
                         {%  elif user.user_type == 'admin' %}
-                            <a href="{% url 'profile' %}" class="btn btn-outline-secondary me-2"><i style="color: black;" class="fa fa-user"></i></a>
-                            <a href="{% url 'logout' %}" class="btn btn-outline-secondary"><i style="color: black;" class="fas fa-sign-out-alt"></i></a>
+                            <a href="{% url 'add_company' %}" class="btn btn-outline-dark me-2"><i  class="fa fa-plus"></i> Adicionar Companhia</a>
+                            <a href="{% url 'profile' %}" class="btn btn-outline-dark me-2"><i   class="fa fa-user"></i></a>
+                            <a href="{% url 'logout' %}" class="btn btn-outline-dark"><i   class="fas fa-sign-out-alt"></i></a>
                         {% else %}
                             {%  endif %}
                     {% else %}
-                        <a href="{% url 'login' %}" class="btn btn-outline-secondary"><img src="/media/user.png" width="20"> Login</a>
+                        <a href="{% url 'login' %}" class="btn btn-outline-dark"><img src="/media/user.png" width="20"> Login</a>
                     {% endif %}
                 </div>
             </div>
