@@ -3,6 +3,7 @@ import json
 import logging
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.hashers import make_password
 from django.db.models import Avg
 from django.http import JsonResponse, Http404
 from django.utils import timezone
@@ -14,7 +15,7 @@ from django.contrib.auth import password_validation
 from django.core.exceptions import ValidationError
 
 from app.models import *
-from app.forms import RegisterForm, ProductForm
+from app.forms import RegisterForm, ProductForm, CompanyForm, UserForm
 from django.contrib.auth import authenticate, login as auth_login, get_user_model
 from django.contrib.auth import logout as auth_logout
 from .forms import RegisterForm, UploadUserProfilePicture, UpdatePassword, UpdateProfile
@@ -36,6 +37,13 @@ def home(request):
             cart.delete()
 
         del request.session['clear_cart']
+    user = request.user
+    if user.is_authenticated:
+        print(user.user_type)
+        if user.user_type == 'admin':
+            return redirect('admin_home')
+        elif user.user_type == 'company':
+            return redirect( 'home')
 
     return render(request, 'home.html', {'artists': artists, 'products': recent_products})
 
@@ -168,7 +176,7 @@ def login(request):
                 elif user.user_type == 'company':
                     return redirect('company_home')
                 elif user.user_type == 'admin':
-                    return redirect('admin_home.html')
+                    return redirect('admin_home')
                 else:
                     return redirect('home')
             else:
@@ -626,4 +634,60 @@ def admin_home(request):
     return render(request, 'admin_home.html', {'users': users, 'products': products})
 def delete_user(request, user_id):
     user = get_object_or_404(User, id=user_id)
+    user.delete()
     return redirect('admin_home')
+def admin_product_delete(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    product.delete()
+    return redirect('admin_home')
+
+def delete_review(request, review_id):
+    review = get_object_or_404(Review, id=review_id)
+    if request.user.user_type == 'admin':
+        review.delete()
+        messages.success(request, "Avaliação removida com sucesso.")
+    else:
+        messages.error(request, "Apenas administradores podem remover avaliações.")
+    return redirect('productDetails', identifier=review.product.id)
+
+def admin_company_delete(request, company_id):
+    company = get_object_or_404(Company, id=company_id)
+    company.delete()
+    return redirect('admin_home')
+
+
+def add_company(request):
+    if request.method == 'POST':
+        company_form = CompanyForm(request.POST, request.FILES)
+        user_form = UserForm(request.POST)
+
+        if company_form.is_valid() and user_form.is_valid():
+            with transaction.atomic():
+                # Save the company instance first
+                company = company_form.save()
+
+                # Prepare the user data with company info
+                user = user_form.save(commit=False)
+                user.user_type = 'company'
+                user.firstname = 'Company'
+                user.lastname = company.name
+                user.email = company.email
+                user.phone = company.phone
+                user.address = company.address
+                user.company = company
+                user.set_password(user_form.cleaned_data['password'])
+                user.save()
+
+                messages.success(request, 'Company and associated user have been created successfully.')
+                return redirect('admin_home')
+        else:
+            messages.error(request, 'Please correct the errors below.')
+
+    else:
+        company_form = CompanyForm()
+        user_form = UserForm()
+
+    return render(request, 'add_company.html', {
+        'company_form': company_form,
+        'user_form': user_form,
+    })
