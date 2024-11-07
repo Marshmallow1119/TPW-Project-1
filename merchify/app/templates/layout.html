@@ -50,9 +50,15 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
-                    <li class="nav-item"><a class="nav-link active" href="{% url 'home' %}">Home</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'produtos' %}">Produtos</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'artistas' %}">Artistas e Bandas</a></li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" href="{% url 'home' %}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'produtos' %}active{% endif %}" href="{% url 'produtos' %}">Produtos</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'artistas' %}active{% endif %}" href="{% url 'artistas' %}">Artistas e Bandas</a>
+                    </li>
                 </ul>
                 <form class="d-flex me-3" method="GET" action="{% url 'search_products' %}">
                     <input class="form-control me-2 search-input" type="search" name="search" placeholder="Search">

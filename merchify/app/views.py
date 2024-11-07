@@ -707,3 +707,26 @@ def add_company(request):
         'company_form': company_form,
         'user_form': user_form,
     })
+
+@login_required
+def order_details(request, order_id):
+    purchase = get_object_or_404(Purchase, id=order_id, user=request.user)
+    products = [
+        {
+            "name": item.product.name,
+            "quantity": item.quantity,
+            "unit_price": item.product.price,  # Preço unitário
+            "total_price": item.quantity * item.product.price,  # Preço total (quantidade x preço unitário)
+            "image_url": item.product.image.url  # URL da imagem do produto
+        }
+        for item in purchase.purchase_products.all()
+    ]
+    data = {
+        "date": purchase.date,
+        "total": purchase.total,
+        "paymentMethod": purchase.paymentMethod,
+        "shippingAddress": purchase.shippingAddress,
+        "status": purchase.status,
+        "products": products,
+    }
+    return JsonResponse(data)

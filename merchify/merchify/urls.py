@@ -57,7 +57,7 @@ urlpatterns = [
     path('admin_home/delete/<int:product_id>', views.admin_product_delete, name='admin_product_delete'),
     path('admin_home/delete/company/<int:company_id>', views.admin_company_delete, name='admin_company_delete'),
     path('admin_home/add/company',views.add_company, name='add_company'),
-
+    path('account/order_details/<int:order_id>/', views.order_details, name='order_details'),
     path('delete/review/<int:review_id>/', views.delete_review, name='delete_review'),
 ]   
 
