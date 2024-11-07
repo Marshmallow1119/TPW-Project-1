@@ -5,10 +5,23 @@
 <section class="info-bar bg-warning text-dark py-2 text-center">
     <div class="container">
         <p class="mb-0">
-            <i class="bi bi-truck"></i> Envio grátis para todo Portugal Continental em compras acima de 220 euros
+            <i class="bi bi-truck"></i> Envio grátis para todo Portugal Continental em compras acima de 100 euros
         </p>
     </div>
 </section>
+{% if show_promotion %}
+<section class="info-bar bg-dark text-white py-2 text-center">
+    <div class="container">
+        <a href="{% url 'login' %}" class="text-white text-decoration-none">
+            <p class="mb-0">
+                <i class="bi bi-gift"></i> Promoção de 10% na primeira compra
+            </p>
+        </a>
+    </div>
+</section>
+{% endif %}
+
+
 
 <div id="carouselExampleIndicators" class="carousel slide w-100" data-bs-ride="carousel" style="margin: 0; padding: 0;">
     <div class="carousel-inner w-100">

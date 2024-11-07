@@ -2,11 +2,13 @@ from datetime import timedelta, date
 import json
 import logging
 import re
+from urllib.parse import urlencode
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import make_password
 from django.db.models import Avg
 from django.http import JsonResponse, Http404
+from django.urls import reverse
 from django.utils import timezone
 from django.shortcuts import redirect, render, get_object_or_404
 from django.shortcuts import render
@@ -38,15 +40,22 @@ def home(request):
             cart.delete()
 
         del request.session['clear_cart']
+
     user = request.user
+    show_promotion= False
+
     if user.is_authenticated:
         print(user.user_type)
         if user.user_type == 'admin':
             return redirect('admin_home')
         elif user.user_type == 'company':
             return redirect( 'home')
+        show_promotion= not Purchase.objects.filter(user=user).exists()
+    else:
+        show_promotion= True
+        
 
-    return render(request, 'home.html', {'artists': artists, 'products': recent_products})
+    return render(request, 'home.html', {'artists': artists, 'products': recent_products, 'show_promotion': show_promotion})
 
 def produtos(request):
     produtos= Product.objects.all()
@@ -487,7 +496,6 @@ def process_payment(request):
                     product_type = product.get_product_type()
                     stock_available = product.get_stock()
 
-                    # Verifica se o produto é de roupa e se o estoque é suficiente
                     if product_type == 'Clothing' and item.size:
                         size = item.size
                         if size.stock >= item.quantity:
@@ -497,10 +505,8 @@ def process_payment(request):
                             messages.error(request, f"Estoque insuficiente para {product.name} no tamanho {size.size}. Disponível: {size.stock}")
                             return redirect('payment_page')
 
-                    # Verifica estoque para os outros tipos de produtos
                     elif product_type in ['Vinil', 'CD', 'Accessory']:
                         if stock_available is not None and stock_available >= item.quantity:
-                            # Reduz o estoque da subclasse
                             if isinstance(product, (Vinil, CD, Accessory)):
                                 product.stock -= item.quantity
                                 product.save()
@@ -512,7 +518,6 @@ def process_payment(request):
                         messages.error(request, f"Produto não encontrado ou estoque insuficiente para {product.name}.")
                         return redirect('payment_page')
 
-                    # Cria a associação do produto com a compra
                     PurchaseProduct.objects.create(
                         purchase=purchase,
                         product=product,
@@ -520,8 +525,8 @@ def process_payment(request):
                     )
 
                 request.session['clear_cart'] = True  
-                messages.success(request, "Sua compra foi realizada com sucesso!")
-                return redirect('payment_confirmation')
+                url_with_success = f"{reverse('payment_page')}?{urlencode({'success': '1'})}"
+                return redirect(url_with_success)
 
         except Cart.DoesNotExist:
             messages.error(request, "Carrinho não encontrado.")
