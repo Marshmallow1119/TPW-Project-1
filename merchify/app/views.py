@@ -1,6 +1,7 @@
 from datetime import timedelta, date
 import json
 import logging
+import re
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import make_password
@@ -81,7 +82,6 @@ def artistsProducts(request, name):
     for product in products:
             product.is_favorited = product.id in favorited_product_ids
     return render(request, 'artists_products.html', {'artist': artist, 'products': products})
-
 
 def productDetails(request, identifier):
     product = get_object_or_404(Product, id=identifier)
@@ -304,8 +304,33 @@ def profile(request):
             user.email = request.POST.get('email', user.email)
             user.username = request.POST.get('username', user.username)
             user.address = request.POST.get('address', user.address)
-            user.phone = request.POST.get('phone', user.phone)
+            phone = request.POST.get('phone', user.phone)
             user.country = request.POST.get('country', user.country)
+
+            if not re.fullmatch(r'\d{9}', phone):
+                messages.error(request, 'O número de telefone deve conter exatamente 9 dígitos.')
+                profile_form = UpdateProfile(initial={
+                    'name': user.first_name,
+                    'surname': user.last_name,
+                    'email': user.email,
+                    'username': user.username,
+                    'address': user.address,
+                    'phone': phone,  # Mantém o valor incorreto para permitir nova entrada
+                    'country': user.country
+                })
+                image_form = UploadUserProfilePicture()
+                password_form = UpdatePassword()
+                purchases = Purchase.objects.filter(user=user)
+                return render(request, 'profile.html', {
+                    'user': user,
+                    'image_form': image_form,
+                    'profile_form': profile_form,
+                    'password_form': password_form,
+                    'number_of_purchases': purchases.count(),
+                    'purchases': purchases,
+                })
+            else:
+                user.phone = phone
             
             if 'image' in request.FILES:
                 logger.debug("Imagem de perfil recebida.")
@@ -336,7 +361,6 @@ def profile(request):
                     if new_password == confirm_new_password:
                         logger.debug("Novas senhas coincidem.")
                         try:
-                            # Validar a nova senha
                             password_validation.validate_password(new_password, user)
                             logger.debug("Nova senha válida.")
                             user.set_password(new_password)

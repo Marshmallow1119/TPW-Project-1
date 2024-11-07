@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import get_user_model
+from jsonschema import ValidationError
 from .models import Product, Company
 
 
@@ -23,6 +24,12 @@ class RegisterForm(UserCreationForm):
     class Meta:
         model = User
         fields = ('username', 'email', 'password1', 'password2', 'first_name', 'last_name', 'address', 'phone', 'country')
+
+    def clean_phone(self):
+        phone = self.cleaned_data.get('phone')
+        if not phone.isdigit() or len(phone) != 9:
+            raise ValidationError("O número de telefone deve conter exatamente 9 dígitos.")
+        return phone
 
 
 class UploadUserProfilePicture(forms.Form):
