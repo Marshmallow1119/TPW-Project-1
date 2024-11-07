@@ -17,15 +17,23 @@
         body {
             font-family: 'Nunito Sans', sans-serif !important;
         }
-    .fa .fas {
-        color:black
-    }
+        
+        .alert-error {
+            background-color: #f8d7da;
+            color: #842029;
+            border-color: #f5c2c7;
+        }
+
+        .alert-success {
+            background-color: #d1e7dd;
+            color: #0f5132;
+            border-color: #badbcc;
+        }
+        
     </style>
-    
     {% endblock %}
     <link rel="stylesheet" href="{% static 'css/fonts.css' %}">
 </head>
-
 <body style="min-height: 100vh; display: flex; flex-direction: column; margin: 0;">
     <nav class="navbar navbar-expand-lg navbar-light bg-light" style="padding: 0.25rem 0; min-height: 50px;">
         <div class="container-fluid">
@@ -60,18 +68,47 @@
             </div>
         </div>
     </nav>
+    
+    {% if messages %}
+    <div class="alert-messages">
+        {% for message in messages %}
+            <div class="alert 
+                {% if message.tags == 'error' %}alert-error{% elif message.tags == 'success' %}alert-success{% else %}alert-info{% endif %} 
+                alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    </div>
+    {% endif %}
 
     <main role="main" style="flex: 1;">
         <div class="container product-page-content gx-0">
             {% block content %}{% endblock %}
         </div>
     </main>
+    
 
     <footer class="bg-dark text-white text-center py-3">
         <div>&copy;  TPW 2024/2025 - Merchify - Trabalho Realizado por: Afonso Ferreira (113480) - Tomás Brás (112665) - Carolina Prata (114245)</div>
     </footer>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    {% block js %}
+    <script>
+        // Remove alert after 5 seconds
+        document.addEventListener('DOMContentLoaded', function() {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                setTimeout(() => {
+                    alert.classList.add('fade');
+                    setTimeout(() => alert.remove(), 500);  // remove after transition
+                }, 5000); // 5 seconds
+            });
+        });
+    </script>
+    {% endblock %}
 </body>
 </html>
 
