@@ -13,11 +13,11 @@ class RegisterForm(UserCreationForm):
     email = forms.EmailField(max_length=100, help_text='Required. Inform a valid email address.')
     password1 = forms.CharField(widget=forms.PasswordInput, label="Senha")
     password2 = forms.CharField(widget=forms.PasswordInput, label="Confirmar Senha")
-    first_name = forms.CharField(max_length=100, required=False)
-    last_name = forms.CharField(max_length=100, required=False)
+    first_name = forms.CharField(max_length=100, required=True)
+    last_name = forms.CharField(max_length=100, required=True)
     address = forms.CharField(max_length=50, required=False)
-    phone = forms.CharField(max_length=50, required=False)
-    country = forms.CharField(max_length=50, required=False)
+    phone = forms.CharField(max_length=50, required=True)
+    country = forms.CharField(max_length=50, required=True)
     image = forms.ImageField(required=False)
 
     class Meta:

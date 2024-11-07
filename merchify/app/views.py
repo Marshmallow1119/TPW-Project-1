@@ -83,11 +83,6 @@ def artistsProducts(request, name):
     return render(request, 'artists_products.html', {'artist': artist, 'products': products})
 
 
-from django.shortcuts import render, get_object_or_404
-from django.db.models import Avg
-from .models import Product, Clothing, CD, Vinil
-
-
 def productDetails(request, identifier):
     product = get_object_or_404(Product, id=identifier)
 
@@ -147,8 +142,6 @@ def register(request):
             user.save()
 
             auth_login(request, user)
-
-            messages.success(request, "Registro realizado com sucesso! Você está agora logado.")
             return redirect('home')
         else:
             messages.error(request, "Formulário inválido. Verifique os campos.")
@@ -162,7 +155,6 @@ def login(request):
         username = request.POST.get('username')
         password = request.POST.get('password')
 
-        # Check if the user exists
         if not User.objects.filter(username=username).exists():
             error_message = "Username does not exist"
             return render(request, 'login.html', {'error_message': error_message})
@@ -243,7 +235,7 @@ def viewCart(request):
 
     cartitems = CartItem.objects.filter(cart=cart)
     context = {
-        'cart_items': cartitems,  # Use 'cart_items' as key in context
+        'cart_items': cartitems, 
     }
     return render(request, 'cart.html', context)
 
