@@ -116,17 +116,12 @@
         }
 
         .produtos-container {
-            max-width: 95%;
-            margin: 0 auto;
             padding: 0 15px;
+            width: 100%;
         }
 
         .hidden-filter {
             display: none;
-        }
-        .container {
-            max-width: 1300px;
-            margin: 0 auto;
         }
     </style>
 </head>
@@ -140,132 +135,134 @@
         </div>
     </div>
     <div class="produtos-container mt-5">
-    
-    <div class="row">
-        <!-- Sidebar Filter Section -->
-        <div class="col-md-3">
-            <h4>Filtros</h4>
-            <div class="sidebar-filter bg-light p-3 rounded mb-4">
-                <!-- Filter by Product Type -->
-            <!-- Form Section with Product Filters -->
-            <form method="get" action="{% url 'product_list' %}" id="filterForm">
-                <!-- Product Type Filter -->
-                <h5>Tipo de Produto</h5>
-                <div class="form-group">
-                    <input type="radio" name="type" value="Vinil" id="vinil" {% if request.GET.type == 'Vinil' %}checked{% endif %} onclick="showFilters(this.value)">
-                    <label for="vinil">Vinil</label><br>
-                    <input type="radio" name="type" value="CD" id="cd" {% if request.GET.type == 'CD' %}checked{% endif %} onclick="showFilters(this.value)">
-                    <label for="cd">CD</label><br>
-                    <input type="radio" name="type" value="Clothing" id="clothing" {% if request.GET.type == 'Clothing' %}checked{% endif %} onclick="showFilters(this.value)">
-                    <label for="clothing">Roupas</label><br>
-                    <input type="radio" name="type" value="Accessory" id="accessory" {% if request.GET.type == 'Accessory' %}checked{% endif %} onclick="showFilters(this.value)">
-                    <label for="accessory">Acessórios</label>
-                </div>
-
-                <!-- Type-Specific Filters and Other Filters (as before) -->
-                <div id="vinil-filters" class="hidden-filter">
-        <h5>Gênero</h5>
-        <div class="form-group">
-            <select name="genreVinyl" class="form-control">
-                <option value="">Todos</option>
-                <option value="Rock" {% if request.GET.genreVinyl == 'Rock' %}selected{% endif %}>Rock</option>
-                <option value="Pop" {% if request.GET.genreVinyl == 'Pop' %}selected{% endif %}>Pop</option>
-                <option value="Jazz" {% if request.GET.genreVinyl == 'Jazz' %}selected{% endif %}>Jazz</option>
-                <option value="Hip-Hop" {% if request.GET.genreVinyl == 'Hip-Hop' %}selected{% endif %}>Hip-Hop</option>
-            </select>
-        </div>
-    </div>
-
-    <div id="cd-filters" class="hidden-filter">
-        <h5>Gênero</h5>
-        <div class="form-group">
-            <select name="genreCD" class="form-control">
-                <option value="">Todos</option>
-                <option value="Rock" {% if request.GET.genreCD == 'Rock' %}selected{% endif %}>Rock</option>
-                <option value="Pop" {% if request.GET.genreCD == 'Pop' %}selected{% endif %}>Pop</option>
-                <option value="Jazz" {% if request.GET.genreCD == 'Jazz' %}selected{% endif %}>Jazz</option>
-                <option value="Hip-Hop" {% if request.GET.genreCD == 'Hip-Hop' %}selected{% endif %}>Hip-Hop</option>
-            </select>
-        </div>
-    </div>
-
-    <div id="clothing-filters" class="hidden-filter">
-        <h5>Cor</h5>
-        <div class="form-group">
-            <select name="colorClothing" class="form-control">
-                <option value="">Todas</option>
-                <option value="Preto" {% if request.GET.colorClothing == 'Preto' %}selected{% endif %}>Preto</option>
-                <option value="Branco" {% if request.GET.colorClothing == 'Branco' %}selected{% endif %}>Branco</option>
-                <option value="Vermelho" {% if request.GET.colorClothing == 'Vermelho' %}selected{% endif %}>Vermelho</option>
-            </select>
-        </div>
-    </div>
-
-    <div id="accessory-filters" class="hidden-filter">
-        <h5>Cor</h5>
-        <div class="form-group">
-            <select name="colorAccessory" class="form-control">
-                <option value="">Todas</option>
-                <option value="Preto" {% if request.GET.colorAccessory == 'Preto' %}selected{% endif %}>Preto</option>
-                <option value="Branco" {% if request.GET.colorAccessory == 'Branco' %}selected{% endif %}>Branco</option>
-            </select>
-        </div>
-
-        <h5>Tamanho</h5>
-        <div class="form-group">
-            <select name="size" class="form-control">
-                <option value="">Todos</option>
-                <option value="S" {% if request.GET.size == 'S' %}selected{% endif %}>S</option>
-                <option value="M" {% if request.GET.size == 'M' %}selected{% endif %}>M</option>
-                <option value="L" {% if request.GET.size == 'L' %}selected{% endif %}>L</option>
-            </select>
-        </div>
-    </div>
-                <!-- Custom Price Range Filter -->
-                <h5>Faixa de Preço</h5>
-                <div class="form-row">
-                    <div class="col">
-                        <label for="min-price">Minímo:</label>
-                        <input type="number" name="min_price" id="min-price" class="form-control" placeholder="€0" value="{{ request.GET.min_price }}">
-                    </div>
-                    <div class="col">
-                        <label for="max-price">Máximo:</label>
-                        <input type="number" name="max_price" id="max-price" class="form-control" placeholder="€50" value="{{ request.GET.max_price }}">
-                    </div>
-                </div>
-
-                <!-- Other Filters, Category, Artist, Apply and Reset Buttons (as before) -->
-
-                <div class="form-group d-flex justify-content-between mt-3">
-                    <button style="width: 48%"  type="button" class="btn btn-secondary" onclick="resetForm()">Reiniciar Filtros</button>
-                    <button style="width: 48%" type="submit" class="btn btn-success">Aplicar Filtros</button>
-
-                </div>
-            </form>
-
-            </div>
-            <div class="col-md-10">
-                <div class="row">
-                    {% for product in products %}
-                    <div class="col-6 col-md-4 col-lg-3">
-                        <div class="product-card">
-                            <i class="fa fa-heart favorite-icon {% if product.is_favorited %}filled{% endif %}" data-id="{{ product.id }}" onclick="addToFavorite({{ product.id }})"></i>
-                            <a href="/product/{{ product.id }}">
-                                <img src="{{ product.image.url }}" alt="{{ product.name }}">
-                                <div class="p-3 text-center">
-                                    <p class="product-name">{{ product.name }}</p>
-                                    <p class="product-price">{{ product.price }}€</p>
-                                    <button class="btn btn-add-to-cart w-100">Adicionar ao carrinho</button>
+            <div class="row">
+                <!-- Sidebar Filter Section (left side) -->
+                <div class="col-md-3">
+                    <h4>Filtros</h4>
+                        <div class="sidebar-filter bg-light p-3 rounded mb-4">
+                                <!-- Filter by Product Type -->
+                            <!-- Form Section with Product Filters -->
+                            <form method="get" action="{% url 'product_list' %}" id="filterForm">
+                                <!-- Product Type Filter -->
+                                <h5>Tipo de Produto</h5>
+                                <div class="form-group">
+                                    <input type="radio" name="type" value="Vinil" id="vinil" {% if request.GET.type == 'Vinil' %}checked{% endif %} onclick="showFilters(this.value)">
+                                    <label for="vinil">Vinil</label><br>
+                                    <input type="radio" name="type" value="CD" id="cd" {% if request.GET.type == 'CD' %}checked{% endif %} onclick="showFilters(this.value)">
+                                    <label for="cd">CD</label><br>
+                                    <input type="radio" name="type" value="Clothing" id="clothing" {% if request.GET.type == 'Clothing' %}checked{% endif %} onclick="showFilters(this.value)">
+                                    <label for="clothing">Roupas</label><br>
+                                    <input type="radio" name="type" value="Accessory" id="accessory" {% if request.GET.type == 'Accessory' %}checked{% endif %} onclick="showFilters(this.value)">
+                                    <label for="accessory">Acessórios</label>
                                 </div>
-                            </a>
+                
+                                <!-- Type-Specific Filters and Other Filters (as before) -->
+                                <div id="vinil-filters" class="hidden-filter">
+                        <h5>Gênero</h5>
+                        <div class="form-group">
+                            <select name="genreVinyl" class="form-control">
+                                <option value="">Todos</option>
+                                <option value="Rock" {% if request.GET.genreVinyl == 'Rock' %}selected{% endif %}>Rock</option>
+                                <option value="Pop" {% if request.GET.genreVinyl == 'Pop' %}selected{% endif %}>Pop</option>
+                                <option value="Jazz" {% if request.GET.genreVinyl == 'Jazz' %}selected{% endif %}>Jazz</option>
+                                <option value="Hip-Hop" {% if request.GET.genreVinyl == 'Hip-Hop' %}selected{% endif %}>Hip-Hop</option>
+                            </select>
                         </div>
                     </div>
-                    {% endfor %}
+                
+                    <div id="cd-filters" class="hidden-filter">
+                        <h5>Gênero</h5>
+                        <div class="form-group">
+                            <select name="genreCD" class="form-control">
+                                <option value="">Todos</option>
+                                <option value="Rock" {% if request.GET.genreCD == 'Rock' %}selected{% endif %}>Rock</option>
+                                <option value="Pop" {% if request.GET.genreCD == 'Pop' %}selected{% endif %}>Pop</option>
+                                <option value="Jazz" {% if request.GET.genreCD == 'Jazz' %}selected{% endif %}>Jazz</option>
+                                <option value="Hip-Hop" {% if request.GET.genreCD == 'Hip-Hop' %}selected{% endif %}>Hip-Hop</option>
+                            </select>
+                        </div>
+                    </div>
+                
+                    <div id="clothing-filters" class="hidden-filter">
+                        <h5>Cor</h5>
+                        <div class="form-group">
+                            <select name="colorClothing" class="form-control">
+                                <option value="">Todas</option>
+                                <option value="Preto" {% if request.GET.colorClothing == 'Preto' %}selected{% endif %}>Preto</option>
+                                <option value="Branco" {% if request.GET.colorClothing == 'Branco' %}selected{% endif %}>Branco</option>
+                                <option value="Vermelho" {% if request.GET.colorClothing == 'Vermelho' %}selected{% endif %}>Vermelho</option>
+                            </select>
+                        </div>
+                    </div>
+                
+                    <div id="accessory-filters" class="hidden-filter">
+                        <h5>Cor</h5>
+                        <div class="form-group">
+                            <select name="colorAccessory" class="form-control">
+                                <option value="">Todas</option>
+                                <option value="Preto" {% if request.GET.colorAccessory == 'Preto' %}selected{% endif %}>Preto</option>
+                                <option value="Branco" {% if request.GET.colorAccessory == 'Branco' %}selected{% endif %}>Branco</option>
+                            </select>
+                        </div>
+                
+                        <h5>Tamanho</h5>
+                        <div class="form-group">
+                            <select name="size" class="form-control">
+                                <option value="">Todos</option>
+                                <option value="S" {% if request.GET.size == 'S' %}selected{% endif %}>S</option>
+                                <option value="M" {% if request.GET.size == 'M' %}selected{% endif %}>M</option>
+                                <option value="L" {% if request.GET.size == 'L' %}selected{% endif %}>L</option>
+                            </select>
+                        </div>
+                    </div>
+                                <!-- Custom Price Range Filter -->
+                                <h5>Faixa de Preço</h5>
+                                <div class="form-row">
+                                    <div class="col">
+                                        <label for="min-price">Minímo:</label>
+                                        <input type="number" name="min_price" id="min-price" class="form-control" placeholder="€0" value="{{ request.GET.min_price }}">
+                                    </div>
+                                    <div class="col">
+                                        <label for="max-price">Máximo:</label>
+                                        <input type="number" name="max_price" id="max-price" class="form-control" placeholder="€50" value="{{ request.GET.max_price }}">
+                                    </div>
+                                </div>
+                
+                                <!-- Other Filters, Category, Artist, Apply and Reset Buttons (as before) -->
+                
+                                <div class="form-group d-flex justify-content-between mt-3">
+                                    <button style="width: 48%"  type="button" class="btn btn-secondary" onclick="resetForm()">Reiniciar Filtros</button>
+                                    <button style="width: 48%" type="submit" class="btn btn-success">Aplicar Filtros</button>
+                
+                                </div>
+                            </form>
+                
+                            </div>
                 </div>
-            </div>
-        </div>
-    </div>
+                
+                <!-- Product Cards Section (right side) -->
+                <div class="col-md-9">
+                    <div class="row">
+                        {% for product in products %}
+                        <div class="col-6 col-md-4 col-lg-3">
+                            <div class="product-card">
+                                <i class="fa fa-heart favorite-icon {% if product.is_favorited %}filled{% endif %}" data-id="{{ product.id }}" onclick="addToFavorite({{ product.id }})"></i>
+                                <a href="/product/{{ product.id }}">
+                                    <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                                    <div class="p-3 text-center">
+                                        <p class="product-name">{{ product.name }}</p>
+                                        <p class="product-price">{{ product.price }}€</p>
+                                        <button class="btn btn-add-to-cart w-100">Adicionar ao carrinho</button>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
 
+            </div>
+                </div>
+                </div>
+        </div>
 
 
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
