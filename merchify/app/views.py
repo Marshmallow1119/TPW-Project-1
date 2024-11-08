@@ -49,14 +49,17 @@ def home(request):
     if user.is_authenticated:
         if user.user_type == 'admin':
             return redirect('admin_home')
-        elif user.user_type == 'company':
-            return redirect( 'home')
+        # elif user.user_type == 'company':
+        #     return redirect( 'home')
         show_promotion= not Purchase.objects.filter(user=user).exists()
     else:
         show_promotion= True
         
 
     return render(request, 'home.html', {'artists': artists, 'products': recent_products, 'show_promotion': show_promotion})
+
+# def home(request):
+#     return render(request, 'home.html')
 
 def produtos(request):
     produtos= Product.objects.all()
@@ -178,7 +181,8 @@ def login(request):
                 if user.user_type == 'individual':
                     return redirect('home')
                 elif user.user_type == 'company':
-                    return redirect('company_home')
+                    company_id = user.company.id
+                    return redirect('company_products', company_id=company_id)
                 elif user.user_type == 'admin':
                     return redirect('admin_home')
                 else:
@@ -190,11 +194,13 @@ def login(request):
             return render(request, 'login.html', {'error_message': error_message})
     else:
         return render(request, 'login.html')
+
+
 @login_required
 def logout(request):
     if request.user.is_authenticated:
         auth_logout(request)  
-    return redirect('home') 
+    return redirect('home')
 
 @login_required
 @csrf_exempt  
@@ -598,54 +604,14 @@ def payment_page(request):
         "discount_applied": discount_applied
     })
 
+@login_required
+def company_home(request):
+    # Supondo que `company_id` está associado ao utilizador logado
+    company_id = request.user.company.id if request.user.user_type == 'company' else None
+    print("Company ID:", company_id)
+    return render(request, 'company_home.html', {'company_id': company_id})
 
-
-#@login_required
-def supplier_product_list(request):
-    products = [
-        {
-            "name": "Produto Exemplo 1",
-            "price": 20.0,
-            "image": {"url": "https://via.placeholder.com/250"},
-            "artist": {"image": {"url": "https://via.placeholder.com/100"}},
-        },
-        {
-            "name": "Produto Exemplo 2",
-            "price": 35.0,
-            "image": {"url": "https://via.placeholder.com/250"},
-            "artist": {"image": {"url": "https://via.placeholder.com/100"}},
-        },
-    ]
-
-    return render(request, 'supplier/product_list.html', {'products': products})
-
-
-def add_product(request):
-    if request.method == 'POST':
-        form = ProductForm(request.POST, request.FILES)
-        if form.is_valid():
-            product = form.save(commit=False)
-            product.company = request.user.supplier_profile.company
-            product.save()
-            return redirect('supplier_product_list')
-    else:
-        form = ProductForm()
-
-    return render(request, 'supplier/product_form.html', {'form': form, 'is_edit': False})
-
-def edit_product(request, product_id):
-    product = get_object_or_404(Product, id=product_id, company=request.user.supplier_profile.company)
-    if request.method == 'POST':
-        form = ProductForm(request.POST, request.FILES, instance=product)
-        if form.is_valid():
-            form.save()
-            return redirect('supplier_product_list')
-    else:
-        form = ProductForm(instance=product)
-
-    return render(request, 'supplier/product_form.html', {'form': form, 'is_edit': True, 'product': product})
-
-
+@login_required
 def company_products(request, company_id):
     company = get_object_or_404(Company, id=company_id)
 
@@ -653,7 +619,7 @@ def company_products(request, company_id):
 
     return render(request, 'company_products.html', {'company': company, 'products': products})
 
-#@login_required
+@login_required
 def add_product_to_company(request, company_id):
     company = get_object_or_404(Company, id=company_id)
 
@@ -669,7 +635,7 @@ def add_product_to_company(request, company_id):
 
     return render(request, 'add_product_to_company.html', {'form': form, 'company': company})
 
-
+@login_required
 def edit_product(request, product_id):
     product = get_object_or_404(Product, id=product_id)
 
@@ -683,7 +649,7 @@ def edit_product(request, product_id):
 
     return render(request, 'edit_product.html', {'form': form, 'product': product})
 
-#@login_required
+@login_required
 def delete_product(request, product_id):
     product = get_object_or_404(Product, id=product_id)
     company_id = product.company.id  # Guarda o ID da empresa para redirecionamento
