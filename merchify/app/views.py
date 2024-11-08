@@ -20,7 +20,7 @@ from django.contrib.auth import password_validation
 from django.core.exceptions import ValidationError
 
 from app.models import *
-from app.forms import RegisterForm, ProductForm, CompanyForm, UserForm
+from app.forms import RegisterForm, ProductForm, CompanyForm, UserForm, VinilForm, CDForm, ClothingForm, AccessoryForm
 from django.contrib.auth import authenticate, login as auth_login, get_user_model
 from django.contrib.auth import logout as auth_logout
 from .forms import RegisterForm, UploadUserProfilePicture, UpdatePassword, UpdateProfile
@@ -49,8 +49,8 @@ def home(request):
     if user.is_authenticated:
         if user.user_type == 'admin':
             return redirect('admin_home')
-        # elif user.user_type == 'company':
-        #     return redirect( 'home')
+        elif user.user_type == 'company':
+             return redirect('company_products',user.company.id)
         show_promotion= not Purchase.objects.filter(user=user).exists()
     else:
         show_promotion= True
@@ -621,19 +621,51 @@ def company_products(request, company_id):
 
 @login_required
 def add_product_to_company(request, company_id):
-    company = get_object_or_404(Company, id=company_id)
-
+    company = Company.objects.get(id=company_id)
     if request.method == 'POST':
-        form = ProductForm(request.POST, request.FILES)
-        if form.is_valid():
-            product = form.save(commit=False)
-            product.company = company
+        product_form = ProductForm(request.POST, request.FILES)
+        if product_form.is_valid():
+            product = product_form.save(commit=False)
+            product.company = company  # Set company
             product.save()
-            return redirect('company_products', company_id=company.id)
-    else:
-        form = ProductForm()
 
-    return render(request, 'add_product_to_company.html', {'form': form, 'company': company})
+            # Save additional fields based on product type
+            product_type = product_form.cleaned_data['product_type']
+            if product_type == 'vinil':
+                vinil_form = VinilForm(request.POST, instance=product)
+                if vinil_form.is_valid():
+                    vinil_form.save()
+            elif product_type == 'cd':
+                cd_form = CDForm(request.POST, instance=product)
+                if cd_form.is_valid():
+                    cd_form.save()
+            elif product_type == 'clothing':
+                clothing_form = ClothingForm(request.POST, instance=product)
+                if clothing_form.is_valid():
+                    clothing_form.save()
+            elif product_type == 'accessory':
+                accessory_form = AccessoryForm(request.POST, instance=product)
+                if accessory_form.is_valid():
+                    accessory_form.save()
+
+            return redirect('company_products', company_id=company.id)
+
+    else:
+        product_form = ProductForm()
+        vinil_form = VinilForm()
+        cd_form = CDForm()
+        clothing_form = ClothingForm()
+        accessory_form = AccessoryForm()
+
+    context = {
+        'company': company,
+        'form': product_form,
+        'vinil_form': vinil_form,
+        'cd_form': cd_form,
+        'clothing_form': clothing_form,
+        'accessory_form': accessory_form,
+    }
+    return render(request, 'add_product_to_company.html', context)
 
 @login_required
 def edit_product(request, product_id):
@@ -765,45 +797,62 @@ def apply_discount(request):
     
     return JsonResponse({"success": False, "message": "Método não permitido."}, status=405)
 
+
 def product_list(request):
     products = Product.objects.all()
     artists = Artist.objects.all()
 
-    product_type = request.GET.get('type')  # e.g., "Vinil", "CD", etc.
-
+    # Filter by product type
+    product_type = request.GET.get('type')
     if product_type:
-        # Filtering by product type
         if product_type == 'Vinil':
-            products = Product.objects.filter(vinil=True)
+            products = products.filter(vinil__isnull=False)
+            genre = request.GET.get('genre')
+            if genre:
+                products = products.filter(vinil__genre=genre)
+                print(products)
         elif product_type == 'CD':
-            products = Product.objects.filter(cd=True)
+            products = products.filter(cd__isnull=False)
+            genre = request.GET.get('genre')
+            if genre:
+                products = products.filter(cd__genre=genre)
         elif product_type == 'Clothing':
-            products = Product.objects.filter(clothing=True)
+            products = products.filter(clothing__isnull=False)
+            color = request.GET.get('color')
+            if color:
+                products = products.filter(clothing__color=color)
         elif product_type == 'Accessory':
-            products = Product.objects.filter(accessory=True)
-        else:
-            products = Product.objects.all()  # Return all if type is invalid
-    else:
-        # Return all products if no specific type is requested
-        products = Product.objects.all()
+            products = products.filter(accessory__isnull=False)
+            color = request.GET.get('color')
+            if color:
+                products = products.filter(accessory__color=color)
+            size = request.GET.get('size')
+            if size:
+                products = products.filter(accessory__size=size)
 
-    price_range = request.GET.get('price')
-    if price_range:
-        min_price, max_price = map(float, price_range.split('-'))
-        products = products.filter(price__gte=min_price, price__lte=max_price)
+    # Filter by price range
+    min_price = request.GET.get('min_price')
+    max_price = request.GET.get('max_price')
+    if min_price and max_price:
+        try:
+            products = products.filter(price__gte=float(min_price), price__lte=float(max_price))
+        except ValueError:
+            pass  # Invalid price values will be ignored
 
+    # Filter by category
     category = request.GET.get('category')
     if category:
         products = products.filter(category=category)
 
+    # Filter by artist
     artist_id = request.GET.get('artist')
     if artist_id:
-        products = products.filter(artist_id=artist_id)
-    print("Product Type:", product_type)
-    print("Price Range:", price_range)
-    print("Category:", category)
-    print("Artist ID:", artist_id)
+        try:
+            products = products.filter(artist_id=int(artist_id))
+        except ValueError:
+            pass  # Invalid artist ID values will be ignored
 
+    # Passing filtered products and all artists to the template
     return render(request, 'artists_products.html', {
         'products': products,
         'artists': artists,

@@ -40,7 +40,6 @@ urlpatterns = [
     path('remove/<int:product_id>/', views.remove_from_cart, name='remove_from_cart'),
     path("account/profile", views.profile, name="profile"),
     path("product/<int:product_id>/submit_review/", views.submit_review, name="submit_review"),
-    path('company/home/', views.company_home, name='company_home'),
     path('company/<int:company_id>/products/', views.company_products, name='company_products'),
     path('company/<int:company_id>/add-product/', views.add_product_to_company, name='add_product_to_company'),
     path('product/<int:product_id>/edit/', views.edit_product, name='edit_product'),
