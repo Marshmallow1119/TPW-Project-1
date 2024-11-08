@@ -40,7 +40,7 @@
             </div>
             <div class="d-flex justify-content-between mt-4">
                 <h4 class="font-weight-bold">Total:</h4>
-                <h4 class="text-primary font-weight-bold">&euro; {{ total|floatformat:2 }}</h4>
+                <h4 class="text-primary font-weight-bold">&euro; {{ subtotal|floatformat:2 }}</h4>
             </div>
         </div>
 
@@ -61,12 +61,41 @@
                     <label for="shipping_address" class="font-weight-bold">Shipping Address</label>
                     <input type="text" class="form-control" id="shipping_address" name="shipping_address" required>
                 </div>
-                <div class="d-flex justify-content-between border-top pt-3 mt-4">
-                    <span class="font-weight-bold">TOTAL PRICE</span>
-                    <span class="font-weight-bold text-primary">&euro; {{ total|floatformat:2 }}</span>
+                <div class="form-group mt-3">
+                    <label for="discount_code" class="font-weight-bold">Discount Code</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="discount_code" name="discount_code">
+                        <button type="button" id="apply_discount" class="btn btn-secondary">Apply</button>
+                    </div>
                 </div>
-                <button name="complete_payment" type="submit" class="btn btn-primary">Complete Payment</button>
-            </form>
+                <div class="border-top pt-3 mt-4">
+                    <div class="d-flex justify-content-between">
+                        <span class="font-weight-bold">Subtotal:</span>
+                        <span>&euro; {{ subtotal|floatformat:2 }}</span>
+                    </div>
+                
+                    {% if discount_applied %}
+                        <div class="d-flex justify-content-between mt-2">
+                            <span class="font-weight-bold text-danger">Desconto Aplicado:</span>
+                            <span class="text-danger">-&euro; {{ discount_value|floatformat:2 }}</span>
+                        </div>
+                    {% endif %}
+                
+                    <div class="d-flex justify-content-between mt-2">
+                        <span class="font-weight-bold">Portes de Envio:</span>
+                        <span>&euro; {{ shipping_cost|floatformat:2 }}</span>
+                    </div>
+                
+                    <div class="d-flex justify-content-between mt-2 border-top pt-2">
+                        <span class="font-weight-bold">Total Final:</span>
+                        <span class="text-primary font-weight-bold">&euro; {{ final_total|floatformat:2 }}</span>
+                    </div>
+                </div>
+                <div class="text-end mt-4">
+                    <button name="complete_payment" type="submit" class="btn btn-primary">Complete Payment</button>
+                </div>
+                 
+             </form>
         </div>
     </div>
 </div>
@@ -98,6 +127,28 @@
                 window.location.href = '{% url "home" %}';
             }, 2000);
         }
+    });
+    document.getElementById('apply_discount').addEventListener('click', function() {
+        const discountCode = document.getElementById('discount_code').value;
+        const csrfToken = '{{ csrf_token }}'; // Django CSRF token for security
+    
+        fetch("{% url 'apply_discount' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({ discount_code: discountCode })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload(); // Recarrega a página se o desconto for aplicado com sucesso
+            } else {
+                alert(data.message); // Mostra uma mensagem de erro caso o código seja inválido
+            }
+        })
+        .catch(error => console.error('Erro ao aplicar o desconto:', error));
     });
 </script>
 {% endblock %}

@@ -179,7 +179,8 @@ class Purchase(models.Model):
     paymentMethod = models.CharField(max_length=50)
     shippingAddress = models.CharField(max_length=50)
     status = models.CharField(max_length=50)
-
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)  
+    
     def __str__(self):
         return self.user.username + ' - ' + str(self.date)
     

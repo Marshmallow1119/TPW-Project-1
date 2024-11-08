@@ -99,7 +99,7 @@
                             <div class="col-12 col-md-6 col-lg-4 mb-4">
                                 <div class="card bg-light text-dark shadow-sm h-100">
                                     <div class="card-header">
-                                        <h5 class="mb-0">Encomenda #{{ purchase.id }}</h5>
+                                        <h5 class="mb-0">Encomenda #{{ forloop.counter }}</h5>
                                     </div>
                                     <div class="card-body" style="text-align:left">
                                         <div class="info-grid">
@@ -109,7 +109,7 @@
                                             </div>
                                             <div class="info-item">
                                                 <span class="text-muted"><strong>Total:</strong></span>
-                                                <span>{{ purchase.total }}€</span>
+                                                <span>{{ purchase.total_amount|floatformat:2 }}€</span>
                                             </div>
                                             <div class="info-item">
                                                 <span class="text-muted"><strong>Método de Pagamento:</strong></span>
@@ -161,6 +161,7 @@
                     </div>
                 </div>
             </div>
+
         </div>
     </div>
 </div>

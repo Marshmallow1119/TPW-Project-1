@@ -12,11 +12,17 @@
 {% if show_promotion %}
 <section class="info-bar bg-dark text-white py-2 text-center">
     <div class="container">
-        <a href="{% url 'login' %}" class="text-white text-decoration-none">
+        {% if user.is_authenticated %}
             <p class="mb-0">
-                <i class="bi bi-gift"></i> Promoção de 10% na primeira compra
+                <i class="bi bi-gift"></i> Promoção de 10% na sua primeira compra! Use o código <strong>PRIMEIRACOMPRA</strong>
             </p>
-        </a>
+        {% else %}
+            <a href="{% url 'login' %}" class="text-white text-decoration-none">
+                <p class="mb-0">
+                    <i class="bi bi-gift"></i> Promoção de 10% na sua primeira compra! Faça login e use o código <strong>PRIMEIRACOMPRA</strong>
+                </p>
+            </a>
+        {% endif %}
     </div>
 </section>
 {% endif %}

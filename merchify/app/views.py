@@ -45,7 +45,6 @@ def home(request):
     show_promotion= False
 
     if user.is_authenticated:
-        print(user.user_type)
         if user.user_type == 'admin':
             return redirect('admin_home')
         elif user.user_type == 'company':
@@ -352,8 +351,7 @@ def profile(request):
         elif 'delete_account' in request.POST:
             logger.debug("Solicitação para eliminar a conta recebida.")
             user.delete()
-            messages.success(request, 'Conta eliminada com sucesso!')
-            return redirect('/login')
+            return redirect('home')
 
         elif 'submit_password' in request.POST:
             logger.debug("Solicitação para mudar a senha recebida.")
@@ -466,7 +464,6 @@ def remove_from_favorites(request, product_id):
         return redirect( 'favorites')
     except Product.DoesNotExist:
         return JsonResponse({"success": False, "message": "Product not found."}, status=404)
-
 @login_required
 def process_payment(request):
     if request.method == 'POST' and 'complete_payment' in request.POST:
@@ -477,17 +474,41 @@ def process_payment(request):
 
             payment_method = request.POST.get('payment_method')
             shipping_address = request.POST.get('shipping_address')
+            discount_code = request.POST.get('discount_code')
 
             if not payment_method or not shipping_address:
                 messages.error(request, "Por favor, preencha todos os campos obrigatórios.")
                 return redirect('payment_page')
-            
+
+            # Inicializar o total com o subtotal do carrinho
+            total = cart.total
+            discount_applied = False
+            discount_value = 0
+
+            # Verificar e aplicar o código de desconto
+            if discount_code and discount_code.lower() == 'primeiracompra':
+                if not Purchase.objects.filter(user=user).exists():
+                    discount_applied = True
+                    discount_value = total * 0.10  # 10% de desconto
+                    total -= discount_value  # Atualizar o total com o desconto aplicado
+                    request.session['discount_applied'] = True
+                    messages.success(request, "Código de desconto aplicado com sucesso!")
+                else:
+                    messages.warning(request, "O código de desconto só é válido para a primeira compra.")
+                    request.session['discount_applied'] = False
+
+            # Recuperar o valor dos portes de envio da sessão
+            shipping_cost = request.session.get('shipping_cost', 0)
+            final_total = total + shipping_cost
+
+            # Processar a compra e salvar no banco de dados
             with transaction.atomic():
                 purchase = Purchase.objects.create(
                     user=user,
                     date=timezone.now().date(),
                     paymentMethod=payment_method,
                     shippingAddress=shipping_address,
+                    total_amount=final_total,
                     status='Processing'
                 )
 
@@ -496,36 +517,33 @@ def process_payment(request):
                     product_type = product.get_product_type()
                     stock_available = product.get_stock()
 
-                    if product_type == 'Clothing' and item.size:
-                        size = item.size
-                        if size.stock >= item.quantity:
-                            size.stock -= item.quantity
-                            size.save()
-                        else:
-                            messages.error(request, f"Estoque insuficiente para {product.name} no tamanho {size.size}. Disponível: {size.stock}")
-                            return redirect('payment_page')
-
-                    elif product_type in ['Vinil', 'CD', 'Accessory']:
-                        if stock_available is not None and stock_available >= item.quantity:
-                            if isinstance(product, (Vinil, CD, Accessory)):
-                                product.stock -= item.quantity
-                                product.save()
-                        else:
-                            messages.error(request, f"Estoque insuficiente para {product.name}. Disponível: {stock_available}")
-                            return redirect('payment_page')
-                    
+                    if stock_available is not None and stock_available >= item.quantity:
+                        if isinstance(product, (Vinil, CD, Accessory)):
+                            product.stock -= item.quantity
+                            product.save()
+                        elif isinstance(product, Clothing) and item.size:
+                            size = item.size
+                            if size.stock >= item.quantity:
+                                size.stock -= item.quantity
+                                size.save()
+                            else:
+                                messages.error(request, f"Estoque insuficiente para {product.name} no tamanho {size.size}. Disponível: {size.stock}")
+                                return redirect('payment_page')
                     else:
-                        messages.error(request, f"Produto não encontrado ou estoque insuficiente para {product.name}.")
+                        messages.error(request, f"Estoque insuficiente para {product.name}. Disponível: {stock_available}")
                         return redirect('payment_page')
 
+                    # Criar o item de compra
                     PurchaseProduct.objects.create(
                         purchase=purchase,
                         product=product,
                         quantity=item.quantity
                     )
 
-                request.session['clear_cart'] = True  
-                url_with_success = f"{reverse('payment_page')}?{urlencode({'success': '1'})}"
+                # Limpar o carrinho e a sessão após a compra
+                request.session['clear_cart'] = True
+                request.session['discount_applied'] = False
+                url_with_success = f"{reverse('payment_page')}?success=1"
                 return redirect(url_with_success)
 
         except Cart.DoesNotExist:
@@ -537,6 +555,7 @@ def process_payment(request):
 
     return redirect('payment_page')
 
+
 @login_required
 def payment_confirmation(request):
     return render(request, 'payment_confirmation.html')
@@ -546,16 +565,39 @@ def payment_page(request):
     user = request.user
     cart = Cart.objects.get(user=user)
     cart_items = CartItem.objects.filter(cart=cart)
-    total = cart.total
+    subtotal = cart.total
 
-    return render(request, 'payment.html', {"cart_items": cart_items, 'total': total})
+    discount_value = 0
 
+    discount_applied = request.session.get('discount_applied', False)
+    if discount_applied:
+        discount_value = subtotal * 0.10 
+        
+
+    shipping_cost = 0
+    if subtotal <= 100:
+        if user.country == 'Portugal':
+            shipping_cost = 4.99
+        else:
+            shipping_cost = 6.00
+
+    request.session['shipping_cost'] = shipping_cost
+
+    final_total = subtotal - discount_value + shipping_cost
+
+    return render(request, 'payment.html', {
+        "cart_items": cart_items,
+        "subtotal": subtotal,
+        "shipping_cost": shipping_cost,
+        "final_total": final_total,
+        "discount_value": discount_value,
+        "discount_applied": discount_applied
+    })
 
 
 
 #@login_required
 def supplier_product_list(request):
-    # Dados de exemplo para testar o layout da página
     products = [
         {
             "name": "Produto Exemplo 1",
@@ -601,13 +643,10 @@ def edit_product(request, product_id):
 
 
 def company_products(request, company_id):
-    # Obter a empresa específica usando o ID
     company = get_object_or_404(Company, id=company_id)
 
-    # Obter todos os produtos associados a esta empresa
-    products = company.products.all()  # Utiliza o related_name definido no modelo Product
+    products = company.products.all()  
 
-    # Renderizar o template com os produtos da empresa
     return render(request, 'company_products.html', {'company': company, 'products': products})
 
 #@login_required
@@ -720,9 +759,9 @@ def order_details(request, order_id):
         {
             "name": item.product.name,
             "quantity": item.quantity,
-            "unit_price": item.product.price,  # Preço unitário
-            "total_price": item.quantity * item.product.price,  # Preço total (quantidade x preço unitário)
-            "image_url": item.product.image.url  # URL da imagem do produto
+            "unit_price": item.product.price, 
+            "total_price": item.quantity * item.product.price, 
+            "image_url": item.product.image.url  
         }
         for item in purchase.purchase_products.all()
     ]
@@ -735,3 +774,23 @@ def order_details(request, order_id):
         "products": products,
     }
     return JsonResponse(data)
+
+@login_required
+def apply_discount(request):
+    if request.method == 'POST':
+        user = request.user
+        data = json.loads(request.body)
+        discount_code = data.get('discount_code')
+
+        if discount_code and discount_code.lower() == 'primeiracompra':
+            # Verificar se o usuário já fez uma compra
+            if not Purchase.objects.filter(user=user).exists():
+                # Retorna sucesso com o sinal de desconto aplicado
+                request.session['discount_applied'] = True
+                return JsonResponse({"success": True})
+            else:
+                return JsonResponse({"success": False, "message": "O código de desconto só é válido para a primeira compra."})
+        
+        return JsonResponse({"success": False, "message": "Código de desconto inválido."})
+    
+    return JsonResponse({"success": False, "message": "Método não permitido."}, status=405)
