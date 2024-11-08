@@ -93,7 +93,7 @@
         <label for="quantity" class="form-label">Quantidade</label>
         <input type="number" id="quantity" class="form-control" value="1" min="1">
       </div>
-      <button id="add-to-cart-btn" class="btn btn-dark w-100" data-product-id="{{ product.id }}">Adicionar ao carrinho</button>
+        <button id="add-to-cart-btn" class="btn btn-dark w-100" data-product-id="{{ product.id }}" data-stock="{{ product.get_stock }}">Adicionar ao carrinho</button>
     </div>
   </div>
 
@@ -176,6 +176,13 @@
 </div>
 
 <script>
+function validateQuantity() {
+    const quantityInput = document.getElementById("quantity");
+    if (quantityInput.value < 1) {
+        quantityInput.value = 1;
+    }
+}
+
 document.addEventListener("DOMContentLoaded", function () {
     const addToCartBtn = document.getElementById("add-to-cart-btn");
     const quantityInput = document.getElementById("quantity");
@@ -194,8 +201,20 @@ document.addEventListener("DOMContentLoaded", function () {
 
     addToCartBtn.addEventListener("click", function () {
         const productId = this.getAttribute("data-product-id");
-        const quantity = quantityInput.value;
-        const productType = "{{ product.get_product_type }}"; // Fetch the product type from Django template
+        const stock = parseInt(this.getAttribute("data-stock"), 10);
+        let quantity = parseInt(quantityInput.value, 10);
+
+        if (quantity < 1) {
+            quantity = 1;
+            quantityInput.value = 1;
+        }
+
+        if (quantity > stock) {
+            alert(`A quantidade selecionada (${quantity}) excede o stock disponível (${stock}).`);
+            return;
+        }
+
+        const productType = "{{ product.get_product_type }}";
 
         if (productType === "Clothing" && !selectedSize) {
             alert("Por favor, selecione um tamanho.");
@@ -205,7 +224,7 @@ document.addEventListener("DOMContentLoaded", function () {
         fetch(`/add-to-cart/${productId}/`, {
             method: "POST",
             headers: {
-                "X-CSRFToken": "{{ csrf_token }}",  // Django CSRF token
+                "X-CSRFToken": "{{ csrf_token }}",
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
@@ -216,16 +235,15 @@ document.addEventListener("DOMContentLoaded", function () {
         .then(response => response.json())
         .then(data => {
             if (data.message) {
-                alert(data.message);  // Success message
+                alert(data.message);
             } else if (data.error) {
-                alert(data.error);  // Error message
+                alert(data.error);
             }
         })
         .catch(error => console.error("Error:", error));
     });
-
-
 });
+
 document.addEventListener("DOMContentLoaded", function () {
     const starRating = document.querySelectorAll("#user-star-rating .star");
     let userRating = 0; // Initialize selected rating

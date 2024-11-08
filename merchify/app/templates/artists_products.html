@@ -27,8 +27,8 @@
             object-fit: cover;
         }
         .product-card a {
-        text-decoration: none; /* Removes the underline */
-        color: inherit; /* Keeps the text color consistent with the parent */
+            text-decoration: none; /* Removes the underline */
+            color: inherit; /* Keeps the text color consistent with the parent */
         }
         .product-card a:hover {
             color: inherit; /* Optional: Ensures hover color is also consistent */
@@ -41,7 +41,6 @@
             font-size: 24px; /* Increase the icon size */
             cursor: pointer; /* Pointer on hover */
             -webkit-text-stroke: 3px #434343; /* Outline width and color */
-
             text-shadow: 2px 2px 1px rgba(0, 0, 0, 0.3);
         }
         .favorite-icon:hover {
@@ -53,7 +52,6 @@
         .favorite-icon.filled {
             color: #e85454; /* Color when the item is favorited */
             -webkit-text-stroke: 0px black; /* Outline width and color */
-
         }
         .product-name {
             font-weight: bold;
@@ -78,73 +76,118 @@
             object-fit: cover;
             margin-bottom: 10px;
         }
+        
+        .produtos-container {
+    max-width: 95%; /* Adjust the width as needed */
+    margin: 0 auto; /* Center the container */
+    padding: 0 15px; /* Optional: Add some padding on the sides */
+}
+
     </style>
 </head>
 <body>
-    <div class="container mt-5">
-        <div class="artist-header">
-            {% if artist.image %}
-                <img src="{{ artist.image.url }}" alt="{{ artist.name }}">
-            {% endif %}
-            <h2>{{ artist.name }}</h2>
-        </div>
+<div class="produtos-container mt-5">
+    <div class="row">
+        <!-- Sidebar Filter Section -->
+        <div class="col-md-3">
+            <h4>Filtros</h4>
+            <div class="sidebar-filter bg-light p-3 rounded mb-4">
+                <!-- Filter by Product Type -->
+                <h5>Tipo de Produto</h5>
+                    <form method="get" action="{% url 'product_list' %}">
+                    <div class="form-group">
+                        <input type="checkbox" name="type" value="Vinil" id="vinil">
+                        <label for="vinil">Vinil</label><br>
+                        <input type="checkbox" name="type" value="CD" id="cd">
+                        <label for="cd">CD</label><br>
+                        <input type="checkbox" name="type" value="Clothing" id="clothing">
+                        <label for="clothing">Roupas</label><br>
+                        <input type="checkbox" name="type" value="Accessory" id="accessory">
+                        <label for="accessory">Acessórios</label>
+                    </div>
 
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <p>{{ products.count }} produtos</p>
-            <div class="dropdown">
-                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    Ordenar por:
-                </button>
-                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                    <a class="dropdown-item" href="?sort=featured">Em destaque</a>
-                    <a class="dropdown-item" href="?sort=priceAsc">Preço (ascendente)</a>
-                    <a class="dropdown-item" href="?sort=priceDesc">Preço (descendente)</a>
-                </div>
+                    <!-- Filter by Price Range -->
+                    <h5>Faixa de Preço</h5>
+                    <div class="form-group">
+                        <input type="radio" name="price" value="0-20" id="price-0-20">
+                        <label for="price-0-20">€0 - €20</label><br>
+                        <input type="radio" name="price" value="20-50" id="price-20-50">
+                        <label for="price-20-50">€20 - €50</label><br>
+                        <input type="radio" name="price" value="50-100" id="price-50-100">
+                        <label for="price-50-100">€50 - €100</label><br>
+                        <input type="radio" name="price" value="100-150" id="price-100-150">
+                        <label for="price-100-150">€100 - €150</label><br>
+                    </div>
+
+                    <!-- Filter by Category -->
+                    <h5>Categoria</h5>
+                    <div class="form-group">
+                        <select name="category" class="form-control">
+                            <option value="">Todas</option>
+                            <option value="Hip-Hop">Hip-Hop</option>
+                            <option value="Pop">Pop</option>
+                            <option value="Rock">Rock</option>
+                            <option value="Jazz">Jazz</option>
+                        </select>
+                    </div>
+
+                    <!-- Filter by Artist -->
+                    <h5>Artista</h5>
+                    <div class="form-group">
+                        <select name="artist" class="form-control">
+                            <option value="">Todos</option>
+                            {% for artist in artists %}
+                                <option value="{{ artist.id }}">{{ artist.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary mt-3">Aplicar Filtros</button>
+                </form>
             </div>
         </div>
 
-        <div class="row">
-            {% for product in products %}
-            <div class="col-6 col-md-4 col-lg-3">
+        <!-- Products Display Section -->
+        <div class="col-md-9">
+            <div class="row" id="productList">
+                {% for product in products %}
+                <div class="col-6 col-md-4 col-lg-3 mb-4">
                     <div class="product-card">
-                    <i class="fa fa-heart favorite-icon {% if product.is_favorited %}filled{% endif %}" data-id="{{ product.id }}" onclick="addToFavorite({{ product.id }})"></i>
-                    <a href="/product/{{ product.id }}">
-                        <img src="{{ product.image.url }}" alt="{{ product.name }}">
-                        <div class="p-3 text-center">
-                            <p class="product-name">{{ product.name }}</p>
-                            <p class="product-price">{{ product.price }}€</p>
-                            <button class="btn btn-add-to-cart w-100">Adicionar ao carrinho</button>
-                        </div>
-                    </a>
+                        <i class="fa fa-heart favorite-icon {% if product.is_favorited %}filled{% endif %}" data-id="{{ product.id }}" onclick="addToFavorite({{ product.id }})"></i>
+                        <a href="/product/{{ product.id }}">
+                            <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                            <div class="p-3 text-center">
+                                <p class="product-name">{{ product.name }}</p>
+                                <p class="product-price">{{ product.price }}€</p>
+                                <button class="btn btn-add-to-cart w-100">Adicionar ao carrinho</button>
+                            </div>
+                        </a>
+                    </div>
                 </div>
+                {% endfor %}
             </div>
-            {% endfor %}
         </div>
     </div>
+</div>
 
-    <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <!-- Popper.js -->
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
-    <!-- Bootstrap JS -->
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-
     <script>
+        // Add to Favorites function
         function addToFavorite(productId) {
             fetch(`/favorites/add/${productId}/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token }}'  // Include CSRF token for Django
+                    'X-CSRFToken': '{{ csrf_token }}'
                 },
                 body: JSON.stringify({ product_id: productId })
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    // Find the heart icon for the given product ID
                     const favoriteIcon = document.querySelector(`.favorite-icon[data-id="${productId}"]`);
-
                     if (data.favorited) {
                         favoriteIcon.classList.add('filled');
                     } else {

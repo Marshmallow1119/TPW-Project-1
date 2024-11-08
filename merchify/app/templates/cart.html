@@ -44,7 +44,7 @@
                 <tr>
                     <th scope="col">Product</th>
                     <th scope="col">Preço</th>
-                    <th scope="col">Quantidade</th>
+                    <th scope="col" style="margin-right: 50px !important;">Quantidade</th>
                     <th scope="col">Total</th>
                     <th scope="col">Apagar</th>
                 </tr>
@@ -56,13 +56,18 @@
                         <div class="product-info">
                             <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="product-image mr-3">
                             <div>
-                                <h5>{{ item.product.name }}</h5>
+                                <a style="text-decoration: none; color: black" href={% url 'productDetails' item.product.id %}><h5>{{ item.product.name }}</h5></a>
                             </div>
                         </div>
                     </td>
-                    <td>${{ item.product.price }}</td>
-                    <td>{{ item.quantity }}</td>
-                    <td>${{ item.product.price|multiply:item.quantity }}</td>
+                    <td>{{ item.product.price }}€</td>
+                    <td style="width:100px; margin-right: 50px">
+                        <input type="number" value="{{ item.quantity }}"
+                               min="1" max="{{ item.product.stock }}"
+                               class="quantity-input form-control"
+                               data-product-id="{{ item.product.id }}">
+                    </td>
+                    <td>{{ item.product.price|multiply:item.quantity }}€</td>
                     <td>
                         <a href="{% url 'remove_from_cart' item.product.id %}" class="btn btn-danger btn-sm">
                             <i class="fas fa-trash-alt"></i>

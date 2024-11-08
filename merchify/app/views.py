@@ -1,6 +1,8 @@
 from datetime import timedelta, date
 import json
 import logging
+from itertools import product
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import make_password
@@ -107,8 +109,10 @@ def productDetails(request, identifier):
 
 
 def search_products(request):
-    query = request.GET.get('search', '')  
-    products = Product.objects.filter(name__icontains=query) if query else Product.objects.none()  
+    query = request.GET.get('search', '')
+    products = Product.objects.filter(name__icontains=query) if query else Product.objects.none()
+    if query == '':
+        products = Product.objects.all()
     return render(request, 'search_results.html', {'products': products, 'query': query})
 
 
@@ -690,4 +694,48 @@ def add_company(request):
     return render(request, 'add_company.html', {
         'company_form': company_form,
         'user_form': user_form,
+    })
+
+def product_list(request):
+    products = Product.objects.all()
+    artists = Artist.objects.all()
+
+    product_type = request.GET.get('type')  # e.g., "Vinil", "CD", etc.
+
+    if product_type:
+        # Filtering by product type
+        if product_type == 'Vinil':
+            products = Product.objects.filter(vinil=True)
+        elif product_type == 'CD':
+            products = Product.objects.filter(cd=True)
+        elif product_type == 'Clothing':
+            products = Product.objects.filter(clothing=True)
+        elif product_type == 'Accessory':
+            products = Product.objects.filter(accessory=True)
+        else:
+            products = Product.objects.all()  # Return all if type is invalid
+    else:
+        # Return all products if no specific type is requested
+        products = Product.objects.all()
+
+    price_range = request.GET.get('price')
+    if price_range:
+        min_price, max_price = map(float, price_range.split('-'))
+        products = products.filter(price__gte=min_price, price__lte=max_price)
+
+    category = request.GET.get('category')
+    if category:
+        products = products.filter(category=category)
+
+    artist_id = request.GET.get('artist')
+    if artist_id:
+        products = products.filter(artist_id=artist_id)
+    print("Product Type:", product_type)
+    print("Price Range:", price_range)
+    print("Category:", category)
+    print("Artist ID:", artist_id)
+
+    return render(request, 'artists_products.html', {
+        'products': products,
+        'artists': artists,
     })
