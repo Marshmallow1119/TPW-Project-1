@@ -27,7 +27,7 @@
                     </div>
                     <i class="fa fa-heart favorite-icon {% if product.is_favorited %}filled{% endif %}" 
                        data-id="{{ product.id }}" 
-                       onclick="addToFavorite({{ product.id }})"
+                       onclick="handleFavoriteClick({{ product.id }})"
                        style="position: absolute; top:260px; margin-left:260px; z-index: 9;"></i>
                     <a href="/product/{{ product.id }}" class="product-card d-block">
                         <img src="{{ product.image.url }}" alt="{{ product.name }}">
@@ -53,15 +53,13 @@
         function handleFavoriteClick(productId) {
             const isAuthenticated = {{ user.is_authenticated|yesno:"true,false" }};
             
+            // Se o usuário não estiver logado, redireciona para a página de login
             if (!isAuthenticated) {
                 window.location.href = '/login/';
                 return;
             }
-    
-            addToFavorite(productId);
-        }
-    
-        function addToFavorite(productId) {
+            
+            // Se estiver logado, adiciona ou remove dos favoritos
             fetch(`/favorites/add/${productId}/`, {
                 method: 'POST',
                 headers: {
@@ -73,6 +71,7 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
+                    // Atualiza o estado do ícone de favorito
                     const favoriteIcon = document.querySelector(`.favorite-icon[data-id="${productId}"]`);
                     favoriteIcon.classList.toggle('filled', data.favorited);
                 } else {
