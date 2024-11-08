@@ -8,7 +8,7 @@ from urllib.parse import urlencode
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import make_password
-from django.db.models import Avg
+from django.db.models import Avg, Count
 from django.http import JsonResponse, Http404
 from django.urls import reverse
 from django.utils import timezone
@@ -606,7 +606,6 @@ def payment_page(request):
 
 @login_required
 def company_home(request):
-    # Supondo que `company_id` está associado ao utilizador logado
     company_id = request.user.company.id if request.user.user_type == 'company' else None
     print("Company ID:", company_id)
     return render(request, 'company_home.html', {'company_id': company_id})
@@ -614,10 +613,27 @@ def company_home(request):
 @login_required
 def company_products(request, company_id):
     company = get_object_or_404(Company, id=company_id)
+    products = company.products.prefetch_related('favorites', 'reviews')  
 
-    products = company.products.all()  
+    for product in products:
+        product.favorites_count = product.favorites.count()  
+        product.reviews_count = product.reviews.count()      
 
     return render(request, 'company_products.html', {'company': company, 'products': products})
+
+@login_required
+def company_product_detail(request, company_id, product_id):
+    company = get_object_or_404(Company, id=company_id)
+    product = get_object_or_404(Product, id=product_id, company=company)
+
+    product.favorites_count = product.favorites.count()
+    reviews = product.reviews.all()
+
+    return render(request, 'company_product_detail.html', {
+        'company': company,
+        'product': product,
+        'reviews': reviews,
+    })
 
 @login_required
 def add_product_to_company(request, company_id):
@@ -671,14 +687,20 @@ def admin_product_delete(request, product_id):
     product.delete()
     return redirect('admin_home')
 
+@login_required
 def delete_review(request, review_id):
     review = get_object_or_404(Review, id=review_id)
-    if request.user.user_type == 'admin':
+    product = review.product
+    company = product.company
+
+    # Verifica se o utilizador é administrador ou proprietário da companhia do produto
+    if request.user.user_type == 'admin' or (request.user.user_type == 'company' and request.user.company == company):
         review.delete()
         messages.success(request, "Avaliação removida com sucesso.")
+        return redirect('company_product_detail', company_id=company.id, product_id=product.id)
     else:
-        messages.error(request, "Apenas administradores podem remover avaliações.")
-    return redirect('productDetails', identifier=review.product.id)
+        messages.error(request, "Apenas administradores ou o proprietário da companhia podem remover avaliações.")
+        return redirect('company_product_detail', company_id=company.id, product_id=product.id)
 
 def admin_company_delete(request, company_id):
     company = get_object_or_404(Company, id=company_id)
