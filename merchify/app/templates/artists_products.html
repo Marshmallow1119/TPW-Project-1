@@ -78,11 +78,43 @@
             object-fit: cover;
             margin-bottom: 10px;
         }
+
+        .artist-background {
+            position: relative;
+            background-image: url('/media/background_images/kendrick_background.jpeg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            padding: 20px;
+            border-radius: 10px;
+            
+        }
+        
+        .artist-header img {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 10px;
+            border: 3px solid white;
+            margin-left: 30px;
+
+        }
+
+        .artist-header h2 {
+            color: white;
+            font-size: 50px;
+            font-weight: bold;
+            text-align: center;
+            margin-left: 30px;
+        }
+
+
     </style>
 </head>
 <body>
     <div class="container mt-5">
-        <div class="artist-header">
+        <div class="artist-header artist-background">
             {% if artist.image %}
                 <img src="{{ artist.image.url }}" alt="{{ artist.name }}">
             {% endif %}
@@ -135,27 +167,34 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token }}'  // Include CSRF token for Django
+                    'X-CSRFToken': '{{ csrf_token }}'
                 },
                 body: JSON.stringify({ product_id: productId })
             })
-            .then(response => response.json())
+            .then(response => {
+                if (response.redirected) {
+                    // Se houver um redirecionamento, envia o usuário para a página de login
+                    window.location.href = response.url;
+                    return;
+                }
+                return response.json();
+            })
             .then(data => {
-                if (data.success) {
-                    // Find the heart icon for the given product ID
+                if (data && data.success) {
                     const favoriteIcon = document.querySelector(`.favorite-icon[data-id="${productId}"]`);
-
                     if (data.favorited) {
                         favoriteIcon.classList.add('filled');
                     } else {
                         favoriteIcon.classList.remove('filled');
                     }
-                } else {
-                    alert(data.message || "Failed to update favorites.");
+                } else if (data && !data.success) {
+                    alert(data.message || "Falha ao atualizar os favoritos.");
                 }
             })
-            .catch(error => console.error("Error:", error));
+            .catch(error => console.error("Erro:", error));
         }
+        
+        
 
     </script>
 </body>

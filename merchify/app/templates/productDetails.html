@@ -216,9 +216,9 @@ document.addEventListener("DOMContentLoaded", function () {
         .then(response => response.json())
         .then(data => {
             if (data.message) {
-                alert(data.message);  // Success message
+                alert(data.message); 
             } else if (data.error) {
-                alert(data.error);  // Error message
+                alert(data.error);  
             }
         })
         .catch(error => console.error("Error:", error));
@@ -228,36 +228,44 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 document.addEventListener("DOMContentLoaded", function () {
     const starRating = document.querySelectorAll("#user-star-rating .star");
-    let userRating = 0; // Initialize selected rating
+    let userRating = 0; 
 
     starRating.forEach(star => {
-        // Highlight stars on hover
         star.addEventListener("mouseover", function () {
             const rating = this.getAttribute("data-rating");
-            highlightStars(rating); // Temporarily highlight based on hover
+            highlightStars(rating); 
         });
 
-        // Reset highlight when not hovering
         star.addEventListener("mouseout", function () {
-            highlightStars(userRating); // Reflect user’s saved rating
+            highlightStars(userRating); 
         });
 
-        // Toggle selected rating on click
         star.addEventListener("click", function () {
             const rating = this.getAttribute("data-rating");
-            userRating = rating; // Update saved rating based on click
-            highlightStars(userRating); // Reflect the saved rating
-            document.getElementById("rating-input").value = userRating; // Save rating to hidden input field
+            userRating = rating; 
+            highlightStars(userRating); 
+            document.getElementById("rating-input").value = userRating;
         });
     });
 
     function highlightStars(rating) {
         starRating.forEach(star => {
             const starRating = star.getAttribute("data-rating");
-            star.textContent = (starRating <= rating) ? "★" : "☆"; // Filled for selected, outlined for unselected
+            star.textContent = (starRating <= rating) ? "★" : "☆"; 
         });
     }
-});
+  });
+    document.addEventListener("DOMContentLoaded", function () {
+        const isAuthenticated = {{ user.is_authenticated|lower }};
+        const addToCartBtn = document.getElementById("add-to-cart-btn");
+
+        addToCartBtn.addEventListener("click", function (event) {
+            if (!isAuthenticated) {
+                event.preventDefault();
+                window.location.href = "/login/";
+            }
+        });
+    });
 
 </script>
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
