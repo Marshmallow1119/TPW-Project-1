@@ -83,25 +83,39 @@ def artistas(request):
         print(artist.image)
     return render(request, 'artistas.html', {'artists': artists})
 
+from django.shortcuts import get_object_or_404, render
 
 def artistsProducts(request, name):
     artist = get_object_or_404(Artist, name=name)
-    products = Product.objects.filter(artist=artist)
-    sort = request.GET.get('sort', 'featured')
 
+    products = Product.objects.filter(artist=artist)
+    
+    sort = request.GET.get('sort', 'featured')
     if sort == 'priceAsc':
-        products = products.order_by('price') 
+        products = products.order_by('price')
     elif sort == 'priceDesc':
-        products = products.order_by('-price')  
+        products = products.order_by('-price')
 
     if request.user.is_authenticated:
         favorited_product_ids = Favorite.objects.filter(user=request.user).values_list('product_id', flat=True)
     else:
-        favorited_product_ids = [] 
+        favorited_product_ids = []
 
     for product in products:
-            product.is_favorited = product.id in favorited_product_ids
-    return render(request, 'artists_products.html', {'artist': artist, 'products': products})
+        product.is_favorited = product.id in favorited_product_ids
+
+
+    background_url = artist.background_image.url
+
+
+    context = {
+        'artist': artist,
+        'products': products,
+        'background_url': background_url,
+    }
+
+    return render(request, 'artists_products.html', context)
+
 
 def productDetails(request, identifier):
     product = get_object_or_404(Product, id=identifier)

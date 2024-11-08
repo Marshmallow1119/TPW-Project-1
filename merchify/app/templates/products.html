@@ -50,6 +50,17 @@
     <!-- Bootstrap JS -->
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script>
+        function handleFavoriteClick(productId) {
+            const isAuthenticated = {{ user.is_authenticated|yesno:"true,false" }};
+            
+            if (!isAuthenticated) {
+                window.location.href = '/login/';
+                return;
+            }
+    
+            addToFavorite(productId);
+        }
+    
         function addToFavorite(productId) {
             fetch(`/favorites/add/${productId}/`, {
                 method: 'POST',
