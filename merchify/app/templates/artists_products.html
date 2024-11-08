@@ -116,15 +116,13 @@
     </style>
 </head>
 <body>
-    <div class="container mt-5">
-        <div class="artist-header artist-background">
+    <div class="artist-header artist-background" style="background-image: url({{ artist.background_image.url }});">
+        <div class="overlay">
             {% if artist.image %}
                 <img src="{{ artist.image.url }}" alt="{{ artist.name }}">
             {% endif %}
             <h2>{{ artist.name }}</h2>
         </div>
-
-                    <!-- Filter by Artist -->
                     <h5>Artista</h5>
                     <div class="form-group">
                         <select name="artist" class="form-control">
