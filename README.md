@@ -12,32 +12,44 @@ Neste primeiro projeto desenvolvemos uma aplicação web usando a framework Djan
 
 ### Utilizador sem login realizado
 
-- Fazer pesquisa de produtos
-- 
-- 
-- 
+- Fazer pesquisa de produtos e de artistas
+- Login
+- Registo
+- Ver os Artistas
+- Ver os Produtos e os seus detalhes
 
 ### Utilizador com login realizado
 
--
-- 
-- 
+- Logout
+- Pesquisar por produto
+- Pesquisar por artistas
+- Adicionar produtos aos favoritos
+- Adicionar artistas aos favoritos
+- Ver os produtos e os artistas que foram colocados como favoritos
+- Ver produtos e os seus detalhes
+- Seguir/Não Seguir artistas
+- Ver os produtos de um determinado artista
+- Ver/ atualizar/ apagar dados do perfile
+- Ver encomendas e os seus detalhes
+- Comprar um produto
+- Adicionar um avaliação a um produto
 - 
 
 ### Admin 
 
--
--
--
--
+- O mesmo que o utilizador com login
+- Adicionar Companhias
+- Banir utilizadores e companhias
+- Remover Produtos
 
 ### Companhia
 
--
--
--
--
--
+- O mesmo que o utilizador com login
+- Adicionar produtos
+- Remover produtos
+- Login
+- Logout
+- 
 
 ## Informação de autenticação de users;
 
