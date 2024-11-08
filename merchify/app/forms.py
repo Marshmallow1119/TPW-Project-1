@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import get_user_model
+from jsonschema import ValidationError
 from .models import Product, Company
 
 
@@ -13,16 +14,22 @@ class RegisterForm(UserCreationForm):
     email = forms.EmailField(max_length=100, help_text='Required. Inform a valid email address.')
     password1 = forms.CharField(widget=forms.PasswordInput, label="Senha")
     password2 = forms.CharField(widget=forms.PasswordInput, label="Confirmar Senha")
-    first_name = forms.CharField(max_length=100, required=False)
-    last_name = forms.CharField(max_length=100, required=False)
+    first_name = forms.CharField(max_length=100, required=True)
+    last_name = forms.CharField(max_length=100, required=True)
     address = forms.CharField(max_length=50, required=False)
-    phone = forms.CharField(max_length=50, required=False)
-    country = forms.CharField(max_length=50, required=False)
+    phone = forms.CharField(max_length=50, required=True)
+    country = forms.CharField(max_length=50, required=True)
     image = forms.ImageField(required=False)
 
     class Meta:
         model = User
         fields = ('username', 'email', 'password1', 'password2', 'first_name', 'last_name', 'address', 'phone', 'country')
+
+    def clean_phone(self):
+        phone = self.cleaned_data.get('phone')
+        if not phone.isdigit() or len(phone) != 9:
+            raise ValidationError("O número de telefone deve conter exatamente 9 dígitos.")
+        return phone
 
 
 class UploadUserProfilePicture(forms.Form):

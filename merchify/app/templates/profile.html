@@ -1,18 +1,7 @@
 {% extends "layout.html" %}
 {% load static %}
 {% block content %}
-{% if messages %}
-    <div class="alert-messages">
-        {% for message in messages %}
-            <div class="alert 
-                {% if message.tags %}{{ message.tags }}{% else %}alert-info{% endif %} 
-                alert-dismissible fade show" role="alert">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        {% endfor %}
-    </div>
-{% endif %}
+
 <div class="container rounded bg-white mt-5 mb-5">
     <div class="row">
         <div class="col-md-4 border-right" style="max-height: 500px; overflow-y: auto;">
@@ -110,7 +99,7 @@
                             <div class="col-12 col-md-6 col-lg-4 mb-4">
                                 <div class="card bg-light text-dark shadow-sm h-100">
                                     <div class="card-header">
-                                        <h5 class="mb-0">Encomenda #{{ purchase.id }}</h5>
+                                        <h5 class="mb-0">Encomenda #{{ forloop.counter }}</h5>
                                     </div>
                                     <div class="card-body" style="text-align:left">
                                         <div class="info-grid">
@@ -120,7 +109,7 @@
                                             </div>
                                             <div class="info-item">
                                                 <span class="text-muted"><strong>Total:</strong></span>
-                                                <span>{{ purchase.total }}€</span>
+                                                <span>{{ purchase.total_amount|floatformat:2 }}€</span>
                                             </div>
                                             <div class="info-item">
                                                 <span class="text-muted"><strong>Método de Pagamento:</strong></span>
@@ -140,6 +129,9 @@
                                                     <li>- {{ item.product.name }} (Quantidade: {{ item.quantity }})</li>
                                                 {% endfor %}
                                             </ul>
+                                            <div class="text-center mt-3"> 
+                                                <button class="btn btn-primary" onclick="showOrderDetails({{ purchase.id }})">Ver Detalhes</button>
+                                            </div>                                        
                                         </div>
                                     </div>
                                 </div>
@@ -150,6 +142,26 @@
                     <p class="text-light">Você ainda não fez nenhuma encomenda.</p>
                 {% endif %}
             </div>
+
+            <div class="modal fade" id="orderDetailsModal" tabindex="-1" aria-labelledby="orderDetailsModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="orderDetailsModalLabel">Detalhes da Encomenda</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div id="orderDetailsContent">
+                                <p>Carregando detalhes da encomenda...</p>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 </div>
@@ -193,6 +205,42 @@
             alert.classList.add('fade'); 
         });
     }, 5000);
+
+    function showOrderDetails(orderId) {
+        // Enviar uma requisição AJAX para buscar os detalhes da encomenda
+        fetch(`/account/order_details/${orderId}/`)
+            .then(response => response.json())
+            .then(data => {
+                // Exibir os detalhes no modal
+                const orderDetailsContent = document.getElementById('orderDetailsContent');
+                orderDetailsContent.innerHTML = `
+                    <p><strong>Data:</strong> ${data.date}</p>
+                    <p><strong>Total:</strong> ${data.total}€</p>
+                    <p><strong>Método de Pagamento:</strong> ${data.paymentMethod}</p>
+                    <p><strong>Endereço de Envio:</strong> ${data.shippingAddress}</p>
+                    <p><strong>Status:</strong> ${data.status}</p>
+                    <h6 class="mt-4"><strong>Produtos:</strong></h6>
+                    <ul class="list-unstyled">
+                        ${data.products.map(product => `
+                            <li class="d-flex align-items-center mb-3">
+                                <img src="${product.image_url}" alt="${product.name}" class="me-3" width="60" height="60" style="object-fit: cover; border-radius: 8px;">
+                                <div>
+                                    <p class="mb-0"><strong>${product.name}</strong></p>
+                                    <p class="mb-0">Quantidade: ${product.quantity} | Preço Unitário: ${product.unit_price}€ | Preço Total: ${product.total_price}€</p>
+                                </div>
+                            </li>
+                        `).join('')}
+                    </ul>
+                `;
+                // Exibir o modal
+                const orderDetailsModal = new bootstrap.Modal(document.getElementById('orderDetailsModal'));
+                orderDetailsModal.show();
+            })
+            .catch(error => {
+                console.error("Erro ao buscar detalhes da encomenda:", error);
+                document.getElementById('orderDetailsContent').innerHTML = '<p>Erro ao carregar os detalhes da encomenda.</p>';
+            });
+    }
 
 </script>
 

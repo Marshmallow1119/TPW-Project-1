@@ -58,8 +58,9 @@ urlpatterns = [
     path('admin_home/delete/company/<int:company_id>', views.admin_company_delete, name='admin_company_delete'),
     path('admin_home/add/company',views.add_company, name='add_company'),
     path('products/', views.product_list, name='product_list'),
-
+    path('account/order_details/<int:order_id>/', views.order_details, name='order_details'),
     path('delete/review/<int:review_id>/', views.delete_review, name='delete_review'),
+    path('apply_discount/', views.apply_discount, name='apply_discount'),
 ]   
 
 

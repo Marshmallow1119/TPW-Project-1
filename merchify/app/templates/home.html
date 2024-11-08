@@ -5,10 +5,29 @@
 <section class="info-bar bg-warning text-dark py-2 text-center">
     <div class="container">
         <p class="mb-0">
-            <i class="bi bi-truck"></i> Envio grátis para todo Portugal Continental em compras acima de 220 euros
+            <i class="bi bi-truck"></i> Envio grátis para todo Portugal Continental em compras acima de 100 euros
         </p>
     </div>
 </section>
+{% if show_promotion %}
+<section class="info-bar bg-dark text-white py-2 text-center">
+    <div class="container">
+        {% if user.is_authenticated %}
+            <p class="mb-0">
+                <i class="bi bi-gift"></i> Promoção de 10% na sua primeira compra! Use o código <strong>PRIMEIRACOMPRA</strong>
+            </p>
+        {% else %}
+            <a href="{% url 'login' %}" class="text-white text-decoration-none">
+                <p class="mb-0">
+                    <i class="bi bi-gift"></i> Promoção de 10% na sua primeira compra! Faça login e use o código <strong>PRIMEIRACOMPRA</strong>
+                </p>
+            </a>
+        {% endif %}
+    </div>
+</section>
+{% endif %}
+
+
 
 <div id="carouselExampleIndicators" class="carousel slide w-100" data-bs-ride="carousel" style="margin: 0; padding: 0;">
     <div class="carousel-inner w-100">
@@ -32,20 +51,21 @@
     </button>
 </div>
 
-
 <section class="artists container my-5">
     <h2 class="text-center mb-4">Artistas</h2>
     <div class="row">
         {% for artist in artists %}
         <div class="col-6 col-md-4 col-lg-3 mb-4">
-            <div class="card card-hover" style="height: 400px;">
-                <div class="card-img-wrapper" style="height: 85%;">
-                    <img src="{{ artist.image.url }}" class="card-img-top" alt="{{ artist.name }}" style="height: 100%; object-fit: cover;">
+            <a href="{% url 'artistsProducts' artist.name %}" class="text-decoration-none">
+                <div class="card card-hover" style="height: 400px;">
+                    <div class="card-img-wrapper" style="height: 85%;">
+                        <img src="{{ artist.image.url }}" class="card-img-top" alt="{{ artist.name }}" style="height: 100%; object-fit: cover;">
+                    </div>
+                    <div class="card-body text-center" style="height: 15%;">
+                        <p class="card-text">{{ artist.name }}</p>
+                    </div>
                 </div>
-                <div class="card-body text-center" style="height: 15%;">
-                    <p class="card-text">{{ artist.name }}</p>
-                </div>
-            </div>
+            </a>
         </div>
         {% endfor %}
     </div>
@@ -59,14 +79,16 @@
     <div class="row">
         {% for product in products %}
         <div class="col-6 col-md-4 col-lg-3 mb-4">
-            <div class="card card-hover" style="height: 400px;">
-                <div class="card-img-wrapper" style="height: 85%;">
-                    <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}" style="height: 100%; object-fit: cover;">
+            <a href="{% url 'productDetails' product.id%}" class="text-decoration-none">
+                <div class="card card-hover" style="height: 400px;">
+                    <div class="card-img-wrapper" style="height: 85%;">
+                        <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}" style="height: 100%; object-fit: cover;">
+                    </div>
+                    <div class="card-body text-center" style="height: 15%;">
+                        <p class="card-text">{{ product.name }}</p>
+                    </div>
                 </div>
-                <div class="card-body text-center" style="height: 15%;">
-                    <p class="card-text">{{ product.name }}</p>
-                </div>
-            </div>
+            </a>
         </div>
         {% endfor %}
     </div>
@@ -74,6 +96,7 @@
         <a href="{% url 'produtos' %}" class="btn btn-warning">Ver todos os produtos</a>
     </div>
 </section>
+
   
 
 {% endblock %}

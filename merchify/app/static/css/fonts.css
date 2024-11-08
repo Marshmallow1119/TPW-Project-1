@@ -64,3 +64,7 @@ body {
     height: 60px;
     margin-bottom: 10px;
 }
+
+.search-input {
+    border: 1px solid black; /* Borda preta ao campo de entrada */
+}

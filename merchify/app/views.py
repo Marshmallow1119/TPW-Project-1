@@ -3,11 +3,14 @@ import json
 import logging
 from itertools import product
 
+import re
+from urllib.parse import urlencode
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import make_password
 from django.db.models import Avg
 from django.http import JsonResponse, Http404
+from django.urls import reverse
 from django.utils import timezone
 from django.shortcuts import redirect, render, get_object_or_404
 from django.shortcuts import render
@@ -39,15 +42,21 @@ def home(request):
             cart.delete()
 
         del request.session['clear_cart']
+
     user = request.user
+    show_promotion= False
+
     if user.is_authenticated:
-        print(user.user_type)
         if user.user_type == 'admin':
             return redirect('admin_home')
         elif user.user_type == 'company':
             return redirect( 'home')
+        show_promotion= not Purchase.objects.filter(user=user).exists()
+    else:
+        show_promotion= True
+        
 
-    return render(request, 'home.html', {'artists': artists, 'products': recent_products})
+    return render(request, 'home.html', {'artists': artists, 'products': recent_products, 'show_promotion': show_promotion})
 
 def produtos(request):
     produtos= Product.objects.all()
@@ -83,12 +92,6 @@ def artistsProducts(request, name):
     for product in products:
             product.is_favorited = product.id in favorited_product_ids
     return render(request, 'artists_products.html', {'artist': artist, 'products': products})
-
-
-from django.shortcuts import render, get_object_or_404
-from django.db.models import Avg
-from .models import Product, Clothing, CD, Vinil
-
 
 def productDetails(request, identifier):
     product = get_object_or_404(Product, id=identifier)
@@ -151,8 +154,6 @@ def register(request):
             user.save()
 
             auth_login(request, user)
-
-            messages.success(request, "Registro realizado com sucesso! Você está agora logado.")
             return redirect('home')
         else:
             messages.error(request, "Formulário inválido. Verifique os campos.")
@@ -166,7 +167,6 @@ def login(request):
         username = request.POST.get('username')
         password = request.POST.get('password')
 
-        # Check if the user exists
         if not User.objects.filter(username=username).exists():
             error_message = "Username does not exist"
             return render(request, 'login.html', {'error_message': error_message})
@@ -247,7 +247,7 @@ def viewCart(request):
 
     cartitems = CartItem.objects.filter(cart=cart)
     context = {
-        'cart_items': cartitems,  # Use 'cart_items' as key in context
+        'cart_items': cartitems, 
     }
     return render(request, 'cart.html', context)
 
@@ -316,8 +316,33 @@ def profile(request):
             user.email = request.POST.get('email', user.email)
             user.username = request.POST.get('username', user.username)
             user.address = request.POST.get('address', user.address)
-            user.phone = request.POST.get('phone', user.phone)
+            phone = request.POST.get('phone', user.phone)
             user.country = request.POST.get('country', user.country)
+
+            if not re.fullmatch(r'\d{9}', phone):
+                messages.error(request, 'O número de telefone deve conter exatamente 9 dígitos.')
+                profile_form = UpdateProfile(initial={
+                    'name': user.first_name,
+                    'surname': user.last_name,
+                    'email': user.email,
+                    'username': user.username,
+                    'address': user.address,
+                    'phone': phone,  # Mantém o valor incorreto para permitir nova entrada
+                    'country': user.country
+                })
+                image_form = UploadUserProfilePicture()
+                password_form = UpdatePassword()
+                purchases = Purchase.objects.filter(user=user)
+                return render(request, 'profile.html', {
+                    'user': user,
+                    'image_form': image_form,
+                    'profile_form': profile_form,
+                    'password_form': password_form,
+                    'number_of_purchases': purchases.count(),
+                    'purchases': purchases,
+                })
+            else:
+                user.phone = phone
             
             if 'image' in request.FILES:
                 logger.debug("Imagem de perfil recebida.")
@@ -330,8 +355,7 @@ def profile(request):
         elif 'delete_account' in request.POST:
             logger.debug("Solicitação para eliminar a conta recebida.")
             user.delete()
-            messages.success(request, 'Conta eliminada com sucesso!')
-            return redirect('/login')
+            return redirect('home')
 
         elif 'submit_password' in request.POST:
             logger.debug("Solicitação para mudar a senha recebida.")
@@ -348,7 +372,6 @@ def profile(request):
                     if new_password == confirm_new_password:
                         logger.debug("Novas senhas coincidem.")
                         try:
-                            # Validar a nova senha
                             password_validation.validate_password(new_password, user)
                             logger.debug("Nova senha válida.")
                             user.set_password(new_password)
@@ -445,7 +468,6 @@ def remove_from_favorites(request, product_id):
         return redirect( 'favorites')
     except Product.DoesNotExist:
         return JsonResponse({"success": False, "message": "Product not found."}, status=404)
-
 @login_required
 def process_payment(request):
     if request.method == 'POST' and 'complete_payment' in request.POST:
@@ -456,17 +478,41 @@ def process_payment(request):
 
             payment_method = request.POST.get('payment_method')
             shipping_address = request.POST.get('shipping_address')
+            discount_code = request.POST.get('discount_code')
 
             if not payment_method or not shipping_address:
                 messages.error(request, "Por favor, preencha todos os campos obrigatórios.")
                 return redirect('payment_page')
-            
+
+            # Inicializar o total com o subtotal do carrinho
+            total = cart.total
+            discount_applied = False
+            discount_value = 0
+
+            # Verificar e aplicar o código de desconto
+            if discount_code and discount_code.lower() == 'primeiracompra':
+                if not Purchase.objects.filter(user=user).exists():
+                    discount_applied = True
+                    discount_value = total * 0.10  # 10% de desconto
+                    total -= discount_value  # Atualizar o total com o desconto aplicado
+                    request.session['discount_applied'] = True
+                    messages.success(request, "Código de desconto aplicado com sucesso!")
+                else:
+                    messages.warning(request, "O código de desconto só é válido para a primeira compra.")
+                    request.session['discount_applied'] = False
+
+            # Recuperar o valor dos portes de envio da sessão
+            shipping_cost = request.session.get('shipping_cost', 0)
+            final_total = total + shipping_cost
+
+            # Processar a compra e salvar no banco de dados
             with transaction.atomic():
                 purchase = Purchase.objects.create(
                     user=user,
                     date=timezone.now().date(),
                     paymentMethod=payment_method,
                     shippingAddress=shipping_address,
+                    total_amount=final_total,
                     status='Processing'
                 )
 
@@ -475,41 +521,34 @@ def process_payment(request):
                     product_type = product.get_product_type()
                     stock_available = product.get_stock()
 
-                    # Verifica se o produto é de roupa e se o estoque é suficiente
-                    if product_type == 'Clothing' and item.size:
-                        size = item.size
-                        if size.stock >= item.quantity:
-                            size.stock -= item.quantity
-                            size.save()
-                        else:
-                            messages.error(request, f"Estoque insuficiente para {product.name} no tamanho {size.size}. Disponível: {size.stock}")
-                            return redirect('payment_page')
-
-                    # Verifica estoque para os outros tipos de produtos
-                    elif product_type in ['Vinil', 'CD', 'Accessory']:
-                        if stock_available is not None and stock_available >= item.quantity:
-                            # Reduz o estoque da subclasse
-                            if isinstance(product, (Vinil, CD, Accessory)):
-                                product.stock -= item.quantity
-                                product.save()
-                        else:
-                            messages.error(request, f"Estoque insuficiente para {product.name}. Disponível: {stock_available}")
-                            return redirect('payment_page')
-                    
+                    if stock_available is not None and stock_available >= item.quantity:
+                        if isinstance(product, (Vinil, CD, Accessory)):
+                            product.stock -= item.quantity
+                            product.save()
+                        elif isinstance(product, Clothing) and item.size:
+                            size = item.size
+                            if size.stock >= item.quantity:
+                                size.stock -= item.quantity
+                                size.save()
+                            else:
+                                messages.error(request, f"Estoque insuficiente para {product.name} no tamanho {size.size}. Disponível: {size.stock}")
+                                return redirect('payment_page')
                     else:
-                        messages.error(request, f"Produto não encontrado ou estoque insuficiente para {product.name}.")
+                        messages.error(request, f"Estoque insuficiente para {product.name}. Disponível: {stock_available}")
                         return redirect('payment_page')
 
-                    # Cria a associação do produto com a compra
+                    # Criar o item de compra
                     PurchaseProduct.objects.create(
                         purchase=purchase,
                         product=product,
                         quantity=item.quantity
                     )
 
-                request.session['clear_cart'] = True  
-                messages.success(request, "Sua compra foi realizada com sucesso!")
-                return redirect('payment_confirmation')
+                # Limpar o carrinho e a sessão após a compra
+                request.session['clear_cart'] = True
+                request.session['discount_applied'] = False
+                url_with_success = f"{reverse('payment_page')}?success=1"
+                return redirect(url_with_success)
 
         except Cart.DoesNotExist:
             messages.error(request, "Carrinho não encontrado.")
@@ -520,6 +559,7 @@ def process_payment(request):
 
     return redirect('payment_page')
 
+
 @login_required
 def payment_confirmation(request):
     return render(request, 'payment_confirmation.html')
@@ -529,16 +569,39 @@ def payment_page(request):
     user = request.user
     cart = Cart.objects.get(user=user)
     cart_items = CartItem.objects.filter(cart=cart)
-    total = cart.total
+    subtotal = cart.total
 
-    return render(request, 'payment.html', {"cart_items": cart_items, 'total': total})
+    discount_value = 0
 
+    discount_applied = request.session.get('discount_applied', False)
+    if discount_applied:
+        discount_value = subtotal * 0.10 
+        
+
+    shipping_cost = 0
+    if subtotal <= 100:
+        if user.country == 'Portugal':
+            shipping_cost = 4.99
+        else:
+            shipping_cost = 6.00
+
+    request.session['shipping_cost'] = shipping_cost
+
+    final_total = subtotal - discount_value + shipping_cost
+
+    return render(request, 'payment.html', {
+        "cart_items": cart_items,
+        "subtotal": subtotal,
+        "shipping_cost": shipping_cost,
+        "final_total": final_total,
+        "discount_value": discount_value,
+        "discount_applied": discount_applied
+    })
 
 
 
 #@login_required
 def supplier_product_list(request):
-    # Dados de exemplo para testar o layout da página
     products = [
         {
             "name": "Produto Exemplo 1",
@@ -584,13 +647,10 @@ def edit_product(request, product_id):
 
 
 def company_products(request, company_id):
-    # Obter a empresa específica usando o ID
     company = get_object_or_404(Company, id=company_id)
 
-    # Obter todos os produtos associados a esta empresa
-    products = company.products.all()  # Utiliza o related_name definido no modelo Product
+    products = company.products.all()  
 
-    # Renderizar o template com os produtos da empresa
     return render(request, 'company_products.html', {'company': company, 'products': products})
 
 #@login_required
@@ -695,6 +755,49 @@ def add_company(request):
         'company_form': company_form,
         'user_form': user_form,
     })
+
+@login_required
+def order_details(request, order_id):
+    purchase = get_object_or_404(Purchase, id=order_id, user=request.user)
+    products = [
+        {
+            "name": item.product.name,
+            "quantity": item.quantity,
+            "unit_price": item.product.price, 
+            "total_price": item.quantity * item.product.price, 
+            "image_url": item.product.image.url  
+        }
+        for item in purchase.purchase_products.all()
+    ]
+    data = {
+        "date": purchase.date,
+        "total": purchase.total,
+        "paymentMethod": purchase.paymentMethod,
+        "shippingAddress": purchase.shippingAddress,
+        "status": purchase.status,
+        "products": products,
+    }
+    return JsonResponse(data)
+
+@login_required
+def apply_discount(request):
+    if request.method == 'POST':
+        user = request.user
+        data = json.loads(request.body)
+        discount_code = data.get('discount_code')
+
+        if discount_code and discount_code.lower() == 'primeiracompra':
+            # Verificar se o usuário já fez uma compra
+            if not Purchase.objects.filter(user=user).exists():
+                # Retorna sucesso com o sinal de desconto aplicado
+                request.session['discount_applied'] = True
+                return JsonResponse({"success": True})
+            else:
+                return JsonResponse({"success": False, "message": "O código de desconto só é válido para a primeira compra."})
+        
+        return JsonResponse({"success": False, "message": "Código de desconto inválido."})
+    
+    return JsonResponse({"success": False, "message": "Método não permitido."}, status=405)
 
 def product_list(request):
     products = Product.objects.all()
