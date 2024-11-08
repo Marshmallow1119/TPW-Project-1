@@ -8,7 +8,7 @@ from urllib.parse import urlencode
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import make_password
-from django.db.models import Avg
+from django.db.models import Avg, Count
 from django.http import JsonResponse, Http404
 from django.urls import reverse
 from django.utils import timezone
@@ -333,7 +333,7 @@ def profile(request):
                     'email': user.email,
                     'username': user.username,
                     'address': user.address,
-                    'phone': phone,  # Mantém o valor incorreto para permitir nova entrada
+                    'phone': phone, 
                     'country': user.country
                 })
                 image_form = UploadUserProfilePicture()
@@ -421,19 +421,17 @@ def submit_review(request, product_id):
                 messages.error(request, "Invalid rating.")
                 return redirect("productDetails", identifier=product_id)
 
-            # Save the review with the current date
             Review.objects.create(
                 product=product,
                 user=request.user,
                 rating=rating,
                 text=review_text,
-                date=timezone.now().date()  # Set the current date
+                date=timezone.now().date() 
             )
             messages.success(request, "Your review has been submitted.")
         else:
             messages.error(request, "Please provide both a rating and a review.")
 
-        # Redirect back to the product page
         return redirect("productDetails", identifier=product_id)
     
 @login_required
@@ -444,7 +442,7 @@ def checkfavorite(request):
 
 
 @require_POST
-@login_required  
+@login_required(login_url='/login/')
 def addtofavorite(request, product_id):
     try:
         product = Product.objects.get(id=product_id)
@@ -490,28 +488,24 @@ def process_payment(request):
                 messages.error(request, "Por favor, preencha todos os campos obrigatórios.")
                 return redirect('payment_page')
 
-            # Inicializar o total com o subtotal do carrinho
             total = cart.total
             discount_applied = False
             discount_value = 0
 
-            # Verificar e aplicar o código de desconto
             if discount_code and discount_code.lower() == 'primeiracompra':
                 if not Purchase.objects.filter(user=user).exists():
                     discount_applied = True
-                    discount_value = total * 0.10  # 10% de desconto
-                    total -= discount_value  # Atualizar o total com o desconto aplicado
+                    discount_value = total * 0.10 
+                    total -= discount_value  
                     request.session['discount_applied'] = True
                     messages.success(request, "Código de desconto aplicado com sucesso!")
                 else:
                     messages.warning(request, "O código de desconto só é válido para a primeira compra.")
                     request.session['discount_applied'] = False
 
-            # Recuperar o valor dos portes de envio da sessão
             shipping_cost = request.session.get('shipping_cost', 0)
             final_total = total + shipping_cost
 
-            # Processar a compra e salvar no banco de dados
             with transaction.atomic():
                 purchase = Purchase.objects.create(
                     user=user,
@@ -543,14 +537,12 @@ def process_payment(request):
                         messages.error(request, f"Estoque insuficiente para {product.name}. Disponível: {stock_available}")
                         return redirect('payment_page')
 
-                    # Criar o item de compra
                     PurchaseProduct.objects.create(
                         purchase=purchase,
                         product=product,
                         quantity=item.quantity
                     )
 
-                # Limpar o carrinho e a sessão após a compra
                 request.session['clear_cart'] = True
                 request.session['discount_applied'] = False
                 url_with_success = f"{reverse('payment_page')}?success=1"
@@ -606,7 +598,6 @@ def payment_page(request):
 
 @login_required
 def company_home(request):
-    # Supondo que `company_id` está associado ao utilizador logado
     company_id = request.user.company.id if request.user.user_type == 'company' else None
     print("Company ID:", company_id)
     return render(request, 'company_home.html', {'company_id': company_id})
@@ -614,10 +605,27 @@ def company_home(request):
 @login_required
 def company_products(request, company_id):
     company = get_object_or_404(Company, id=company_id)
+    products = company.products.prefetch_related('favorites', 'reviews')  
 
-    products = company.products.all()  
+    for product in products:
+        product.favorites_count = product.favorites.count()  
+        product.reviews_count = product.reviews.count()      
 
     return render(request, 'company_products.html', {'company': company, 'products': products})
+
+@login_required
+def company_product_detail(request, company_id, product_id):
+    company = get_object_or_404(Company, id=company_id)
+    product = get_object_or_404(Product, id=product_id, company=company)
+
+    product.favorites_count = product.favorites.count()
+    reviews = product.reviews.all()
+
+    return render(request, 'company_product_detail.html', {
+        'company': company,
+        'product': product,
+        'reviews': reviews,
+    })
 
 @login_required
 def add_product_to_company(request, company_id):
@@ -703,14 +711,20 @@ def admin_product_delete(request, product_id):
     product.delete()
     return redirect('admin_home')
 
+@login_required
 def delete_review(request, review_id):
     review = get_object_or_404(Review, id=review_id)
-    if request.user.user_type == 'admin':
+    product = review.product
+    company = product.company
+
+    # Verifica se o utilizador é administrador ou proprietário da companhia do produto
+    if request.user.user_type == 'admin' or (request.user.user_type == 'company' and request.user.company == company):
         review.delete()
         messages.success(request, "Avaliação removida com sucesso.")
+        return redirect('company_product_detail', company_id=company.id, product_id=product.id)
     else:
-        messages.error(request, "Apenas administradores podem remover avaliações.")
-    return redirect('productDetails', identifier=review.product.id)
+        messages.error(request, "Apenas administradores ou o proprietário da companhia podem remover avaliações.")
+        return redirect('company_product_detail', company_id=company.id, product_id=product.id)
 
 def admin_company_delete(request, company_id):
     company = get_object_or_404(Company, id=company_id)

@@ -51,6 +51,7 @@ class Artist(models.Model):
     name = models.CharField(max_length=50, unique=True)
     description = models.TextField();
     image = models.ImageField()
+    background_image = models.ImageField(upload_to='background_images/', blank=True, null=True)
 
     def __str__(self):
         return self.name
