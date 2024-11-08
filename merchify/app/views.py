@@ -33,7 +33,7 @@ User = get_user_model()
 
 def home(request):
     artists = Artist.objects.all()
-    recent_products = Product.objects.order_by('-addedProduct')[:20]  
+    recent_products = Product.objects.order_by('-addedProduct')[:20]
 
     if request.session.get('clear_cart'):
         cart = Cart.objects.filter(user=request.user).first()
@@ -54,9 +54,16 @@ def home(request):
         show_promotion= not Purchase.objects.filter(user=user).exists()
     else:
         show_promotion= True
+
+    recently_viewed_ids = request.session.get('recently_viewed', [])
+    recently_viewed_products = Product.objects.filter(id__in=recently_viewed_ids)
+    recently_viewed_products = sorted(
+        recently_viewed_products,
+        key=lambda product: recently_viewed_ids.index(product.id)
+    )
         
 
-    return render(request, 'home.html', {'artists': artists, 'products': recent_products, 'show_promotion': show_promotion})
+    return render(request, 'home.html', {'artists': artists, 'products': recent_products, 'show_promotion': show_promotion, 'recently_viewed_products': recently_viewed_products})
 
 # def home(request):
 #     return render(request, 'home.html')
@@ -98,6 +105,15 @@ def artistsProducts(request, name):
 
 def productDetails(request, identifier):
     product = get_object_or_404(Product, id=identifier)
+    product.count = product.count + 1
+    product.save()
+
+    recently_viewed = request.session.get('recently_viewed', [])
+    if product.id in recently_viewed:
+        recently_viewed.remove(product.id)
+    recently_viewed.insert(0, product.id)
+    recently_viewed = recently_viewed[:4]
+    request.session['recently_viewed'] = recently_viewed
 
     context = {
         'product': product,
@@ -821,52 +837,56 @@ def product_list(request):
     if product_type:
         if product_type == 'Vinil':
             products = products.filter(vinil__isnull=False)
-            genre = request.GET.get('genre')
+            # Use getlist to retrieve all 'genre' parameters and filter out empty values
+            genre = next((g for g in request.GET.getlist('genreVinyl') if g), None)
             if genre:
                 products = products.filter(vinil__genre=genre)
-                print(products)
         elif product_type == 'CD':
             products = products.filter(cd__isnull=False)
-            genre = request.GET.get('genre')
+            genre = next((g for g in request.GET.getlist('genreCD') if g), None)
             if genre:
                 products = products.filter(cd__genre=genre)
         elif product_type == 'Clothing':
             products = products.filter(clothing__isnull=False)
-            color = request.GET.get('color')
+            color = next((c for c in request.GET.getlist('colorClothing') if c), None)
             if color:
                 products = products.filter(clothing__color=color)
         elif product_type == 'Accessory':
             products = products.filter(accessory__isnull=False)
-            color = request.GET.get('color')
+            color = next((c for c in request.GET.getlist('colorAccessory') if c), None)
             if color:
                 products = products.filter(accessory__color=color)
-            size = request.GET.get('size')
+            size = next((s for s in request.GET.getlist('size') if s), None)
             if size:
                 products = products.filter(accessory__size=size)
 
     # Filter by price range
     min_price = request.GET.get('min_price')
     max_price = request.GET.get('max_price')
-    if min_price and max_price:
+    if min_price:
         try:
-            products = products.filter(price__gte=float(min_price), price__lte=float(max_price))
+            products = products.filter(price__gte=float(min_price))
         except ValueError:
-            pass  # Invalid price values will be ignored
+            pass
+    if max_price:
+        try:
+            products = products.filter(price__lte=float(max_price))
+        except ValueError:
+            pass
 
-    # Filter by category
+    # Filter by category if provided
     category = request.GET.get('category')
     if category:
         products = products.filter(category=category)
 
-    # Filter by artist
+    # Filter by artist ID if provided
     artist_id = request.GET.get('artist')
     if artist_id:
         try:
             products = products.filter(artist_id=int(artist_id))
         except ValueError:
-            pass  # Invalid artist ID values will be ignored
+            pass
 
-    # Passing filtered products and all artists to the template
     return render(request, 'artists_products.html', {
         'products': products,
         'artists': artists,

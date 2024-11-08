@@ -38,7 +38,11 @@
 
     <!-- Product Details -->
     <div class="col-md-6">
-      <h1 class="display-6">{{ product.name }}</h1>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h1 class="display-6">{{ product.name }}</h1>
+            <p style="margin: 0; padding-top: 0;" class="text-muted">Este produto foi visto um total de {{ product.count }} vezes</p>
+        </div>
+
       <p class="text-muted">{{ product.artist.name }}</p>
       <h3 class="text-success">{{ product.price|floatformat:2 }}€</h3>
       <p class="lead">{{ product.description }}</p>
