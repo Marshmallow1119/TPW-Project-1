@@ -2,9 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import get_user_model
 from jsonschema import ValidationError
-from .models import Product, Company
-
-
+from .models import Product, Company, Vinil, CD, Accessory, Clothing
 
 User = get_user_model()
 
@@ -75,10 +73,38 @@ class UpdateProfile(forms.Form):
         
 
 class ProductForm(forms.ModelForm):
+    PRODUCT_TYPE_CHOICES = [
+        ('vinil', 'Vinil'),
+        ('cd', 'CD'),
+        ('clothing', 'Clothing'),
+        ('accessory', 'Accessory'),
+    ]
+    product_type = forms.ChoiceField(choices=PRODUCT_TYPE_CHOICES, required=True, label="Product Type")
+
     class Meta:
         model = Product
-        fields = ['name', 'description', 'price', 'image', 'artist', 'category']  # Exclui o campo 'company' porque será preenchido na view
+        fields = ['product_type', 'name', 'description', 'price', 'image', 'artist', 'category']
+        exclude = ['company']  # `company` will be set in the view
 
+class VinilForm(forms.ModelForm):
+    class Meta:
+        model = Vinil
+        fields = ['genre', 'lpSize', 'releaseDate', 'stock']
+
+class CDForm(forms.ModelForm):
+    class Meta:
+        model = CD
+        fields = ['genre', 'releaseDate', 'stock']
+
+class ClothingForm(forms.ModelForm):
+    class Meta:
+        model = Clothing
+        fields = ['color']
+
+class AccessoryForm(forms.ModelForm):
+    class Meta:
+        model = Accessory
+        fields = ['material', 'color', 'size', 'stock']
 
 class CompanyForm(forms.ModelForm):
     class Meta:

@@ -1,12 +1,156 @@
 {% extends "layout.html" %}
+{% load filters %}
 {% block content %}
 <div class="container mt-5">
-    <h2>Add Products to {{ company.name }}</h2>
+    <h2 class="mb-4 text-center">Add Product to {{ company.name }}</h2>
+
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn btn-primary">Save Product</button>
-        <a href="{% url 'company_products' company.id %}" class="btn btn-secondary">Cancel</a>
+
+        <!-- Main Product Information Section -->
+        <div class="card p-4 mb-4 shadow-sm">
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="product_type" class="form-label">Product Type</label>
+                    {{ form.product_type|add_class:"form-select" }}
+                </div>
+                <div class="col-md-6">
+                    <label for="artist" class="form-label">Artist</label>
+                    {{ form.artist|add_class:"form-select" }}
+                </div>
+            </div>
+            <div class="mb-3">
+                <label for="name" class="form-label">Product Name</label>
+                {{ form.name|add_class:"form-control" }}
+            </div>
+            <div class="mb-3">
+                <label for="description" class="form-label">Description</label>
+                {{ form.description|add_class:"form-control" }}
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <label for="price" class="form-label">Price (€)</label>
+                    {{ form.price|add_class:"form-control" }}
+                </div>
+                <div class="col-md-4">
+                    <label for="category" class="form-label">Category</label>
+                    {{ form.category|add_class:"form-control" }}
+                </div>
+                <div class="col-md-4">
+                    <label for="image" class="form-label">Product Image</label>
+                    {{ form.image|add_class:"form-control" }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Conditional fields based on Product Type -->
+        <div id="vinil-fields" class="card p-4 mb-4 shadow-sm" style="display: none;">
+            <h5>Vinil Details</h5>
+            <div class="row">
+                <div class="col-md-4">
+                    <label for="genre" class="form-label">Genre</label>
+                    {{ vinil_form.genre|add_class:"form-control" }}
+                </div>
+                <div class="col-md-4">
+                    <label for="lpSize" class="form-label">LP Size</label>
+                    {{ vinil_form.lpSize|add_class:"form-control" }}
+                </div>
+                <div class="col-md-4">
+                    <label for="releaseDate" class="form-label">Release Date</label>
+                    {{ vinil_form.releaseDate|add_class:"form-control" }}
+                </div>
+                <div class="col-md-4 mt-3">
+                    <label for="stock" class="form-label">Stock</label>
+                    {{ vinil_form.stock|add_class:"form-control" }}
+                </div>
+            </div>
+        </div>
+
+        <div id="cd-fields" class="card p-4 mb-4 shadow-sm" style="display: none;">
+            <h5>CD Details</h5>
+            <div class="row">
+                <div class="col-md-4">
+                    <label for="genre" class="form-label">Genre</label>
+                    {{ cd_form.genre|add_class:"form-control" }}
+                </div>
+                <div class="col-md-4">
+                    <label for="releaseDate" class="form-label">Release Date</label>
+                    {{ cd_form.releaseDate|add_class:"form-control" }}
+                </div>
+                <div class="col-md-4">
+                    <label for="stock" class="form-label">Stock</label>
+                    {{ cd_form.stock|add_class:"form-control" }}
+                </div>
+            </div>
+        </div>
+
+        <div id="clothing-fields" class="card p-4 mb-4 shadow-sm" style="display: none;">
+            <h5>Clothing Details</h5>
+            <div class="mb-3">
+                <label for="color" class="form-label">Color</label>
+                {{ clothing_form.color|add_class:"form-control" }}
+            </div>
+        </div>
+
+        <div id="accessory-fields" class="card p-4 mb-4 shadow-sm" style="display: none;">
+            <h5>Accessory Details</h5>
+            <div class="row">
+                <div class="col-md-4">
+                    <label for="material" class="form-label">Material</label>
+                    {{ accessory_form.material|add_class:"form-control" }}
+                </div>
+                <div class="col-md-4">
+                    <label for="color" class="form-label">Color</label>
+                    {{ accessory_form.color|add_class:"form-control" }}
+                </div>
+                <div class="col-md-4">
+                    <label for="size" class="form-label">Size</label>
+                    {{ accessory_form.size|add_class:"form-control" }}
+                </div>
+                <div class="col-md-4 mt-3">
+                    <label for="stock" class="form-label">Stock</label>
+                    {{ accessory_form.stock|add_class:"form-control" }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="d-flex justify-content-center mt-4 mb-5">
+            <button type="submit" class="btn btn-success me-2">Save Product</button>
+            <a href="{% url 'company_products' company.id %}" class="btn btn-secondary">Cancel</a>
+        </div>
     </form>
 </div>
+
+<!-- JavaScript to handle dynamic field visibility based on product type -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const productTypeField = document.querySelector('[name="product_type"]');
+        const vinilFields = document.getElementById('vinil-fields');
+        const cdFields = document.getElementById('cd-fields');
+        const clothingFields = document.getElementById('clothing-fields');
+        const accessoryFields = document.getElementById('accessory-fields');
+
+        function updateFieldVisibility() {
+            // Hide all field groups initially
+            vinilFields.style.display = 'none';
+            cdFields.style.display = 'none';
+            clothingFields.style.display = 'none';
+            accessoryFields.style.display = 'none';
+
+            // Show the appropriate field group
+            const productType = productTypeField.value;
+            if (productType === 'vinil') vinilFields.style.display = 'block';
+            else if (productType === 'cd') cdFields.style.display = 'block';
+            else if (productType === 'clothing') clothingFields.style.display = 'block';
+            else if (productType === 'accessory') accessoryFields.style.display = 'block';
+        }
+
+        // Initial call to set up the form based on default selection
+        updateFieldVisibility();
+
+        // Update visibility when the product type changes
+        productTypeField.addEventListener('change', updateFieldVisibility);
+    });
+</script>
 {% endblock %}

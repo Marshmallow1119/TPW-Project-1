@@ -26,3 +26,7 @@ def instanceof(value, arg):
     if model_class:
         return isinstance(value, model_class)
     return False  # Return False if the arg is not a recognized type
+
+@register.filter(name='add_class')
+def add_class(field, css_class):
+    return field.as_widget(attrs={"class": css_class})
