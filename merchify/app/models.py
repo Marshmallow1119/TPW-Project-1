@@ -66,6 +66,7 @@ class Product(models.Model):
     company = models.ForeignKey('Company', on_delete=models.CASCADE, related_name='products')
     category = models.CharField(max_length=50)
     addedProduct = models.DateField(auto_now_add=True)
+    count = models.IntegerField(default=0)
 
     def get_average_rating(self):
         average_rating = self.reviews.aggregate(avg_rating=Avg('rating'))['avg_rating']
