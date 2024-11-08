@@ -1,0 +1,109 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <!-- Coluna para a Imagem do Produto -->
+        <div class="col-md-5 d-flex justify-content-center">
+            <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-img imagem" style="width: 95%; height: auto; object-fit: cover;">
+        </div>
+
+        <!-- Coluna para os Detalhes e Reviews -->
+        <div class="col-md-7">
+            <h1 class="display-6">{{ product.name }}</h1>
+            <p class="text-muted">{{ product.artist.name }}</p>
+            <h3 class="text-success">{{ product.price|floatformat:2 }}€</h3>
+            <p class="lead">{{ product.description }}</p>
+
+            <!-- Detalhes do Produto e Reviews -->
+            <div class="row">
+                <!-- Tabela de Detalhes do Produto -->
+                <div class="col-md-6">
+                    <h5>Detalhes do Produto</h5>
+                    <table class="table table-bordered">
+                        <tbody>
+                            <tr><th>Categoria</th><td>{{ product.category }}</td></tr>
+                            <tr><th>Artista</th><td>{{ product.artist.name }}</td></tr>
+                            <tr><th>Empresa</th><td>{{ product.company.name }}</td></tr>
+                            <tr><th>Data de Adição</th><td>{{ product.addedProduct|date:"d/m/Y" }}</td></tr>
+
+                            {% if product.get_product_type == "Vinil" %}
+                                <tr><th>Gênero</th><td>{{ product.vinil.genre }}</td></tr>
+                                <tr><th>Tamanho do LP</th><td>{{ product.vinil.lpSize }}</td></tr>
+                                <tr><th>Data de Lançamento</th><td>{{ product.vinil.releaseDate|date:"d/m/Y" }}</td></tr>
+                                <tr><th>Stock</th><td>{{ product.vinil.stock }}</td></tr>
+                            {% elif product.get_product_type == "CD" %}
+                                <tr><th>Gênero</th><td>{{ product.cd.genre }}</td></tr>
+                                <tr><th>Data de Lançamento</th><td>{{ product.cd.releaseDate|date:"d/m/Y" }}</td></tr>
+                                <tr><th>Stock</th><td>{{ product.cd.stock }}</td></tr>
+                            {% elif product.get_product_type == "Clothing" %}
+                                <tr><th>Cor</th><td>{{ product.clothing.color }}</td></tr>
+                            {% elif product.get_product_type == "Accessory" %}
+                                <tr><th>Material</th><td>{{ product.accessory.material }}</td></tr>
+                                <tr><th>Cor</th><td>{{ product.accessory.color }}</td></tr>
+                                <tr><th>Tamanho</th><td>{{ product.accessory.size }}</td></tr>
+                                <tr><th>Stock</th><td>{{ product.accessory.stock }}</td></tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Reviews -->
+                <div class="col-md-6">
+                    <h5>Reviews:</h5>
+                    {% if reviews %}
+                        {% for review in reviews %}
+                            <div class="card p-3 mb-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h6>{{ review.user.username }} <small class="text-muted">- {{ review.date|date:"d/m/Y" }}</small></h6>
+                                    <form method="post" action="{% url 'delete_review' review.id %}" class="d-inline-block">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-danger" title="Remover avaliação">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                                <p>{{ review.text }}</p>
+                                <div>
+                                    {% for i in "12345" %}
+                                        {% if forloop.counter <= review.rating %}
+                                            <span class="star selected">★</span>
+                                        {% else %}
+                                            <span class="star">☆</span>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">Este produto ainda não possui reviews.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Favoritos e Botões de Editar/Apagar -->
+            <div class="mt-4">
+                <i class="fa fa-heart text-danger"></i> Favoritos: {{ product.favorites_count }}
+            </div>
+            <div class="d-flex mt-3">
+                <a href="{% url 'edit_product' product.id %}" class="btn btn-warning me-2">Edit</a>
+                <form action="{% url 'delete_product' product.id %}" method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this product?');">
+                        Delete
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .star {
+        font-size: 1.2em;
+        color: #FFD700;
+    }
+    .star.selected {
+        color: #FFD700;
+    }
+</style>
+{% endblock %}

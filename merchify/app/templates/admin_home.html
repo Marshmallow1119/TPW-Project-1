@@ -1,4 +1,4 @@
-{%  extends "layout.html" %}
+{% extends "layout.html" %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,196 +12,230 @@
     {% block css %}
     <style>
         /* Custom styles */
-        .user-image  {
+        .user-image {
             width: 50px;
             height: 50px;
             object-fit: cover;
             border-radius: 50%;
         }
 
-        .product-image{
+        .product-image {
             width: 50px;
             height: 50px;
             object-fit: cover;
         }
+
         .table td, .table th {
             vertical-align: middle;
         }
-        a{
-            text-decoration: none;
-        }
-        .close:focus{
-	outline: none;
-        }
-        .modal-header{
-            border: none;
-        }
-        .modal-footer{
-            border: none;
-        }
-        .btn-danger{
+
+        .btn-danger {
             background: #DD2750;
             border: 1px solid #C43352;
         }
-        .btn-light{
+
+        .btn-light {
             border: 1px solid #E7E7E9;
         }
-        .btn:focus{
-            box-shadow: none;
+
+        /* Sidebar and layout styling */
+        .container-fluid {
+            display: flex;
+            flex-direction: row;
+        }
+
+        .sidebar {
+            width: 300px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-right: 1px solid #ddd;
+        }
+
+        .sidebar a {
+            display: block;
+            padding: 10px;
+            color: #000;
+            text-decoration: none;
+            margin-bottom: 5px;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+
+        .sidebar a:hover {
+            background-color: #e9ecef;
+        }
+
+        .content-section {
+            flex-grow: 1;
+            padding: 20px;
+            width: 100%;
+        }
+
+        .content-section h1 {
+            margin-top: 10px;
+        }
+
+        .content-table {
+            display: none;
+        }
+
+        .content-table.active {
+            display: block;
         }
     </style>
     {% endblock %}
 </head>
 {% block content %}
 <body>
-    <div class="container" style="margin-top: 10px">
-        <!-- User List Section -->
-        <h1>Lista de Utilizadores:</h1>
+    <div class="container-fluid">
+        <!-- Sidebar navigation -->
+        <div class="sidebar">
+            <h3>Dashboard do Administrador</h3>
+            <a href="#" onclick="showSection('user-section')">Lista de Utilizadores</a>
+            <a href="#" onclick="showSection('product-section')">Lista de Produtos</a>
+            <a href="#" onclick="showSection('company-section')">Lista de Companhias</a>
+        </div>
 
-        {% if users %}
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th scope="col">Imagem</th>
-                        <th scope="col">Nome</th>
-                        <th scope="col">Email</th>
-                        <th scope="col">Número de Compras</th>
-                        <th scope="col" style="text-align: right;">Ações</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for user in users %}
-                        {%  if user.user_type == 'individual' %}
-                    <tr>
-                        <td>
-                            {% if user.image %}
-                                <img src="{{ user.image.url }}" alt="{{ user.name }}" class="user-image">
-                            {% else %}
-                                <img src="/media/user.png" alt="{{ user.name }}" class="user-image">
-                            {% endif %}
-                        </td>
-                        <td>{{ user.firstname }} {{ user.lastname }}</td>
-                        <td>{{ user.email }}</td>
-                        <td>{{ user.number_of_purchases }}</td>
-                        <td style="text-align: right;">
-                            <a href="#" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#exampleModal2" data-user-id="{{ user.id }}">
-                                <i class="fas fa-trash-alt"></i>
-                                Banir Utilizador
-                            </a>
-                        </td>
-                    </tr>
-                        {% endif %}
-                    {% endfor %}
-                </tbody>
-            </table>
-        {% else %}
-            <p class="text-muted">No users found.</p>
-        {% endif %}
-
-        <!-- Product List Section -->
-        <h1>Lista de Produtos:</h1>
-
-        {% if products %}
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th scope="col">Imagem</th>
-                        <th scope="col">Nome</th>
-                        <th scope="col">Preço</th>
-                        <th scope="col">Stock</th>
-                        <th scope="col">Numero de Avaliações</th>
-                        <th scope="col">Média de Avaliações</th>
-                        <th scope="col"style="text-align: right;" >Ações</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for product in products %}
-                    <tr>
-                        <td>
-                            {% if product.image %}
-                                <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-image">
-                            {% else %}
-                                <img src="/media/default-product.png" alt="{{ product.name }}" class="product-image">
-                            {% endif %}
-                        </td>
-                        <td>
-                            <a  style="color: black !important; " href="{% url 'productDetails' product.id %}">{{ product.name }}</a> <!-- Link to product detail page -->
-                        </td>
-                        <td>{{ product.price }}€</td>
-                        <td>{{ product.get_stock }}</td>
-                        <td>{{ product.review_count }}</td>
-                        <td>{{ product.get_average_rating }}</td>
-                        <td style="text-align: right;">
-                            <a href="{% url 'edit_product' product.id %}" class="btn btn-primary btn-sm">
-                                <i class="fas fa-edit"></i> Editar Produto
-                            </a>
-                            <a href="#" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#exampleModal" data-product-id="{{ product.id }}">
-                                <i class="fas fa-trash-alt"></i>
-                                Apagar Produto
-                            </a>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-
-            </table>
-        {% else %}
-            <p class="text-muted">No products found.</p>
-        {% endif %}
-        <!-- Companhias List Section -->
-        <h1>Lista de Companhias:</h1>
-        {% if users %}
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th scope="col">Logo</th>
-                        <th scope="col">Nome</th>
-                        <th scope="col">Email</th>
-                        <th scope="col">Telemóvel</th>
-                        <th scope="col">Morada</th>
-                        <th scope="col">Numero de Produtos</th>
-                        <th scope="col">Média de Avaliações</th>
-                        <th scope="col">Ações</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for user in users %}
-                        {% if user.user_type == 'company' and user.company %}
+        <!-- Main content area -->
+        <div class="content-section">
+            <!-- User List Section -->
+            <div id="user-section" class="content-table active">
+                <h1>Lista de Utilizadores:</h1>
+                {% if users %}
+                    <table class="table">
+                        <thead>
                             <tr>
-                                <td>
-                                    {% if user.company.logo %}
-                                        <img src="{{ user.company.logo.url }}" alt="{{ user.company.name }}" class="user-image" >
-                                    {% else %}
-                                        <img src="/media/company_default.png" alt="Default Logo" class="user-image">
-                                    {% endif %}
-                                </td>
-                                <td>{{ user.company.name }}</td>
-                                <td>{{ user.email }}</td>
-                                <td>{{ user.company.phone }}</td>
-                                <td>{{ user.company.address }}</td>
-                                <td>{{ user.company.getNumberOfProducts }}</td>
-                                <td>{{ user.company.get_average_rating }}</td>
-                                <td>
-                                <a href="#" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#exampleModal1" data-company-id="{{ user.company.id }}">
-                                    <i class="fas fa-trash-alt"></i>
-                                    Ban Company
-                                </a>
-                                </td>
+                                <th scope="col">Imagem</th>
+                                <th scope="col">Nome</th>
+                                <th scope="col">Email</th>
+                                <th scope="col">Número de Compras</th>
+                                <th scope="col"  >Ações</th>
                             </tr>
-                        {% endif %}
-                    {% endfor %}
-                </tbody>
-            </table>
-        {% else %}
-            <p class="text-muted">Não foram encontradas companhias.</p>
-        {% endif %}
-        <div class="row mt-3">
-            <div class="col-12">
-                <button type="submit" class="btn btn-dark w-100" style="margin-bottom: 20px" onclick="window.location.href='{% url 'add_company' %}'">Adicionar Nova Companhia</button>
+                        </thead>
+                        <tbody>
+                            {% for user in users %}
+                                {% if user.user_type == 'individual' %}
+                                    <tr>
+                                        <td>
+                                            {% if user.image %}
+                                                <img src="{{ user.image.url }}" alt="{{ user.name }}" class="user-image">
+                                            {% else %}
+                                                <img src="/media/user.png" alt="{{ user.name }}" class="user-image">
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ user.firstname }} {{ user.lastname }}</td>
+                                        <td>{{ user.email }}</td>
+                                        <td>{{ user.number_of_purchases }}</td>
+                                        <td  >
+                                            <a href="#" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#exampleModal2" data-user-id="{{ user.id }}">
+                                                <i class="fas fa-trash-alt"></i> Banir Utilizador
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p class="text-muted">No users found.</p>
+                {% endif %}
+            </div>
+
+            <!-- Product List Section -->
+            <div id="product-section" class="content-table">
+                <h1>Lista de Produtos:</h1>
+                {% if products %}
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Imagem</th>
+                                <th scope="col">Nome</th>
+                                <th scope="col">Preço</th>
+                                <th scope="col">Stock</th>
+                                <th scope="col">Numero de Avaliações</th>
+                                <th scope="col">Média de Avaliações</th>
+                                <th scope="col"  >Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for product in products %}
+                                <tr>
+                                    <td>
+                                        {% if product.image %}
+                                            <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-image">
+                                        {% else %}
+                                            <img src="/media/default-product.png" alt="{{ product.name }}" class="product-image">
+                                        {% endif %}
+                                    </td>
+                                    <td><a href="{% url 'productDetails' product.id %}" style="color: black; text-decoration: none">{{ product.name }}</a></td>
+                                    <td>{{ product.price }}€</td>
+                                    <td>{{ product.get_stock }}</td>
+                                    <td>{{ product.review_count }}</td>
+                                    <td>{{ product.get_average_rating }}</td>
+                                    <td  >
+                                        <a href="{% url 'edit_product' product.id %}" class="btn btn-primary btn-sm"><i class="fas fa-edit"></i> Editar Produto</a>
+                                        <a href="#" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#exampleModal" data-product-id="{{ product.id }}"><i class="fas fa-trash-alt"></i> Apagar Produto</a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p class="text-muted">No products found.</p>
+                {% endif %}
+            </div>
+
+            <!-- Company List Section -->
+            <div id="company-section" class="content-table">
+                <h1>Lista de Companhias:</h1>
+                {% if users %}
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Logo</th>
+                                <th scope="col">Nome</th>
+                                <th scope="col">Email</th>
+                                <th scope="col">Telemóvel</th>
+                                <th scope="col">Morada</th>
+                                <th scope="col">Numero de Produtos</th>
+                                <th scope="col">Média de Avaliações</th>
+                                <th scope="col">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in users %}
+                                {% if user.user_type == 'company' and user.company %}
+                                    <tr>
+                                        <td>
+                                            {% if user.company.logo %}
+                                                <img src="{{ user.company.logo.url }}" alt="{{ user.company.name }}" class="user-image">
+                                            {% else %}
+                                                <img src="/media/company_default.png" alt="Default Logo" class="user-image">
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ user.company.name }}</td>
+                                        <td>{{ user.email }}</td>
+                                        <td>{{ user.company.phone }}</td>
+                                        <td>{{ user.company.address }}</td>
+                                        <td>{{ user.company.getNumberOfProducts }}</td>
+                                        <td>{{ user.company.get_average_rating }}</td>
+                                        <td><a href="#" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#exampleModal1" data-company-id="{{ user.company.id }}"><i class="fas fa-trash-alt"></i> Ban Company</a></td>
+                                    </tr>
+                                {% endif %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p class="text-muted">Não foram encontradas companhias.</p>
+                {% endif %}
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-dark w-100" onclick="window.location.href='{% url 'add_company' %}'">Adicionar Nova Companhia</button>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-    <!-- Modal -->
+      <!-- Modal -->
     <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -268,11 +302,21 @@
             </div>
         </div>
     </div>
+    </div>
 
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script>
+        function showSection(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('.content-table').forEach(section => {
+                section.classList.remove('active');
+            });
+            // Show the selected section
+            document.getElementById(sectionId).classList.add('active');
+        }
+
         $('#exampleModal').on('show.bs.modal', function (event) {
             var button = $(event.relatedTarget); // Button that triggered the modal
             var productId = button.data('product-id'); // Extract product ID from data-* attribute
@@ -297,7 +341,6 @@
             $('#confirmDeleteButton2').attr('href', deleteUrl);
         });
     </script>
-
 </body>
 </html>
 {% endblock %}

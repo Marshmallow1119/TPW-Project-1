@@ -89,7 +89,6 @@ class Product(models.Model):
         elif hasattr(self, 'cd'):
             return self.cd.stock
         elif hasattr(self, 'clothing'):
-            # Clothing stock may need to be calculated differently based on `Size`
             return sum(size.stock for size in self.clothing.sizes.all())
         elif hasattr(self, 'accessory'):
             return self.accessory.stock

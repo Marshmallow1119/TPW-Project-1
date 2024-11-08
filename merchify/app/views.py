@@ -1,12 +1,14 @@
 from datetime import timedelta, date
 import json
 import logging
+from itertools import product
+
 import re
 from urllib.parse import urlencode
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import make_password
-from django.db.models import Avg
+from django.db.models import Avg, Count
 from django.http import JsonResponse, Http404
 from django.urls import reverse
 from django.utils import timezone
@@ -47,14 +49,17 @@ def home(request):
     if user.is_authenticated:
         if user.user_type == 'admin':
             return redirect('admin_home')
-        elif user.user_type == 'company':
-            return redirect( 'home')
+        # elif user.user_type == 'company':
+        #     return redirect( 'home')
         show_promotion= not Purchase.objects.filter(user=user).exists()
     else:
         show_promotion= True
         
 
     return render(request, 'home.html', {'artists': artists, 'products': recent_products, 'show_promotion': show_promotion})
+
+# def home(request):
+#     return render(request, 'home.html')
 
 def produtos(request):
     produtos= Product.objects.all()
@@ -110,8 +115,10 @@ def productDetails(request, identifier):
 
 
 def search_products(request):
-    query = request.GET.get('search', '')  
-    products = Product.objects.filter(name__icontains=query) if query else Product.objects.none()  
+    query = request.GET.get('search', '')
+    products = Product.objects.filter(name__icontains=query) if query else Product.objects.none()
+    if query == '':
+        products = Product.objects.all()
     return render(request, 'search_results.html', {'products': products, 'query': query})
 
 
@@ -174,7 +181,8 @@ def login(request):
                 if user.user_type == 'individual':
                     return redirect('home')
                 elif user.user_type == 'company':
-                    return redirect('company_home')
+                    company_id = user.company.id
+                    return redirect('company_products', company_id=company_id)
                 elif user.user_type == 'admin':
                     return redirect('admin_home')
                 else:
@@ -186,11 +194,13 @@ def login(request):
             return render(request, 'login.html', {'error_message': error_message})
     else:
         return render(request, 'login.html')
+
+
 @login_required
 def logout(request):
     if request.user.is_authenticated:
         auth_logout(request)  
-    return redirect('home') 
+    return redirect('home')
 
 @login_required
 @csrf_exempt  
@@ -586,62 +596,38 @@ def payment_page(request):
         "discount_applied": discount_applied
     })
 
+@login_required
+def company_home(request):
+    company_id = request.user.company.id if request.user.user_type == 'company' else None
+    print("Company ID:", company_id)
+    return render(request, 'company_home.html', {'company_id': company_id})
 
-
-#@login_required
-def supplier_product_list(request):
-    products = [
-        {
-            "name": "Produto Exemplo 1",
-            "price": 20.0,
-            "image": {"url": "https://via.placeholder.com/250"},
-            "artist": {"image": {"url": "https://via.placeholder.com/100"}},
-        },
-        {
-            "name": "Produto Exemplo 2",
-            "price": 35.0,
-            "image": {"url": "https://via.placeholder.com/250"},
-            "artist": {"image": {"url": "https://via.placeholder.com/100"}},
-        },
-    ]
-
-    return render(request, 'supplier/product_list.html', {'products': products})
-
-
-def add_product(request):
-    if request.method == 'POST':
-        form = ProductForm(request.POST, request.FILES)
-        if form.is_valid():
-            product = form.save(commit=False)
-            product.company = request.user.supplier_profile.company
-            product.save()
-            return redirect('supplier_product_list')
-    else:
-        form = ProductForm()
-
-    return render(request, 'supplier/product_form.html', {'form': form, 'is_edit': False})
-
-def edit_product(request, product_id):
-    product = get_object_or_404(Product, id=product_id, company=request.user.supplier_profile.company)
-    if request.method == 'POST':
-        form = ProductForm(request.POST, request.FILES, instance=product)
-        if form.is_valid():
-            form.save()
-            return redirect('supplier_product_list')
-    else:
-        form = ProductForm(instance=product)
-
-    return render(request, 'supplier/product_form.html', {'form': form, 'is_edit': True, 'product': product})
-
-
+@login_required
 def company_products(request, company_id):
     company = get_object_or_404(Company, id=company_id)
+    products = company.products.prefetch_related('favorites', 'reviews')  
 
-    products = company.products.all()  
+    for product in products:
+        product.favorites_count = product.favorites.count()  
+        product.reviews_count = product.reviews.count()      
 
     return render(request, 'company_products.html', {'company': company, 'products': products})
 
-#@login_required
+@login_required
+def company_product_detail(request, company_id, product_id):
+    company = get_object_or_404(Company, id=company_id)
+    product = get_object_or_404(Product, id=product_id, company=company)
+
+    product.favorites_count = product.favorites.count()
+    reviews = product.reviews.all()
+
+    return render(request, 'company_product_detail.html', {
+        'company': company,
+        'product': product,
+        'reviews': reviews,
+    })
+
+@login_required
 def add_product_to_company(request, company_id):
     company = get_object_or_404(Company, id=company_id)
 
@@ -657,7 +643,7 @@ def add_product_to_company(request, company_id):
 
     return render(request, 'add_product_to_company.html', {'form': form, 'company': company})
 
-
+@login_required
 def edit_product(request, product_id):
     product = get_object_or_404(Product, id=product_id)
 
@@ -671,7 +657,7 @@ def edit_product(request, product_id):
 
     return render(request, 'edit_product.html', {'form': form, 'product': product})
 
-#@login_required
+@login_required
 def delete_product(request, product_id):
     product = get_object_or_404(Product, id=product_id)
     company_id = product.company.id  # Guarda o ID da empresa para redirecionamento
@@ -693,14 +679,20 @@ def admin_product_delete(request, product_id):
     product.delete()
     return redirect('admin_home')
 
+@login_required
 def delete_review(request, review_id):
     review = get_object_or_404(Review, id=review_id)
-    if request.user.user_type == 'admin':
+    product = review.product
+    company = product.company
+
+    # Verifica se o utilizador é administrador ou proprietário da companhia do produto
+    if request.user.user_type == 'admin' or (request.user.user_type == 'company' and request.user.company == company):
         review.delete()
         messages.success(request, "Avaliação removida com sucesso.")
+        return redirect('company_product_detail', company_id=company.id, product_id=product.id)
     else:
-        messages.error(request, "Apenas administradores podem remover avaliações.")
-    return redirect('productDetails', identifier=review.product.id)
+        messages.error(request, "Apenas administradores ou o proprietário da companhia podem remover avaliações.")
+        return redirect('company_product_detail', company_id=company.id, product_id=product.id)
 
 def admin_company_delete(request, company_id):
     company = get_object_or_404(Company, id=company_id)
@@ -786,3 +778,47 @@ def apply_discount(request):
         return JsonResponse({"success": False, "message": "Código de desconto inválido."})
     
     return JsonResponse({"success": False, "message": "Método não permitido."}, status=405)
+
+def product_list(request):
+    products = Product.objects.all()
+    artists = Artist.objects.all()
+
+    product_type = request.GET.get('type')  # e.g., "Vinil", "CD", etc.
+
+    if product_type:
+        # Filtering by product type
+        if product_type == 'Vinil':
+            products = Product.objects.filter(vinil=True)
+        elif product_type == 'CD':
+            products = Product.objects.filter(cd=True)
+        elif product_type == 'Clothing':
+            products = Product.objects.filter(clothing=True)
+        elif product_type == 'Accessory':
+            products = Product.objects.filter(accessory=True)
+        else:
+            products = Product.objects.all()  # Return all if type is invalid
+    else:
+        # Return all products if no specific type is requested
+        products = Product.objects.all()
+
+    price_range = request.GET.get('price')
+    if price_range:
+        min_price, max_price = map(float, price_range.split('-'))
+        products = products.filter(price__gte=min_price, price__lte=max_price)
+
+    category = request.GET.get('category')
+    if category:
+        products = products.filter(category=category)
+
+    artist_id = request.GET.get('artist')
+    if artist_id:
+        products = products.filter(artist_id=artist_id)
+    print("Product Type:", product_type)
+    print("Price Range:", price_range)
+    print("Category:", category)
+    print("Artist ID:", artist_id)
+
+    return render(request, 'artists_products.html', {
+        'products': products,
+        'artists': artists,
+    })

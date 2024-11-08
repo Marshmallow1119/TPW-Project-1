@@ -3,7 +3,6 @@
 <div class="container my-5">
     <h1 class="my-4 text-center">Products by {{ company.name }}</h1>
 
-    <!-- "Add Product" button always visible at the top -->
     <div class="text-right mb-4">
         <a href="{% url 'add_product_to_company' company.id %}" class="btn btn-primary">Add Product</a>
     </div>
@@ -12,25 +11,35 @@
         {% for product in products %}
         <div class="col-6 col-md-4 col-lg-3 mb-4">
             <div class="product-card">
-                <img src="{{ product.image.url }}" alt="{{ product.name }}" class="card-img-top" style="height: 200px; object-fit: cover;">
-
-                <div class="p-3 text-center">
-                    <h5 class="product-name">{{ product.name }}</h5>
-                    <p class="product-price">{{ product.price }}€</p>
-                    <p>{{ product.description|truncatewords:15 }}</p>
-
-                    <!-- Edit and Delete buttons -->
-                    <div class="d-flex justify-content-center">
-                        <a href="{% url 'edit_product' product.id %}" class="btn btn-sm btn-warning me-2">Edit</a>
-
-                        <!-- Delete Button with Trash Icon -->
-                        <form action="{% url 'delete_product' product.id %}" method="post" style="display:inline;">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this product?');">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </form>
+                <!-- Link cobrindo todo o card, mas não os botões de edição e exclusão -->
+                <a href="{% url 'company_product_detail' company.id product.id %}" class="d-block" style="text-decoration: none; color: inherit;">
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="card-img-top" style="height: 200px; object-fit: cover;">
+                    <div class="p-3 text-center">
+                        <h5 class="product-name">{{ product.name }}</h5>
+                        <p class="product-price">{{ product.price }}€</p>
+                        <p>{{ product.description|truncatewords:15 }}</p>
+                        
+                        <!-- Contagem de Favoritos e Reviews -->
+                        <div class="d-flex justify-content-center align-items-center">
+                            <div class="me-3">
+                                <i class="fa fa-heart text-danger"></i> {{ product.favorites_count }}
+                            </div>
+                            <div>
+                                <i class="fa fa-comment text-info"></i> {{ product.reviews_count }}
+                            </div>
+                        </div>
                     </div>
+                </a>
+
+                <!-- Botões de Editar e Apagar fora do link do card -->
+                <div class="d-flex justify-content-center mt-3">
+                    <a href="{% url 'edit_product' product.id %}" class="btn btn-sm btn-warning me-2">Edit</a>
+                    <form action="{% url 'delete_product' product.id %}" method="post" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this product?');">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>

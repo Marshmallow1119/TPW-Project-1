@@ -1,6 +1,7 @@
-*app/pycache
-*merchify/pycache
+*app/__pycache__
+*merchify/__pycache__
 *db.sqlite3
-*app/migrations/pycache
+*app/migrations/__pycache__
 *venv/
 *app/db.sqlite3
+*app/templatetags/__pycache__

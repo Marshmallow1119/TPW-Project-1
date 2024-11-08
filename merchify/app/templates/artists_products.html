@@ -27,8 +27,8 @@
             object-fit: cover;
         }
         .product-card a {
-        text-decoration: none; /* Removes the underline */
-        color: inherit; /* Keeps the text color consistent with the parent */
+            text-decoration: none; /* Removes the underline */
+            color: inherit; /* Keeps the text color consistent with the parent */
         }
         .product-card a:hover {
             color: inherit; /* Optional: Ensures hover color is also consistent */
@@ -41,7 +41,6 @@
             font-size: 24px; /* Increase the icon size */
             cursor: pointer; /* Pointer on hover */
             -webkit-text-stroke: 3px #434343; /* Outline width and color */
-
             text-shadow: 2px 2px 1px rgba(0, 0, 0, 0.3);
         }
         .favorite-icon:hover {
@@ -53,7 +52,6 @@
         .favorite-icon.filled {
             color: #e85454; /* Color when the item is favorited */
             -webkit-text-stroke: 0px black; /* Outline width and color */
-
         }
         .product-name {
             font-weight: bold;
@@ -108,6 +106,11 @@
             text-align: center;
             margin-left: 30px;
         }
+        .produtos-container {
+            max-width: 95%; /* Adjust the width as needed */
+            margin: 0 auto; /* Center the container */
+            padding: 0 15px; /* Optional: Add some padding on the sides */
+        }
 
 
     </style>
@@ -121,47 +124,50 @@
             <h2>{{ artist.name }}</h2>
         </div>
 
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <p>{{ products.count }} produtos</p>
-            <div class="dropdown">
-                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    Ordenar por:
-                </button>
-                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                    <a class="dropdown-item" href="?sort=featured">Em destaque</a>
-                    <a class="dropdown-item" href="?sort=priceAsc">Preço (ascendente)</a>
-                    <a class="dropdown-item" href="?sort=priceDesc">Preço (descendente)</a>
-                </div>
+                    <!-- Filter by Artist -->
+                    <h5>Artista</h5>
+                    <div class="form-group">
+                        <select name="artist" class="form-control">
+                            <option value="">Todos</option>
+                            {% for artist in artists %}
+                                <option value="{{ artist.id }}">{{ artist.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary mt-3">Aplicar Filtros</button>
+                </form>
             </div>
         </div>
 
-        <div class="row">
-            {% for product in products %}
-            <div class="col-6 col-md-4 col-lg-3">
+        <!-- Products Display Section -->
+        <div class="col-md-9">
+            <div class="row" id="productList">
+                {% for product in products %}
+                <div class="col-6 col-md-4 col-lg-3 mb-4">
                     <div class="product-card">
-                    <i class="fa fa-heart favorite-icon {% if product.is_favorited %}filled{% endif %}" data-id="{{ product.id }}" onclick="addToFavorite({{ product.id }})"></i>
-                    <a href="/product/{{ product.id }}">
-                        <img src="{{ product.image.url }}" alt="{{ product.name }}">
-                        <div class="p-3 text-center">
-                            <p class="product-name">{{ product.name }}</p>
-                            <p class="product-price">{{ product.price }}€</p>
-                            <button class="btn btn-add-to-cart w-100">Adicionar ao carrinho</button>
-                        </div>
-                    </a>
+                        <i class="fa fa-heart favorite-icon {% if product.is_favorited %}filled{% endif %}" data-id="{{ product.id }}" onclick="addToFavorite({{ product.id }})"></i>
+                        <a href="/product/{{ product.id }}">
+                            <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                            <div class="p-3 text-center">
+                                <p class="product-name">{{ product.name }}</p>
+                                <p class="product-price">{{ product.price }}€</p>
+                                <button class="btn btn-add-to-cart w-100">Adicionar ao carrinho</button>
+                            </div>
+                        </a>
+                    </div>
                 </div>
+                {% endfor %}
             </div>
-            {% endfor %}
         </div>
     </div>
+</div>
 
-    <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <!-- Popper.js -->
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
-    <!-- Bootstrap JS -->
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-
     <script>
+        // Add to Favorites function
         function addToFavorite(productId) {
             fetch(`/favorites/add/${productId}/`, {
                 method: 'POST',
