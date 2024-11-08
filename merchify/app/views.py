@@ -76,7 +76,7 @@ def artistas(request):
         print(artist.image)
     return render(request, 'artistas.html', {'artists': artists})
 
-from django.shortcuts import get_object_or_404, render
+
 
 def artistsProducts(request, name):
     artist = get_object_or_404(Artist, name=name)
