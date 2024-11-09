@@ -902,6 +902,55 @@ def company_product_detail(request, company_id, product_id):
 def company_products_user(request, company_id):
     company = get_object_or_404(Company, id=company_id)
     products = Product.objects.filter(company=company)
+    # Filter by product type
+    product_type = request.GET.get('type')
+    if product_type:
+        if product_type == 'Vinil':
+            products = products.filter(vinil__isnull=False)
+            genre = request.GET.get('genreVinyl')
+            if genre:
+                products = products.filter(vinil__genre=genre)
+            logger.debug(f"Filtered by 'Vinil' type and genre {genre}, products count: {products.count()}")
+
+        elif product_type == 'CD':
+            products = products.filter(cd__isnull=False)
+            genre = request.GET.get('genreCD')
+            if genre:
+                products = products.filter(cd__genre=genre)
+            logger.debug(f"Filtered by 'CD' type and genre {genre}, products count: {products.count()}")
+
+        elif product_type == 'Clothing':
+            products = products.filter(clothing__isnull=False)
+            color = request.GET.get('colorClothing')
+            if color:
+                products = products.filter(clothing__color=color)
+            logger.debug(f"Filtered by 'Clothing' type and color {color}, products count: {products.count()}")
+
+        elif product_type == 'Accessory':
+            products = products.filter(accessory__isnull=False)
+            color = request.GET.get('colorAccessory')
+            if color:
+                products = products.filter(accessory__color=color)
+            size = request.GET.get('size')
+            if size:
+                products = products.filter(accessory__size=size)
+            logger.debug(f"Filtered by 'Accessory' type, color {color}, and size {size}, products count: {products.count()}")
+
+    # Filter by price range
+    min_price = request.GET.get('min_price')
+    max_price = request.GET.get('max_price')
+    if min_price:
+        try:
+            products = products.filter(price__gte=float(min_price))
+            logger.debug(f"Applied min price filter {min_price}, products count: {products.count()}")
+        except ValueError:
+            logger.debug("Invalid minimum price provided.")
+    if max_price:
+        try:
+            products = products.filter(price__lte=float(max_price))
+            logger.debug(f"Applied max price filter {max_price}, products count: {products.count()}")
+        except ValueError:
+            logger.debug("Invalid maximum price provided.")
     return render(request, 'company_product_user.html', {'company': company, 'products': products})
 
 
