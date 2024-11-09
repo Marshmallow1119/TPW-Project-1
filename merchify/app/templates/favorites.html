@@ -1,41 +1,93 @@
 <!DOCTYPE html>
+{% extends 'layout.html' %}
+
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Favorite Products</title>
+    <title>Favorite Products and Artists</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-          integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg=="
-          crossorigin="anonymous" referrerpolicy="no-referrer" />
+        integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    {%  block css %}
     <style>
-        /* Add custom styles here if needed */
         .product-image {
             width: 100px;
             height: 100px;
             object-fit: contain;
         }
+
         .product-info {
             display: flex;
             align-items: center;
         }
+
         .product-info h5 {
-            margin-bottom: 0; /* Remove default margin */
+            margin-bottom: 0;
         }
-        .table td { /* Center content in table cells */
+
+        .table td {
             vertical-align: middle;
         }
+
+        /* Horizontal navbar style */
+        .navzinha {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .navzinha .nav-item {
+            margin-right: 20px;
+        }
+
+        .navzinha .nav-item:last-child {
+            margin-right: 0;
+        }
+
+        .favorite-section {
+            display: none;
+        }
+
+        .favorite-section.active {
+            display: block;
+            padding: 20px;
+        }
+        .container-fluid {
+            padding: 0; /* Remove padding */
+            width: 100vw; /* Full viewport width */
+        }
     </style>
+    {% endblock %}
 </head>
+
 <body>
-{% extends 'layout.html' %}
-{% block content %}
-{% load filters %}
+    {% block content %}
+    {% load filters %}
 
-    <div class="container">
-        <h1>Meus Produtos Favoritos:</h1>
+    <div class="container-fluid" style="padding-left: 0px !important; padding-right: 0px !important;">
+        <!-- Horizontal Navbar for selecting Products or Artists -->
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark"">
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav navzinha">
+                    <li class="nav-item">
+                        <a class="nav-link" href="javascript:void(0);" onclick="showFavorites('products')">Produtos</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="javascript:void(0);" onclick="showFavorites('artists')">Artistas</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
 
-        {% if favorite_products %}
+
+        <!-- Product Favorites Section -->
+        <div id="products" class="favorite-section {% if category == 'products' %}active{% endif %}">
+                <h1>Meus Favoritos:</h1>
+
+            <h2>Os meus produtos favoritos:</h2>
+            {% if favorite_products %}
             <table class="table">
                 <thead>
                     <tr>
@@ -56,7 +108,7 @@
                             </div>
                         </td>
                         <td>{{ fav.price }}€</td>
-                        <td class="text-right"> <!-- Use text-right instead of d-flex -->
+                        <td class="text-right">
                             <a href="{% url 'remove_from_favorites' product_id=fav.id %}" class="btn btn-danger mr-2">
                                 <i class="fas fa-trash-alt"></i> Remover
                             </a>
@@ -68,14 +120,69 @@
                     {% endfor %}
                 </tbody>
             </table>
-        {% else %}
+            {% else %}
             <p class="text-muted">Não há produtos favoritos. Adicione produtos aos seus favoritos.</p>
             <button class="btn btn-dark" type="button" onclick="window.location.href='{% url 'produtos' %}'">Ver Produtos</button>
-        {% endif %}
+            {% endif %}
+        </div>
+
+        <!-- Artist Favorites Section -->
+        <div id="artists" class="favorite-section {% if category == 'artists' %}active{% endif %}">
+            <h2>Os meus artistas favoritos:</h2>
+            {% if favorite_artists %}
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">Imagem</th>
+                        <th scope="col">Artista</th>
+                        <th scope="col"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for fav in favorite_artists %}
+                    <tr>
+                        <td><img src="{{ fav.image }}" alt="{{ fav.name }}" class="product-image mr-3"></td>
+                        <td>{{ fav.name }}</td>
+                        <td class="text-right">
+                            <a href="{% url 'remove_from_favorites_artist' artist_id=fav.id %}" class="btn btn-danger mr-2">
+                                <i class="fas fa-trash-alt"></i> Remover
+                            </a>
+                            <a href="{% url 'artistsProducts' name=fav.name %}" class="btn btn-dark">
+                                Ver Artista
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p class="text-muted">Não há artistas favoritos. Adicione artistas aos seus favoritos.</p>
+            <button class="btn btn-dark" type="button" onclick="window.location.href='{% url 'artistas' %}'">Ver Artistas</button>
+            {% endif %}
+        </div>
     </div>
-{% endblock %}
+
+    <script>
+        // Function to show selected category favorites (Products or Artists)
+        function showFavorites(category) {
+            // Hide both sections
+            document.getElementById('products').classList.remove('active');
+            document.getElementById('artists').classList.remove('active');
+
+            // Show the selected category
+            if (category === 'products') {
+                document.getElementById('products').classList.add('active');
+            } else if (category === 'artists') {
+                document.getElementById('artists').classList.add('active');
+            }
+        }
+    </script>
+
+    {% endblock %}
+
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
+
 </html>
