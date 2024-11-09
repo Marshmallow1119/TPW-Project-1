@@ -435,25 +435,33 @@ def viewCart(request):
     except Cart.DoesNotExist:
         cart = Cart.objects.create(user=user)
 
-    cartitems = CartItem.objects.filter(cart=cart)
+    cart_items = CartItem.objects.filter(cart=cart)
+    cart_total = sum(item.product.price * item.quantity for item in cart_items)
+
     context = {
-        'cart_items': cartitems, 
+        'cart_items': cart_items,
+        'cart_total': cart_total,
     }
     return render(request, 'cart.html', context)
 
+
 @login_required
-def update_cart_item(request):
+def update_cart_item(request, item_id):
     if request.method == 'POST':
-        item_id = request.POST.get('item_id')
-        quantity = int(request.POST.get('quantity'))
+        try:
+            quantity = int(request.POST.get('quantity', 1))
+            cart_item = get_object_or_404(CartItem, id=item_id)
 
-        cart_item = get_object_or_404(CartItem, id=item_id)
-        cart_item.quantity = quantity
-        cart_item.save()
+            # Atualizar a quantidade do item
+            cart_item.quantity = max(1, quantity)  # Garantir que a quantidade seja pelo menos 1
+            cart_item.save()
 
-        return JsonResponse({'success': True})
-    else:
-        return JsonResponse({'success': False})
+            # Redirecionar de volta para a página do carrinho
+            return redirect('viewCart')
+        except Exception as e:
+            messages.error(request, f"Erro ao atualizar o carrinho: {str(e)}")
+            return redirect('viewCart')
+    return redirect('viewCart')
 
 @login_required
 def remove_from_cart(request, product_id):
@@ -487,7 +495,15 @@ def profile(request):
             'country': user.country
         })
         password_form = UpdatePassword()
+        
         purchases = Purchase.objects.filter(user=user)
+        for purchase in purchases:
+            if purchase.total_amount > 100:
+                purchase.shipping_fee = 0
+            else:
+                purchase.shipping_fee = 4.99 if user.country.lower() == "portugal" else 6.0
+
+        
 
         return render(request, 'profile.html', {
             'user': user,
@@ -827,12 +843,14 @@ def process_payment(request):
             discount_applied = False
             discount_value = 0
 
+            # Aplicar desconto se o código for válido
             if discount_code and discount_code.lower() == 'primeiracompra':
                 if not Purchase.objects.filter(user=user).exists():
                     discount_applied = True
-                    discount_value = total * 0.10 
-                    total -= discount_value  
+                    discount_value = total * 0.10
+                    total -= discount_value
                     request.session['discount_applied'] = True
+                    request.session['discount_value'] = discount_value
                     messages.success(request, "Código de desconto aplicado com sucesso!")
                 else:
                     messages.warning(request, "O código de desconto só é válido para a primeira compra.")
@@ -878,8 +896,11 @@ def process_payment(request):
                         quantity=item.quantity
                     )
 
+                # Limpar o carrinho após a compra
                 request.session['clear_cart'] = True
                 request.session['discount_applied'] = False
+                request.session.pop('discount_value', None)
+
                 url_with_success = f"{reverse('payment_page')}?success=1"
                 return redirect(url_with_success)
 
@@ -891,6 +912,7 @@ def process_payment(request):
             return redirect('payment_page')
 
     return redirect('payment_page')
+
 
 
 @login_required
@@ -1327,7 +1349,7 @@ def order_details(request, order_id):
     ]
     data = {
         "date": purchase.date,
-        "total": purchase.total,
+        "total_amount": purchase.total_amount,
         "paymentMethod": purchase.paymentMethod,
         "shippingAddress": purchase.shippingAddress,
         "status": purchase.status,
