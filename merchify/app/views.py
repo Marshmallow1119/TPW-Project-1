@@ -871,7 +871,6 @@ def process_payment(request):
 
                 for item in cart_items:
                     product = item.product
-                    product_type = product.get_product_type()
                     stock_available = product.get_stock()
 
                     if stock_available is not None and stock_available >= item.quantity:
@@ -896,7 +895,6 @@ def process_payment(request):
                         quantity=item.quantity
                     )
 
-                # Limpar o carrinho após a compra
                 request.session['clear_cart'] = True
                 request.session['discount_applied'] = False
                 request.session.pop('discount_value', None)
