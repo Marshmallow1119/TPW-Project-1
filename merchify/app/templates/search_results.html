@@ -1,55 +1,155 @@
 {% extends "layout.html" %}
+{% block css %}
+<style>
+    /* Estilos Gerais dos Cards */
+    .product-card,
+    .artist-card {
+        border: none;
+        border-radius: 12px;
+        overflow: hidden;
+        text-decoration: none;
+        color: inherit;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        background-color: #fff;
+        transition: transform 0.2s, box-shadow 0.2s;
+        height: 460px;
+    }
+
+    .product-card:hover,
+    .artist-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Ícone de Favorito */
+    .favorite-icon {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        font-size: 24px;
+        color: #ccc;
+        cursor: pointer;
+        z-index: 10;
+        transition: color 0.2s;
+    }
+
+    .favorite-icon.filled {
+        color: #e63946; /* Cor para itens favoritados */
+    }
+
+    /* Contêiner de Imagem com Proporção Fixa (4:3) */
+    .image-container {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 4 / 3;
+        height: 300px;
+        overflow: hidden;
+        border-top-left-radius: 12px;
+        border-top-right-radius: 12px;
+    }
+
+    .card-img-top {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+    }
+
+    /* Corpo do Card */
+    .card-body {
+        padding: 15px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-between;
+        height: 180px;
+    }
+
+    .product-name {
+        font-weight: 600;
+        font-size: 18px;
+        color: #333;
+        text-align: center;
+        margin-bottom: 5px;
+        height: 40px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .product-price {
+        color: #007bff;
+        font-size: 17px;
+        font-weight: 500;
+        text-align: center;
+        margin-bottom: 10px;
+    }
+
+    .btn-add-to-cart {
+        background-color: #007bff;
+        color: #fff;
+        font-weight: 600;
+        border: none;
+        border-radius: 6px;
+        padding: 10px 15px;
+        width: 100%;
+        transition: background-color 0.2s;
+    }
+
+    .btn-add-to-cart:hover {
+        background-color: #0056b3;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
+
 <div class="container mt-5">
     <h2>Resultados da Pesquisa para "{{ query }}"</h2>
 
-    <!-- Resultados para Produtos -->
-    <div class="mt-4">
-        <h4>Produtos Encontrados</h4>
-        <div class="row">
-            {% for product in produtos %}
-            <div class="col-6 col-md-4 col-lg-3 mb-4">
-                <div class="position-relative">
-                    <div class="artist-identifier" style="position: absolute; top: 10px; right: 10px; width: 50px; height: 50px; border-radius: 50%; overflow: hidden;">
-                        <a href="{% url 'artistsProducts' product.artist.name %}">
-                            <img src="{{ product.artist.image.url }}" alt="{{ product.artist.name }}" style="width: 100%; height: 100%; object-fit: cover;">
-                        </a>                   
-                    </div>
-                    <i class="fa fa-heart favorite-icon {% if product.is_favorited %}filled{% endif %}" 
-                       data-id="{{ product.id }}" 
-                       onclick="handleFavoriteClick({{ product.id }})"
-                       style="position: absolute; top:260px; margin-left:260px; z-index: 9;"></i>
-                    <a href="/product/{{ product.id }}" class="product-card d-block">
-                        <img src="{{ product.image.url }}" alt="{{ product.name }}">
-                        <div class="p-3 text-center">
-                            <p class="product-name mb-0">{{ product.name }}</p>
-                            <p class="product-price">{{ product.price }}€</p>
-                            <button class="btn btn-add-to-cart w-100">Adicionar ao carrinho</button>
-                        </div>
-                    </a>
+    <div class="row">
+        {% for product in products %}
+        <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-4">
+            <div class="card product-card">
+                <div class="image-container">
+                    <i class="fa fa-heart favorite-icon {% if product.is_favorited %}filled{% endif %}"
+                       data-id="{{ product.id }}"
+                       onclick="handleFavoriteClick({{ product.id }}, 'product')"></i>
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="card-img-top">
                 </div>
+                <a href="/product/{{ product.id }}" class="d-block">
+                    <div class="card-body">
+                        <p class="product-name">{{ product.name }}</p>
+                        <p class="product-price">{{ product.price }}€</p>
+                    </div>
+                </a>
             </div>
-            {% endfor %}
         </div>
+        {% endfor %}
     </div>
 
-    <!-- Resultados para Artistas -->
     <div class="mt-4">
         <h4>Artistas Encontrados</h4>
         <div class="row">
             {% if artists %}
                 {% for artist in artists %}
-                <div class="col-6 col-md-4 col-lg-3 mb-4">
-                    <a href="/products/{{ artist.name }}" class="card-link">
-                        <div class="card card-hover" style="height: 400px;">
-                            <div class="card-img-wrapper" style="height: 85%;">
-                                <img src="{{ artist.image.url }}" class="card-img-top" alt="{{ artist.name }}" style="height: 100%; object-fit: cover;">
-                            </div>
-                            <div class="card-body text-center">
+                <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-4">
+                    <div class="card artist-card">
+                        <div class="image-container">
+                            <i class="fa fa-heart favorite-icon {% if artist.is_favorited %}filled{% endif %}"
+                               data-id="{{ artist.id }}"
+                               onclick="handleFavoriteClick({{ artist.id }}, 'artist')"></i>
+                            <img src="{{ artist.image.url }}" class="card-img-top" alt="{{ artist.name }}">
+                        </div>
+                        <a href="/products/{{ artist.name }}" class="card-link">
+                            <div class="card-body">
                                 <p class="card-text">{{ artist.name }}</p>
                             </div>
-                        </div>
-                    </a>
+                        </a>
+                    </div>
                 </div>
                 {% endfor %}
             {% else %}
@@ -58,4 +158,35 @@
         </div>
     </div>
 </div>
+
+<script>
+    function handleFavoriteClick(itemId, itemType) {
+        const isAuthenticated = {{ user.is_authenticated|yesno:"true,false" }};
+        
+        if (!isAuthenticated) {
+            window.location.href = '/login/';
+            return;
+        }
+
+        fetch(`/favorites/add/${itemType}/${itemId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ item_id: itemId, item_type: itemType })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const favoriteIcon = document.querySelector(`.favorite-icon[data-id="${itemId}"]`);
+                favoriteIcon.classList.toggle('filled', data.favorited);
+            } else {
+                alert(data.message || "Erro ao atualizar os favoritos.");
+            }
+        })
+        .catch(error => console.error("Erro:", error));
+    }
+</script>
+
 {% endblock %}

@@ -146,22 +146,24 @@ def productDetails(request, identifier):
     return render(request, 'productDetails.html', context)
 
 
+from django.shortcuts import render
+from .models import Product, Artist
+
 def search(request):
     query = request.GET.get('search', '').strip()
 
-    products = Product.objects.filter(name__icontains=query) if query else Product.objects.none()
-    artists = Artist.objects.filter(name__icontains=query) if query else Artist.objects.none()
-
-    if not query:
-        products = Product.objects.all()
-        artists = Artist.objects.all()
+    if query:
+        products = Product.objects.filter(name__icontains=query.strip()).exclude(name__isnull=True).exclude(name='')
+        artists = Artist.objects.filter(name__icontains=query.strip()).exclude(name__isnull=True).exclude(name='')
+    else:
+        products = Product.objects.none()
+        artists = Artist.objects.none()
 
     return render(request, 'search_results.html', {
-        'products': products,
+        'products': products,  
         'artists': artists,
         'query': query,
     })
-
 
 def register(request):
     if request.method == 'POST':
