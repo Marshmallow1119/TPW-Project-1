@@ -108,6 +108,19 @@
                                                 <span>{{ purchase.date }}</span>
                                             </div>
                                             <div class="info-item">
+                                                <span class="text-muted"><strong>Desconto Aplicado:</strong></span>
+                                                {% if purchase.discount_applied %}
+                                                    <span>-{{ purchase.discount_value|floatformat:2 }}€</span>
+                                                {% else %}
+                                                    <span>Sem desconto</span>
+                                                {% endif %}
+                                            </div>
+                                            
+                                            <div class="info-item">
+                                                <span class="text-muted"><strong>Portes de Envio:</strong></span>
+                                                <span>{{ purchase.shipping_fee|floatformat:2 }}€</span>
+                                            </div>
+                                            <div class="info-item">
                                                 <span class="text-muted"><strong>Total:</strong></span>
                                                 <span>{{ purchase.total_amount|floatformat:2 }}€</span>
                                             </div>

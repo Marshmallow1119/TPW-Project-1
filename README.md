@@ -66,14 +66,13 @@ Neste primeiro projeto desenvolvemos uma aplicação web usando a framework Djan
 ### Utilizadores normais
 | Username | Password |
 | -------- | -------- |
-|   joao   | user1234 |
-|   jose   | user1234 |
+|   joao1   | usertestado123 |
 
 ### Companhias
 | Username | Password |
 | -------- | -------- |
-|   joao   | user1234 |
-|   jose   | user1234 |
+|   mea123   | testarcompanhia123 |
+
 
 
 ## Autores
