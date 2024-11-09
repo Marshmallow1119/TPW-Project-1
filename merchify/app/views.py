@@ -146,14 +146,21 @@ def productDetails(request, identifier):
     return render(request, 'productDetails.html', context)
 
 
-def search_products(request):
-    query = request.GET.get('search', '')
+def search(request):
+    query = request.GET.get('search', '').strip()
+
     products = Product.objects.filter(name__icontains=query) if query else Product.objects.none()
-    if query == '':
+    artists = Artist.objects.filter(name__icontains=query) if query else Artist.objects.none()
+
+    if not query:
         products = Product.objects.all()
-    return render(request, 'search_results.html', {'products': products, 'query': query})
+        artists = Artist.objects.all()
 
-
+    return render(request, 'search_results.html', {
+        'products': products,
+        'artists': artists,
+        'query': query,
+    })
 
 
 def register(request):
