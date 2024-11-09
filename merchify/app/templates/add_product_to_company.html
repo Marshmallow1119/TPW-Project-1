@@ -124,33 +124,29 @@
 
 <!-- JavaScript to handle dynamic field visibility based on product type -->
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const productTypeField = document.querySelector('[name="product_type"]');
-        const vinilFields = document.getElementById('vinil-fields');
-        const cdFields = document.getElementById('cd-fields');
-        const clothingFields = document.getElementById('clothing-fields');
-        const accessoryFields = document.getElementById('accessory-fields');
+        document.addEventListener('DOMContentLoaded', function() {
+            const productTypeField = document.querySelector('[name="product_type"]');
+            const vinilFields = document.getElementById('vinil-fields');
+            const cdFields = document.getElementById('cd-fields');
+            const clothingFields = document.getElementById('clothing-fields');
+            const accessoryFields = document.getElementById('accessory-fields');
 
-        function updateFieldVisibility() {
-            // Hide all field groups initially
-            vinilFields.style.display = 'none';
-            cdFields.style.display = 'none';
-            clothingFields.style.display = 'none';
-            accessoryFields.style.display = 'none';
+            function updateFieldVisibility() {
+                vinilFields.style.display = 'none';
+                cdFields.style.display = 'none';
+                clothingFields.style.display = 'none';
+                accessoryFields.style.display = 'none';
 
-            // Show the appropriate field group
-            const productType = productTypeField.value;
-            if (productType === 'vinil') vinilFields.style.display = 'block';
-            else if (productType === 'cd') cdFields.style.display = 'block';
-            else if (productType === 'clothing') clothingFields.style.display = 'block';
-            else if (productType === 'accessory') accessoryFields.style.display = 'block';
-        }
+                const productType = productTypeField.value;
+                if (productType === 'vinil') vinilFields.style.display = 'block';
+                else if (productType === 'cd') cdFields.style.display = 'block';
+                else if (productType === 'clothing') clothingFields.style.display = 'block';
+                else if (productType === 'accessory') accessoryFields.style.display = 'block';
+            }
 
-        // Initial call to set up the form based on default selection
-        updateFieldVisibility();
+            updateFieldVisibility();
 
-        // Update visibility when the product type changes
-        productTypeField.addEventListener('change', updateFieldVisibility);
-    });
+            productTypeField.addEventListener('change', updateFieldVisibility);
+        });
 </script>
 {% endblock %}

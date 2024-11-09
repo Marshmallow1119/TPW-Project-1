@@ -90,21 +90,41 @@ class VinilForm(forms.ModelForm):
     class Meta:
         model = Vinil
         fields = ['genre', 'lpSize', 'releaseDate', 'stock']
+        widgets = {
+            'genre': forms.TextInput(attrs={'required': False}),
+            'lpSize': forms.NumberInput(attrs={'required': False}),
+            'releaseDate': forms.DateInput(attrs={'type': 'date', 'required': False}),
+            'stock': forms.NumberInput(attrs={'required': False}),
+        }
 
 class CDForm(forms.ModelForm):
     class Meta:
         model = CD
         fields = ['genre', 'releaseDate', 'stock']
+        widgets = {
+            'genre': forms.TextInput(attrs={'required': False}),
+            'releaseDate': forms.DateInput(attrs={'type': 'date', 'required': False}),
+            'stock': forms.NumberInput(attrs={'required': False}),
+        }
 
 class ClothingForm(forms.ModelForm):
     class Meta:
         model = Clothing
         fields = ['color']
+        widgets = {
+            'color': forms.TextInput(attrs={'required': False}),
+        }
 
 class AccessoryForm(forms.ModelForm):
     class Meta:
         model = Accessory
         fields = ['material', 'color', 'size', 'stock']
+        widgets = {
+            'material': forms.TextInput(attrs={'required': False}),
+            'color': forms.TextInput(attrs={'required': False}),
+            'size': forms.NumberInput(attrs={'required': False}),
+            'stock': forms.NumberInput(attrs={'required': False}),
+        }
 
 class CompanyForm(forms.ModelForm):
     class Meta:
