@@ -84,7 +84,9 @@ class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
         fields = ['product_type', 'name', 'description', 'price', 'image', 'artist', 'category']
-        exclude = ['company']  # `company` will be set in the view
+        widgets = {
+            'category': forms.HiddenInput(),  # This makes 'category' hidden since it's set by JS
+        }
 
 class VinilForm(forms.ModelForm):
     class Meta:

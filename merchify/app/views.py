@@ -134,14 +134,12 @@ def produtos(request):
     max_price = request.GET.get('max_price')
     if min_price:
         try:
-            products = products.filter(price__gte=float(min_price))
-            logger.debug(f"Applied min price filter {min_price}, products count: {products.count()}")
+            produtos = produtos.filter(price__gte=float(min_price))
         except ValueError:
             logger.debug("Invalid minimum price provided.")
     if max_price:
         try:
-            products = products.filter(price__lte=float(max_price))
-            logger.debug(f"Applied max price filter {max_price}, products count: {products.count()}")
+            produtos = produtos.filter(price__lte=float(max_price))
         except ValueError:
             logger.debug("Invalid maximum price provided.")
 
@@ -1042,77 +1040,100 @@ def add_product_to_company(request, company_id):
     company = get_object_or_404(Company, id=company_id)
 
     if request.method == 'POST':
+        # Initialize forms with POST data
         product_form = ProductForm(request.POST, request.FILES)
 
-        if product_form.is_valid():
-            # Create and set the base Product instance without saving
-            product = product_form.save(commit=False)
-            product.company = company
+        # Empty type-specific forms for rendering in case of errors
+        vinil_form = VinilForm()
+        cd_form = CDForm()
+        clothing_form = ClothingForm()
+        accessory_form = AccessoryForm()
 
-            # Ensure that price is provided and set
+        # Check the validity of the main product form
+        if product_form.is_valid():
+            # Create the Product instance without saving yet
+            product = product_form.save(commit=False)
+            product.company = company  # Assign company
+
+            # Check for price explicitly to avoid null values
             price = product_form.cleaned_data.get('price')
             if price is None:
-                print("Error: Price is missing!")  # Debugging log
                 return render(request, 'add_product_to_company.html', {
-                    'product_form': product_form,
+                    'form': product_form,
                     'error_message': "Price is required."
                 })
+            product.price = price  # Set price
 
-            product.price = price  # Explicitly set price
-            try:
-                product.save()  # Save the Product instance with price
-            except IntegrityError:
-                # If product fails to save, show an error and prevent further processing
-                return render(request, 'add_product_to_company.html', {
-                    'product_form': product_form,
-                    'error_message': "There was an error saving the product. Please try again."
-                })
-
-            # Process type-specific form only after base product is saved
+            # Now, handle specific fields based on product type
             product_type = product_form.cleaned_data['product_type']
 
-            # Handle type-specific fields
             if product_type == 'vinil':
                 vinil_form = VinilForm(request.POST)
                 if vinil_form.is_valid():
                     vinil = vinil_form.save(commit=False)
-                    vinil.product_ptr = product
+                    vinil.name = product.name
+                    vinil.description = product.description
+                    vinil.price = product.price
+                    vinil.image = product.image
+                    vinil.artist = product.artist
+                    vinil.company = product.company
+                    vinil.category = product.category
                     vinil.save()
 
             elif product_type == 'cd':
                 cd_form = CDForm(request.POST)
                 if cd_form.is_valid():
                     cd = cd_form.save(commit=False)
-                    cd.product_ptr = product
+                    cd.name = product.name
+                    cd.description = product.description
+                    cd.price = product.price
+                    cd.image = product.image
+                    cd.artist = product.artist
+                    cd.company = product.company
+                    cd.category = product.category
                     cd.save()
 
             elif product_type == 'clothing':
                 clothing_form = ClothingForm(request.POST)
                 if clothing_form.is_valid():
                     clothing = clothing_form.save(commit=False)
-                    clothing.product_ptr = product
+                    clothing.name = product.name
+                    clothing.description = product.description
+                    clothing.price = product.price
+                    clothing.image = product.image
+                    clothing.artist = product.artist
+                    clothing.company = product.company
+                    clothing.category = product.category
                     clothing.save()
 
             elif product_type == 'accessory':
                 accessory_form = AccessoryForm(request.POST)
                 if accessory_form.is_valid():
                     accessory = accessory_form.save(commit=False)
-                    accessory.product_ptr = product
+                    accessory.name = product.name
+                    accessory.description = product.description
+                    accessory.price = product.price
+                    accessory.image = product.image
+                    accessory.artist = product.artist
+                    accessory.company = product.company
+                    accessory.category = product.category
                     accessory.save()
-
-            # Redirect after successful save
+            # Redirect to company products after successful save
             return redirect('company_products', company_id=company.id)
 
         else:
-            print("Form errors:", product_form.errors)  # Debugging log for form errors
+            # Log form errors if the main product form is invalid
+            print("Product form errors:", product_form.errors)
 
-    # If GET request, initialize all forms
-    product_form = ProductForm()
-    vinil_form = VinilForm()
-    cd_form = CDForm()
-    clothing_form = ClothingForm()
-    accessory_form = AccessoryForm()
+    else:
+        # Initialize forms for GET request
+        product_form = ProductForm()
+        vinil_form = VinilForm()
+        cd_form = CDForm()
+        clothing_form = ClothingForm()
+        accessory_form = AccessoryForm()
 
+    # Context for the template
     context = {
         'company': company,
         'form': product_form,
@@ -1121,6 +1142,7 @@ def add_product_to_company(request, company_id):
         'clothing_form': clothing_form,
         'accessory_form': accessory_form,
     }
+
     return render(request, 'add_product_to_company.html', context)
 @login_required
 def edit_product(request, company_id, product_id):
