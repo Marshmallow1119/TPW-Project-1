@@ -146,9 +146,6 @@ def productDetails(request, identifier):
     return render(request, 'productDetails.html', context)
 
 
-from django.shortcuts import render
-from .models import Product, Artist
-
 def search(request):
     query = request.GET.get('search', '').strip()
 
