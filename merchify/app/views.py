@@ -870,15 +870,17 @@ def process_payment(request):
                 for item in cart_items:
                     product = item.product
                     stock_available = product.get_stock()
-
+                
                     if stock_available is not None and stock_available >= item.quantity:
                         if isinstance(product, (Vinil, CD, Accessory)):
-                            product.stock -= item.quantity
+                            new_stock = max(0, product.stock - item.quantity)
+                            product.stock = new_stock
                             product.save()
                         elif isinstance(product, Clothing) and item.size:
                             size = item.size
                             if size.stock >= item.quantity:
-                                size.stock -= item.quantity
+                                new_stock = max(0, size.stock - item.quantity)
+                                size.stock = new_stock
                                 size.save()
                             else:
                                 messages.error(request, f"Estoque insuficiente para {product.name} no tamanho {size.size}. Disponível: {size.stock}")
@@ -886,6 +888,7 @@ def process_payment(request):
                     else:
                         messages.error(request, f"Estoque insuficiente para {product.name}. Disponível: {stock_available}")
                         return redirect('payment_page')
+                
 
                     PurchaseProduct.objects.create(
                         purchase=purchase,
