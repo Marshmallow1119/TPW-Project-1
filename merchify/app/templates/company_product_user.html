@@ -1,0 +1,334 @@
+{% extends "layout.html" %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ company.name }}</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        .product-card {
+            position: relative;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .product-card img {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+        }
+
+        .favorite-icon {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            -webkit-text-stroke: 3px #434343;
+            text-shadow: 2px 2px 1px rgba(0, 0, 0, 0.3);
+        }
+
+        .favorite-icon:hover {
+            color: #a6a6a6;
+            transition: ease-in-out 0.3s;
+            scale: 1.2;
+        }
+
+        .favorite-icon.filled {
+            color: #e85454;
+        }
+
+        .product-name {
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .product-price {
+            color: #888;
+        }
+
+        .btn-add-to-cart {
+            background-color: #100f0f;
+            color: #fff;
+            font-weight: bold;
+        }
+
+        .company-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .company-header img {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 10px;
+            border: 3px solid white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .company-background {
+            position: relative;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            padding: 40px 20px;
+            border-radius: 10px;
+            min-height: 300px;
+            margin-left:150px;
+            margin-right:150px
+        }
+
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+        }
+
+        .company-header h2 {
+            color: white;
+            font-size: 50px;
+            font-weight: bold;
+        }
+
+        .produtos-container {
+            padding: 0 15px;
+            width: 100%;
+            margin-left: 10%; 
+        }
+
+        .hidden-filter {
+            display: none;
+        }
+
+        .col-md-3 {
+            max-width: 20%;
+        }
+
+        .col-md-9 {
+            max-width: 60%;
+        }
+
+        .produtos-container .col-6 {
+            flex: 0 0 33.333%;
+            max-width: 33.333%;
+        }
+    </style>
+</head>
+<body>
+    <div class="company-header company-background" style="background-image: url('{{ background_url }}');">
+        <div class="overlay">
+            {% if company.logo %}
+                <img src="{{ company.logo.url }}" alt="{{ company.name }}">
+            {% endif %}
+            <h2>{{ company.name }}</h2>
+        </div>
+    </div>
+    <div class="produtos-container mt-5">
+            <div class="row">
+                <div class="col-md-3">
+                    <h4>Filtros</h4>
+                        <div class="sidebar-filter bg-light p-3 rounded mb-4">
+                            <form method="get" action="{% url 'company_products' company.id %}" id="filterForm">
+                                <h5>Tipo de Produto</h5>
+                                <div class="form-group">
+                                    <input type="radio" name="type" value="Vinil" id="vinil" {% if request.GET.type == 'Vinil' %}checked{% endif %} onclick="showFilters(this.value)">
+                                    <label for="vinil">Vinil</label><br>
+                                    <input type="radio" name="type" value="CD" id="cd" {% if request.GET.type == 'CD' %}checked{% endif %} onclick="showFilters(this.value)">
+                                    <label for="cd">CD</label><br>
+                                    <input type="radio" name="type" value="Clothing" id="clothing" {% if request.GET.type == 'Clothing' %}checked{% endif %} onclick="showFilters(this.value)">
+                                    <label for="clothing">Roupas</label><br>
+                                    <input type="radio" name="type" value="Accessory" id="accessory" {% if request.GET.type == 'Accessory' %}checked{% endif %} onclick="showFilters(this.value)">
+                                    <label for="accessory">Acessórios</label>
+                                </div>
+                                <h5>Gênero</h5>
+                                <div class="form-group">
+                                    <select name="genreVinyl" class="form-control">
+                                        <option value="">Todos</option>
+                                        <option value="Rock" {% if request.GET.genreVinyl == 'Rock' %}selected{% endif %}>Rock</option>
+                                        <option value="Pop" {% if request.GET.genreVinyl == 'Pop' %}selected{% endif %}>Pop</option>
+                                        <option value="Jazz" {% if request.GET.genreVinyl == 'Jazz' %}selected{% endif %}>Jazz</option>
+                                        <option value="Hip-Hop" {% if request.GET.genreVinyl == 'Hip-Hop' %}selected{% endif %}>Hip-Hop</option>
+                                    </select>
+                                </div>
+                            </div>
+                        
+                            <div id="cd-filters" class="hidden-filter">
+                                <h5>Gênero</h5>
+                                <div class="form-group">
+                                    <select name="genreCD" class="form-control">
+                                        <option value="">Todos</option>
+                                        <option value="Rock" {% if request.GET.genreCD == 'Rock' %}selected{% endif %}>Rock</option>
+                                        <option value="Pop" {% if request.GET.genreCD == 'Pop' %}selected{% endif %}>Pop</option>
+                                        <option value="Jazz" {% if request.GET.genreCD == 'Jazz' %}selected{% endif %}>Jazz</option>
+                                        <option value="Hip-Hop" {% if request.GET.genreCD == 'Hip-Hop' %}selected{% endif %}>Hip-Hop</option>
+                                    </select>
+                                </div>
+                            </div>
+                        
+                            <div id="clothing-filters" class="hidden-filter">
+                                <h5>Cor</h5>
+                                <div class="form-group">
+                                    <select name="colorClothing" class="form-control">
+                                        <option value="">Todas</option>
+                                        <option value="Preto" {% if request.GET.colorClothing == 'Preto' %}selected{% endif %}>Preto</option>
+                                        <option value="Branco" {% if request.GET.colorClothing == 'Branco' %}selected{% endif %}>Branco</option>
+                                        <option value="Vermelho" {% if request.GET.colorClothing == 'Vermelho' %}selected{% endif %}>Vermelho</option>
+                                    </select>
+                                </div>
+                            </div>
+                        
+                            <div id="accessory-filters" class="hidden-filter">
+                                <h5>Cor</h5>
+                                <div class="form-group">
+                                    <select name="colorAccessory" class="form-control">
+                                        <option value="">Todas</option>
+                                        <option value="Preto" {% if request.GET.colorAccessory == 'Preto' %}selected{% endif %}>Preto</option>
+                                        <option value="Branco" {% if request.GET.colorAccessory == 'Branco' %}selected{% endif %}>Branco</option>
+                                    </select>
+                                </div>
+                        
+                                <h5>Tamanho</h5>
+                                <div class="form-group">
+                                    <select name="size" class="form-control">
+                                        <option value="">Todos</option>
+                                        <option value="S" {% if request.GET.size == 'S' %}selected{% endif %}>S</option>
+                                        <option value="M" {% if request.GET.size == 'M' %}selected{% endif %}>M</option>
+                                        <option value="L" {% if request.GET.size == 'L' %}selected{% endif %}>L</option>
+                                    </select>
+                                </div>
+                            </div>
+                                <h5>Faixa de Preço</h5>
+                                <div class="form-row">
+                                    <div class="col">
+                                        <label for="min-price">Minímo:</label>
+                                        <input type="number" name="min_price" id="min-price" class="form-control" placeholder="€0" value="{{ request.GET.min_price }}">
+                                    </div>
+                                    <div class="col">
+                                        <label for="max-price">Máximo:</label>
+                                        <input type="number" name="max_price" id="max-price" class="form-control" placeholder="€50" value="{{ request.GET.max_price }}">
+                                    </div>
+                                </div>
+                                <div class="form-group d-flex justify-content-between mt-3">
+                                    <button style="width: 48%" type="button" class="btn btn-secondary" onclick="resetForm()">Reiniciar Filtros</button>
+                                    <button style="width: 48%" type="submit" class="btn btn-success">Aplicar Filtros</button>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="col-md-9">
+                            <div class="row">
+                                {% for product in products %}
+                                <div class="col-6 col-md-4 col-lg-3">
+                                    <div class="product-card">
+                                        <i class="fa fa-heart favorite-icon {% if product.is_favorited %}filled{% endif %}" data-id="{{ product.id }}" onclick="addToFavorite('{{ product.id }}')"></i>
+                                        <a href="{% url 'productDetails' product.id %}">
+                                            <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                                            <div class="p-3 text-center">
+                                                <p class="product-name">{{ product.name }}</p>
+                                                <p class="product-price">{{ product.price }}€</p>
+                                                <button class="btn btn-add-to-cart w-100">Adicionar ao carrinho</button>
+                                            </div>
+                                        </a>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                </div>
+
+
+            </div>
+        </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        function addToFavorite(productId) {
+            fetch(`/favorites/add/${productId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({ product_id: productId })
+            })
+            .then(response => response.redirected ? window.location.href = response.url : response.json())
+            .then(data => {
+                const favoriteIcon = document.querySelector(`.favorite-icon[data-id="${productId}"]`);
+                if (data && data.success) {
+                    favoriteIcon.classList.toggle('filled', data.favorited);
+                }
+            })
+            .catch(error => console.error("Erro:", error));
+        }
+        function showFilters(type) {
+            // Hide all type-specific filters initially
+            document.getElementById("vinil-filters").classList.add("hidden-filter");
+            document.getElementById("cd-filters").classList.add("hidden-filter");
+            document.getElementById("clothing-filters").classList.add("hidden-filter");
+            document.getElementById("accessory-filters").classList.add("hidden-filter");
+
+            // Show only the selected type's filters
+            if (type === "Vinil") {
+                document.getElementById("vinil-filters").classList.remove("hidden-filter");
+            } else if (type === "CD") {
+                document.getElementById("cd-filters").classList.remove("hidden-filter");
+            } else if (type === "Clothing") {
+                document.getElementById("clothing-filters").classList.remove("hidden-filter");
+            } else if (type === "Accessory") {
+                document.getElementById("accessory-filters").classList.remove("hidden-filter");
+            }
+        }
+
+        // Automatically call showFilters() based on the currently selected product type when the page loads
+        document.addEventListener("DOMContentLoaded", function() {
+            const selectedType = document.querySelector('input[name="type"]:checked');
+            if (selectedType) {
+                showFilters(selectedType.value); // Pass the selected type's value
+            }
+        });
+
+        // Reset form function to clear all inputs, selections, and radio buttons
+        function resetForm() {
+            // Reset the form fields
+            document.getElementById("filterForm").reset();
+
+            // Uncheck any selected radio buttons for 'type' manually
+            document.querySelectorAll('input[name="type"]').forEach(radio => radio.checked = false);
+
+            // Hide all type-specific filters
+            document.getElementById("vinil-filters").classList.add("hidden-filter");
+            document.getElementById("cd-filters").classList.add("hidden-filter");
+            document.getElementById("clothing-filters").classList.add("hidden-filter");
+            document.getElementById("accessory-filters").classList.add("hidden-filter");
+
+            // Optional: Clear URL parameters for a full reset
+            const url = new URL(window.location.href);
+            url.search = "";
+            window.history.replaceState(null, "", url);
+        }
+    </script>
+</body>
+</html>
+{% endblock %}

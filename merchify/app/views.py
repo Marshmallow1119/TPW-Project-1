@@ -26,6 +26,11 @@ from django.contrib.auth import logout as auth_logout
 from .forms import RegisterForm, UploadUserProfilePicture, UpdatePassword, UpdateProfile
 from django.contrib.auth.models import User
 from django.db import transaction
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from .models import Product, Company
+from .forms import ProductForm, VinilForm, CDForm, ClothingForm, AccessoryForm
+
 
 
 User = get_user_model()
@@ -602,103 +607,142 @@ def submit_review(request, product_id):
 
         return redirect("productDetails", identifier=product_id)
     
+
+# Verificar favoritos para produtos e artistas
 @login_required
 def checkfavorite(request, category):
+    user = request.user
     if category == 'products':
-        favorite_products = Favorite.objects.filter(user=request.user).select_related('product')
+        favorite_products = Favorite.objects.filter(user=user).select_related('product')
         products_list = [
-            {'id': fav.product.id, 'name': fav.product.name, 'price': fav.product.price, 'image': fav.product.image.url}
-            for fav in favorite_products]
+            {
+                'id': fav.product.id,
+                'name': fav.product.name,
+                'price': fav.product.price,
+                'image': fav.product.image.url
+            }
+            for fav in favorite_products
+        ]
         return render(request, "favorites.html", {"favorite_products": products_list})
-    else:
-        favorite_artists = FavoriteArtist.objects.filter(user=request.user)
-        artists_list = {
-            {'id': fav.product.id, 'name': fav.product.name, 'image': fav.product.image.url}
-            for fav in favorite_artists
-        }
-        return render(request, "favorites.html", {"favorite_artists": artists_list})
 
-@login_required
-def checkfavoriteOld(request):
-
-        favorite_products = Favorite.objects.filter(user=request.user).select_related('product')
-        products_list = [
-            {'id': fav.product.id, 'name': fav.product.name, 'price': fav.product.price, 'image': fav.product.image.url}
-            for fav in favorite_products]
-        favorite_artists = FavoriteArtist.objects.filter(user=request.user)
+    elif category == 'artists':
+        favorite_artists = FavoriteArtist.objects.filter(user=user).select_related('artist')
         artists_list = [
-            {'id': fav.artist.id, 'name': fav.artist.name, 'image': fav.artist.image.url}
+            {
+                'id': fav.artist.id,
+                'name': fav.artist.name,
+                'image': fav.artist.image.url
+            }
             for fav in favorite_artists
         ]
-        category = request.GET.get('category', 'products')  # Default to 'products' if not provided
-        # Assuming you have logic to fetch favorite products and artists
-        return render(request, 'favorites.html', {'category': category, 'favorite_products': products_list,
-                                                    'favorite_artists': artists_list})
+        return render(request, "favorites.html", {"favorite_artists": artists_list})
 
+    return JsonResponse({"success": False, "message": "Invalid category."}, status=400)
 
+# Versão antiga corrigida
+@login_required
+def checkfavoriteOld(request):
+    user = request.user
 
+    favorite_products = Favorite.objects.filter(user=user).select_related('product')
+    products_list = [
+        {
+            'id': fav.product.id,
+            'name': fav.product.name,
+            'price': fav.product.price,
+            'image': fav.product.image.url
+        }
+        for fav in favorite_products
+    ]
 
+    favorite_artists = FavoriteArtist.objects.filter(user=user).select_related('artist')
+    artists_list = [
+        {
+            'id': fav.artist.id,
+            'name': fav.artist.name,
+            'image': fav.artist.image.url
+        }
+        for fav in favorite_artists
+    ]
+
+    category = request.GET.get('category', 'products')
+    return render(request, 'favorites.html', {
+        'category': category,
+        'favorite_products': products_list,
+        'favorite_artists': artists_list
+    })
+
+# Adicionar ou remover produto favorito
 @require_POST
 @login_required(login_url='/login/')
 def addtofavorite(request, product_id):
     try:
-        product = Product.objects.get(id=product_id)
+        product = get_object_or_404(Product, id=product_id)
         user = request.user
 
         favorite, created = Favorite.objects.get_or_create(user=user, product=product)
+        favorited = created
 
-        if created:
-            favorited = True
-        else:
+        if not created:
             favorite.delete()
-            favorited = False
 
         return JsonResponse({"success": True, "favorited": favorited})
 
     except Product.DoesNotExist:
         return JsonResponse({"success": False, "message": "Product not found."}, status=404)
-    except Exception as e:
-        return JsonResponse({"success": False, "message": str(e)}, status=500)
 
 @require_POST
+@login_required(login_url='/login/')
 def addtofavoriteartist(request, artist_id):
     try:
-        artist = Artist.objects.get(id=artist_id)
+        artist = get_object_or_404(Artist, id=artist_id)
         user = request.user
 
-        favorite, created = FavoriteArtist.objects.get_or_create(user=user, artist=artist)
+        # Verificar se o artista foi encontrado corretamente
+        if not artist:
+            return JsonResponse({"success": False, "message": "Invalid artist."}, status=400)
 
-        if created:
-            favorited = True
-        else:
-            favorite.delete()
-            favorited = False
+        # Obter ou criar o favorito
+        favorite_artist, created = FavoriteArtist.objects.get_or_create(user=user, artist=artist)
+        favorited = created
+
+        # Se o favorito já existir, removê-lo
+        if not created:
+            favorite_artist.delete()
+
         return JsonResponse({"success": True, "favorited": favorited})
 
     except Artist.DoesNotExist:
-        return JsonResponse({"success": False, "message": "Product not found."}, status=404)
+        return JsonResponse({"success": False, "message": "Artist not found."}, status=404)
     except Exception as e:
+        # Para capturar outros erros
         return JsonResponse({"success": False, "message": str(e)}, status=500)
 
+# Remover produto dos favoritos
 @login_required
 def remove_from_favorites(request, product_id):
     try:
-        product = Product.objects.get(id=product_id)
+        product = get_object_or_404(Product, id=product_id)
         user = request.user
         Favorite.objects.filter(user=user, product=product).delete()
-        return redirect( 'favorites')
+        return redirect('favorites')
+
     except Product.DoesNotExist:
         return JsonResponse({"success": False, "message": "Product not found."}, status=404)
 
+# Remover artista dos favoritos
 @login_required
 def remove_from_favorites_artist(request, artist_id):
     try:
-        artist = Artist.objects.get(id=artist_id)
+        artist = get_object_or_404(Artist, id=artist_id)
         user = request.user
         FavoriteArtist.objects.filter(user=user, artist=artist).delete()
-        return redirect( 'favorites')
-    except Product.DoesNotExist:
-        return JsonResponse({"success": False, "message": "Product not found."}, status=404)
+        return redirect('favorites')
+
+    except Artist.DoesNotExist:
+        return JsonResponse({"success": False, "message": "Artist not found."}, status=404)
+
+
 @login_required
 def process_payment(request):
     if request.method == 'POST' and 'complete_payment' in request.POST:
@@ -854,6 +898,13 @@ def company_product_detail(request, company_id, product_id):
         'reviews': reviews,
     })
 
+def company_products_user(request, company_id):
+    company = get_object_or_404(Company, id=company_id)
+    products = Product.objects.filter(company=company)
+    return render(request, 'company_product_user.html', {'company': company, 'products': products})
+
+
+
 @login_required
 def add_product_to_company(request, company_id):
     company = Company.objects.get(id=company_id)
@@ -905,16 +956,65 @@ def add_product_to_company(request, company_id):
 @login_required
 def edit_product(request, product_id):
     product = get_object_or_404(Product, id=product_id)
+    company = product.company
+
+    product_form = ProductForm(request.POST or None, request.FILES or None, instance=product)
+
+    product_type = product.get_product_type()
+    vinil_form = cd_form = clothing_form = accessory_form = None
+    
+    if product_type == 'Vinil':
+        vinil_instance = getattr(product, 'vinil', None)
+        vinil_form = VinilForm(request.POST or None, instance=vinil_instance or Vinil())
+    elif product_type == 'CD':
+        cd_instance = getattr(product, 'cd', None)
+        cd_form = CDForm(request.POST or None, instance=cd_instance or CD())
+    elif product_type == 'Clothing':
+        clothing_instance = getattr(product, 'clothing', None)
+        clothing_form = ClothingForm(request.POST or None, instance=clothing_instance or Clothing())
+    elif product_type == 'Accessory':
+        accessory_instance = getattr(product, 'accessory', None)
+        accessory_form = AccessoryForm(request.POST or None, instance=accessory_instance or Accessory())
 
     if request.method == 'POST':
-        form = ProductForm(request.POST, request.FILES, instance=product)
-        if form.is_valid():
-            form.save()
-            return redirect('company_products', company_id=product.company.id)
-    else:
-        form = ProductForm(instance=product)
+        if product_form.is_valid():
+            product = product_form.save(commit=False)
+            product.company = company  
+            product.save()
 
-    return render(request, 'edit_product.html', {'form': form, 'product': product})
+            if product_type == 'Vinil' and vinil_form and vinil_form.is_valid():
+                vinil_instance = vinil_form.save(commit=False)
+                vinil_instance.product = product
+                vinil_instance.save()
+            elif product_type == 'CD' and cd_form and cd_form.is_valid():
+                cd_instance = cd_form.save(commit=False)
+                cd_instance.product = product
+                cd_instance.save()
+            elif product_type == 'Clothing' and clothing_form and clothing_form.is_valid():
+                clothing_instance = clothing_form.save(commit=False)
+                clothing_instance.product = product
+                clothing_instance.save()
+            elif product_type == 'Accessory' and accessory_form and accessory_form.is_valid():
+                accessory_instance = accessory_form.save(commit=False)
+                accessory_instance.product = product
+                accessory_instance.save()
+
+            return redirect('company_products', company_id=company.id)
+
+    context = {
+        'company': company,
+        'form': product_form,
+        'vinil_form': vinil_form,
+        'cd_form': cd_form,
+        'clothing_form': clothing_form,
+        'accessory_form': accessory_form,
+        'product': product,
+        'product_type': product_type
+    }
+    return render(request, 'edit_product.html', context)
+
+
+
 
 @login_required
 def delete_product(request, product_id):
