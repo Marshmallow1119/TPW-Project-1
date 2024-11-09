@@ -93,6 +93,8 @@
             padding: 40px 20px;
             border-radius: 10px;
             min-height: 300px;
+            margin-left:150px;
+            margin-right:150px
         }
 
         .overlay {
@@ -118,12 +120,28 @@
         .produtos-container {
             padding: 0 15px;
             width: 100%;
+            margin-left: 10%; 
         }
 
         .hidden-filter {
             display: none;
         }
-    </style>
+
+        .col-md-3 {
+            max-width: 20%;
+        }
+
+        .col-md-9 {
+            max-width: 60%;
+        }
+
+        .produtos-container .col-6 {
+            flex: 0 0 33.333%;
+            max-width: 33.333%;
+        }
+
+
+        </style>
 </head>
 <body>
     <div class="artist-header artist-background" style="background-image: url('{{ background_url }}');">
@@ -136,14 +154,10 @@
     </div>
     <div class="produtos-container mt-5">
             <div class="row">
-                <!-- Sidebar Filter Section (left side) -->
                 <div class="col-md-3">
                     <h4>Filtros</h4>
                         <div class="sidebar-filter bg-light p-3 rounded mb-4">
-                                <!-- Filter by Product Type -->
-                            <!-- Form Section with Product Filters -->
                             <form method="get" action="{% url 'product_list' %}" id="filterForm">
-                                <!-- Product Type Filter -->
                                 <h5>Tipo de Produto</h5>
                                 <div class="form-group">
                                     <input type="radio" name="type" value="Vinil" id="vinil" {% if request.GET.type == 'Vinil' %}checked{% endif %} onclick="showFilters(this.value)">
@@ -155,8 +169,6 @@
                                     <input type="radio" name="type" value="Accessory" id="accessory" {% if request.GET.type == 'Accessory' %}checked{% endif %} onclick="showFilters(this.value)">
                                     <label for="accessory">Acessórios</label>
                                 </div>
-                
-                                <!-- Type-Specific Filters and Other Filters (as before) -->
                                 <div id="vinil-filters" class="hidden-filter">
                         <h5>Gênero</h5>
                         <div class="form-group">
@@ -215,7 +227,6 @@
                             </select>
                         </div>
                     </div>
-                                <!-- Custom Price Range Filter -->
                                 <h5>Faixa de Preço</h5>
                                 <div class="form-row">
                                     <div class="col">
@@ -227,9 +238,6 @@
                                         <input type="number" name="max_price" id="max-price" class="form-control" placeholder="€50" value="{{ request.GET.max_price }}">
                                     </div>
                                 </div>
-                
-                                <!-- Other Filters, Category, Artist, Apply and Reset Buttons (as before) -->
-                
                                 <div class="form-group d-flex justify-content-between mt-3">
                                     <button style="width: 48%"  type="button" class="btn btn-secondary" onclick="resetForm()">Reiniciar Filtros</button>
                                     <button style="width: 48%" type="submit" class="btn btn-success">Aplicar Filtros</button>
@@ -240,7 +248,6 @@
                             </div>
                 </div>
                 
-                <!-- Product Cards Section (right side) -->
                 <div class="col-md-9">
                     <div class="row">
                         {% for product in products %}
