@@ -1125,65 +1125,106 @@ def add_product_to_company(request, company_id):
     }
     return render(request, 'add_product_to_company.html', context)
 @login_required
-def edit_product(request, product_id):
-    product = get_object_or_404(Product, id=product_id)
-    company = product.company
+def edit_product(request, company_id, product_id):
+    company = get_object_or_404(Company, id=company_id)
+    product = get_object_or_404(Product, id=product_id, company=company)
 
-    product_form = ProductForm(request.POST or None, request.FILES or None, instance=product)
-
-    product_type = product.get_product_type()
-    vinil_form = cd_form = clothing_form = accessory_form = None
-    
-    if product_type == 'Vinil':
-        vinil_instance = getattr(product, 'vinil', None)
-        vinil_form = VinilForm(request.POST or None, instance=vinil_instance or Vinil())
-    elif product_type == 'CD':
-        cd_instance = getattr(product, 'cd', None)
-        cd_form = CDForm(request.POST or None, instance=cd_instance or CD())
-    elif product_type == 'Clothing':
-        clothing_instance = getattr(product, 'clothing', None)
-        clothing_form = ClothingForm(request.POST or None, instance=clothing_instance or Clothing())
-    elif product_type == 'Accessory':
-        accessory_instance = getattr(product, 'accessory', None)
-        accessory_form = AccessoryForm(request.POST or None, instance=accessory_instance or Accessory())
+    # Get the dynamic product type
+    product_type = product.get_product_type().lower()  # e.g., 'vinil', 'cd', etc.
 
     if request.method == 'POST':
-        if product_form.is_valid():
-            product = product_form.save(commit=False)
-            product.company = company  
-            product.save()
+        product_form = ProductForm(request.POST, request.FILES, instance=product)
 
-            if product_type == 'Vinil' and vinil_form and vinil_form.is_valid():
-                vinil_instance = vinil_form.save(commit=False)
-                vinil_instance.product = product
-                vinil_instance.save()
-            elif product_type == 'CD' and cd_form and cd_form.is_valid():
-                cd_instance = cd_form.save(commit=False)
-                cd_instance.product = product
-                cd_instance.save()
-            elif product_type == 'Clothing' and clothing_form and clothing_form.is_valid():
-                clothing_instance = clothing_form.save(commit=False)
-                clothing_instance.product = product
-                clothing_instance.save()
-            elif product_type == 'Accessory' and accessory_form and accessory_form.is_valid():
-                accessory_instance = accessory_form.save(commit=False)
-                accessory_instance.product = product
-                accessory_instance.save()
+        if product_form.is_valid():
+            # Save base product fields
+            product = product_form.save(commit=False)
+            product.company = company
+
+            # Ensure price is provided
+            price = product_form.cleaned_data.get('price')
+            if price is None:
+                return render(request, 'edit_product.html', {
+                    'product_form': product_form,
+                    'error_message': "Price is required.",
+                    'company': company,
+                })
+
+            product.price = price  # Explicitly set price
+            try:
+                product.save()  # Save the Product instance with price
+            except IntegrityError:
+                return render(request, 'edit_product.html', {
+                    'product_form': product_form,
+                    'error_message': "There was an error saving the product. Please try again.",
+                    'company': company,
+                })
+
+            # Save type-specific fields based on product type
+            if product_type == 'vinil':
+                vinil = get_object_or_404(Vinil, product_ptr=product)
+                vinil_form = VinilForm(request.POST, instance=vinil)
+                if vinil_form.is_valid():
+                    vinil_form.save()
+
+            elif product_type == 'cd':
+                cd = get_object_or_404(CD, product_ptr=product)
+                cd_form = CDForm(request.POST, instance=cd)
+                if cd_form.is_valid():
+                    cd_form.save()
+
+            elif product_type == 'clothing':
+                clothing = get_object_or_404(Clothing, product_ptr=product)
+                clothing_form = ClothingForm(request.POST, instance=clothing)
+                if clothing_form.is_valid():
+                    clothing_form.save()
+
+            elif product_type == 'accessory':
+                accessory = get_object_or_404(Accessory, product_ptr=product)
+                accessory_form = AccessoryForm(request.POST, instance=accessory)
+                if accessory_form.is_valid():
+                    accessory_form.save()
 
             return redirect('company_products', company_id=company.id)
 
+    else:
+        # Load existing data into forms
+        product_form = ProductForm(instance=product)
+
+        # Initialize type-specific form with the current product's data
+        if product_type == 'vinil':
+            vinil = get_object_or_404(Vinil, product_ptr=product)
+            vinil_form = VinilForm(instance=vinil)
+        else:
+            vinil_form = VinilForm()
+
+        if product_type == 'cd':
+            cd = get_object_or_404(CD, product_ptr=product)
+            cd_form = CDForm(instance=cd)
+        else:
+            cd_form = CDForm()
+
+        if product_type == 'clothing':
+            clothing = get_object_or_404(Clothing, product_ptr=product)
+            clothing_form = ClothingForm(instance=clothing)
+        else:
+            clothing_form = ClothingForm()
+
+        if product_type == 'accessory':
+            accessory = get_object_or_404(Accessory, product_ptr=product)
+            accessory_form = AccessoryForm(instance=accessory)
+        else:
+            accessory_form = AccessoryForm()
+
     context = {
         'company': company,
-        'form': product_form,
+        'product': product,
+        'product_form': product_form,
         'vinil_form': vinil_form,
         'cd_form': cd_form,
         'clothing_form': clothing_form,
         'accessory_form': accessory_form,
-        'product': product,
-        'product_type': product_type
     }
     return render(request, 'edit_product.html', context)
-
 
 
 
@@ -1197,9 +1238,10 @@ def delete_product(request, product_id):
 def admin_home(request):
     users = User.objects.all()
     products = Product.objects.all()
+    companies = Company.objects.all()
     for product in products:
         product.review_count = Review.objects.filter(product=product).count()  # Count reviews for this product
-    return render(request, 'admin_home.html', {'users': users, 'products': products})
+    return render(request, 'admin_home.html', {'users': users, 'products': products, 'companies': companies})
 def delete_user(request, user_id):
     user = get_object_or_404(User, id=user_id)
     user.delete()
@@ -1249,6 +1291,7 @@ def add_company(request):
                 user.address = company.address
                 user.company = company
                 user.set_password(user_form.cleaned_data['password'])
+                user.save()
                 group = Group.objects.get(name='company')
                 user.groups.add(group)
                 user.save()

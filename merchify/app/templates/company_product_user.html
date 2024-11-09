@@ -243,7 +243,9 @@
                                 {% for product in products %}
                                 <div class="col-6 col-md-4 col-lg-3">
                                     <div class="product-card">
+                                        {% if not user.is_authenticated or user.user_type == 'individual' %}
                                         <i class="fa fa-heart favorite-icon {% if product.is_favorited %}filled{% endif %}" data-id="{{ product.id }}" onclick="addToFavorite('{{ product.id }}')"></i>
+                                    {% endif %}
                                         <a href="{% url 'productDetails' product.id %}" style="color: black; text-decoration: none">
                                             <img src="{{ product.image.url }}" alt="{{ product.name }}">
                                             <div class="p-3 text-center">
