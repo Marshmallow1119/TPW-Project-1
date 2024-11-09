@@ -4,6 +4,7 @@ import logging
 from itertools import product
 
 import re
+from sqlite3 import IntegrityError
 from urllib.parse import urlencode
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -904,44 +905,81 @@ def company_products_user(request, company_id):
     return render(request, 'company_product_user.html', {'company': company, 'products': products})
 
 
-
 @login_required
 def add_product_to_company(request, company_id):
-    company = Company.objects.get(id=company_id)
+    company = get_object_or_404(Company, id=company_id)
+
     if request.method == 'POST':
         product_form = ProductForm(request.POST, request.FILES)
+
         if product_form.is_valid():
+            # Create and set the base Product instance without saving
             product = product_form.save(commit=False)
-            product.company = company  # Set company
-            product.save()
+            product.company = company
 
-            # Save additional fields based on product type
+            # Ensure that price is provided and set
+            price = product_form.cleaned_data.get('price')
+            if price is None:
+                print("Error: Price is missing!")  # Debugging log
+                return render(request, 'add_product_to_company.html', {
+                    'product_form': product_form,
+                    'error_message': "Price is required."
+                })
+
+            product.price = price  # Explicitly set price
+            try:
+                product.save()  # Save the Product instance with price
+            except IntegrityError:
+                # If product fails to save, show an error and prevent further processing
+                return render(request, 'add_product_to_company.html', {
+                    'product_form': product_form,
+                    'error_message': "There was an error saving the product. Please try again."
+                })
+
+            # Process type-specific form only after base product is saved
             product_type = product_form.cleaned_data['product_type']
-            if product_type == 'vinil':
-                vinil_form = VinilForm(request.POST, instance=product)
-                if vinil_form.is_valid():
-                    vinil_form.save()
-            elif product_type == 'cd':
-                cd_form = CDForm(request.POST, instance=product)
-                if cd_form.is_valid():
-                    cd_form.save()
-            elif product_type == 'clothing':
-                clothing_form = ClothingForm(request.POST, instance=product)
-                if clothing_form.is_valid():
-                    clothing_form.save()
-            elif product_type == 'accessory':
-                accessory_form = AccessoryForm(request.POST, instance=product)
-                if accessory_form.is_valid():
-                    accessory_form.save()
 
+            # Handle type-specific fields
+            if product_type == 'vinil':
+                vinil_form = VinilForm(request.POST)
+                if vinil_form.is_valid():
+                    vinil = vinil_form.save(commit=False)
+                    vinil.product_ptr = product
+                    vinil.save()
+
+            elif product_type == 'cd':
+                cd_form = CDForm(request.POST)
+                if cd_form.is_valid():
+                    cd = cd_form.save(commit=False)
+                    cd.product_ptr = product
+                    cd.save()
+
+            elif product_type == 'clothing':
+                clothing_form = ClothingForm(request.POST)
+                if clothing_form.is_valid():
+                    clothing = clothing_form.save(commit=False)
+                    clothing.product_ptr = product
+                    clothing.save()
+
+            elif product_type == 'accessory':
+                accessory_form = AccessoryForm(request.POST)
+                if accessory_form.is_valid():
+                    accessory = accessory_form.save(commit=False)
+                    accessory.product_ptr = product
+                    accessory.save()
+
+            # Redirect after successful save
             return redirect('company_products', company_id=company.id)
 
-    else:
-        product_form = ProductForm()
-        vinil_form = VinilForm()
-        cd_form = CDForm()
-        clothing_form = ClothingForm()
-        accessory_form = AccessoryForm()
+        else:
+            print("Form errors:", product_form.errors)  # Debugging log for form errors
+
+    # If GET request, initialize all forms
+    product_form = ProductForm()
+    vinil_form = VinilForm()
+    cd_form = CDForm()
+    clothing_form = ClothingForm()
+    accessory_form = AccessoryForm()
 
     context = {
         'company': company,
@@ -952,7 +990,6 @@ def add_product_to_company(request, company_id):
         'accessory_form': accessory_form,
     }
     return render(request, 'add_product_to_company.html', context)
-
 @login_required
 def edit_product(request, product_id):
     product = get_object_or_404(Product, id=product_id)

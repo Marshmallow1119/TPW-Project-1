@@ -32,10 +32,7 @@
                     <label for="price" class="form-label">Price (€)</label>
                     {{ form.price|add_class:"form-control" }}
                 </div>
-                <div class="col-md-4">
-                    <label for="category" class="form-label">Category</label>
-                    {{ form.category|add_class:"form-control" }}
-                </div>
+                <input type="hidden" name="category" id="category" value="">
                 <div class="col-md-4">
                     <label for="image" class="form-label">Product Image</label>
                     {{ form.image|add_class:"form-control" }}
@@ -122,10 +119,11 @@
     </form>
 </div>
 
-<!-- JavaScript to handle dynamic field visibility based on product type -->
+<!-- JavaScript to handle dynamic field visibility and category assignment based on product type -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const productTypeField = document.querySelector('[name="product_type"]');
+    const categoryField = document.getElementById('category');
     const vinilFields = document.getElementById('vinil-fields');
     const cdFields = document.getElementById('cd-fields');
     const clothingFields = document.getElementById('clothing-fields');
@@ -151,19 +149,23 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         const productType = productTypeField.value;
-        // Show the relevant section and enable its fields
+        // Set category and show the relevant section
         if (productType === 'vinil') {
             vinilFields.style.display = 'block';
             enableFields(vinilFields);
+            categoryField.value = 'Vinyl';
         } else if (productType === 'cd') {
             cdFields.style.display = 'block';
             enableFields(cdFields);
+            categoryField.value = 'CD';
         } else if (productType === 'clothing') {
             clothingFields.style.display = 'block';
             enableFields(clothingFields);
+            categoryField.value = 'Clothing';
         } else if (productType === 'accessory') {
             accessoryFields.style.display = 'block';
             enableFields(accessoryFields);
+            categoryField.value = 'Accessory';
         }
     }
 

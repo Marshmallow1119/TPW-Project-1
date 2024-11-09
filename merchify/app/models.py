@@ -60,12 +60,12 @@ class Product(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=50)
     description = models.TextField()
-    price = models.FloatField()
+    price = models.FloatField(default=30, null=True)
     image = models.ImageField(upload_to='products/')
-    artist = models.ForeignKey('Artist', on_delete=models.CASCADE)
-    company = models.ForeignKey('Company', on_delete=models.CASCADE, related_name='products')
+    artist = models.ForeignKey('Artist', on_delete=models.CASCADE, null=True)
+    company = models.ForeignKey('Company', on_delete=models.CASCADE, related_name='products', null=True)
     category = models.CharField(max_length=50)
-    addedProduct = models.DateField(auto_now_add=True)
+    addedProduct = models.DateField(auto_now_add=True, null=True)
     count = models.IntegerField(default=0)
 
     def get_average_rating(self):
