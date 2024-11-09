@@ -33,7 +33,7 @@ urlpatterns = [
     path("logout", views.logout, name="logout"),
     path('products/<str:name>/', views.artistsProducts, name='artistsProducts'),
     path('product/<int:identifier>/',  views.productDetails, name='productDetails'),
-    path('search/', views.search_products, name='search_products'),
+    path('search/', views.search, name='search'),
     path('register/', views.register, name='register'),
     path('cart/', views.viewCart, name='cart'),
     path('add-to-cart/<int:product_id>/', views.add_to_cart, name = 'add_to_cart'),
@@ -61,6 +61,7 @@ urlpatterns = [
     path('account/order_details/<int:order_id>/', views.order_details, name='order_details'),
     path('delete/review/<int:review_id>/', views.delete_review, name='delete_review'),
     path('apply_discount/', views.apply_discount, name='apply_discount'),
+    path('companhias/', views.companhias, name='companhias'),
 ]   
 
 

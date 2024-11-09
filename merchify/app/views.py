@@ -65,8 +65,10 @@ def home(request):
 
     return render(request, 'home.html', {'artists': artists, 'products': recent_products, 'show_promotion': show_promotion, 'recently_viewed_products': recently_viewed_products})
 
-# def home(request):
-#     return render(request, 'home.html')
+
+def companhias(request):
+    companies = Company.objects.all()
+    return render(request, 'companhias.html', {'companhias': companies})
 
 def produtos(request):
     produtos= Product.objects.all()
@@ -152,15 +154,24 @@ def productDetails(request, identifier):
     return render(request, 'productDetails.html', context)
 
 
-def search_products(request):
-    query = request.GET.get('search', '')
-    products = Product.objects.filter(name__icontains=query) if query else Product.objects.none()
-    if query == '':
-        products = Product.objects.all()
-    return render(request, 'search_results.html', {'products': products, 'query': query})
+from django.shortcuts import render
+from .models import Product, Artist
 
+def search(request):
+    query = request.GET.get('search', '').strip()
 
+    if query:
+        products = Product.objects.filter(name__icontains=query.strip()).exclude(name__isnull=True).exclude(name='')
+        artists = Artist.objects.filter(name__icontains=query.strip()).exclude(name__isnull=True).exclude(name='')
+    else:
+        products = Product.objects.none()
+        artists = Artist.objects.none()
 
+    return render(request, 'search_results.html', {
+        'products': products,  
+        'artists': artists,
+        'query': query,
+    })
 
 def register(request):
     if request.method == 'POST':
@@ -774,7 +785,6 @@ def delete_review(request, review_id):
     product = review.product
     company = product.company
 
-    # Verifica se o utilizador é administrador ou proprietário da companhia do produto
     if request.user.user_type == 'admin' or (request.user.user_type == 'company' and request.user.company == company):
         review.delete()
         messages.success(request, "Avaliação removida com sucesso.")
