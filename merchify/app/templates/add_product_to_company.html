@@ -124,29 +124,52 @@
 
 <!-- JavaScript to handle dynamic field visibility based on product type -->
 <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const productTypeField = document.querySelector('[name="product_type"]');
-            const vinilFields = document.getElementById('vinil-fields');
-            const cdFields = document.getElementById('cd-fields');
-            const clothingFields = document.getElementById('clothing-fields');
-            const accessoryFields = document.getElementById('accessory-fields');
+document.addEventListener('DOMContentLoaded', function() {
+    const productTypeField = document.querySelector('[name="product_type"]');
+    const vinilFields = document.getElementById('vinil-fields');
+    const cdFields = document.getElementById('cd-fields');
+    const clothingFields = document.getElementById('clothing-fields');
+    const accessoryFields = document.getElementById('accessory-fields');
 
-            function updateFieldVisibility() {
-                vinilFields.style.display = 'none';
-                cdFields.style.display = 'none';
-                clothingFields.style.display = 'none';
-                accessoryFields.style.display = 'none';
-
-                const productType = productTypeField.value;
-                if (productType === 'vinil') vinilFields.style.display = 'block';
-                else if (productType === 'cd') cdFields.style.display = 'block';
-                else if (productType === 'clothing') clothingFields.style.display = 'block';
-                else if (productType === 'accessory') accessoryFields.style.display = 'block';
-            }
-
-            updateFieldVisibility();
-
-            productTypeField.addEventListener('change', updateFieldVisibility);
+    function disableFields(container) {
+        container.querySelectorAll('input, select, textarea').forEach(field => {
+            field.disabled = true;
         });
+    }
+
+    function enableFields(container) {
+        container.querySelectorAll('input, select, textarea').forEach(field => {
+            field.disabled = false;
+        });
+    }
+
+    function updateFieldVisibility() {
+        // Hide all sections and disable their fields
+        [vinilFields, cdFields, clothingFields, accessoryFields].forEach(section => {
+            section.style.display = 'none';
+            disableFields(section);
+        });
+
+        const productType = productTypeField.value;
+        // Show the relevant section and enable its fields
+        if (productType === 'vinil') {
+            vinilFields.style.display = 'block';
+            enableFields(vinilFields);
+        } else if (productType === 'cd') {
+            cdFields.style.display = 'block';
+            enableFields(cdFields);
+        } else if (productType === 'clothing') {
+            clothingFields.style.display = 'block';
+            enableFields(clothingFields);
+        } else if (productType === 'accessory') {
+            accessoryFields.style.display = 'block';
+            enableFields(accessoryFields);
+        }
+    }
+
+    updateFieldVisibility(); // Initial call to set the correct visibility and field state
+
+    productTypeField.addEventListener('change', updateFieldVisibility);
+});
 </script>
 {% endblock %}

@@ -670,19 +670,19 @@ def add_product_to_company(request, company_id):
             # Save additional fields based on product type
             product_type = product_form.cleaned_data['product_type']
             if product_type == 'vinil':
-                vinil_form = VinilForm(request.POST, instance=product, required=False)
+                vinil_form = VinilForm(request.POST, instance=product)
                 if vinil_form.is_valid():
                     vinil_form.save()
             elif product_type == 'cd':
-                cd_form = CDForm(request.POST, instance=product, required=False)
+                cd_form = CDForm(request.POST, instance=product)
                 if cd_form.is_valid():
                     cd_form.save()
             elif product_type == 'clothing':
-                clothing_form = ClothingForm(request.POST, instance=product, required=False)
+                clothing_form = ClothingForm(request.POST, instance=product)
                 if clothing_form.is_valid():
                     clothing_form.save()
             elif product_type == 'accessory':
-                accessory_form = AccessoryForm(request.POST, instance=product, required=False)
+                accessory_form = AccessoryForm(request.POST, instance=product)
                 if accessory_form.is_valid():
                     accessory_form.save()
 
