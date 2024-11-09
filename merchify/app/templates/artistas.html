@@ -53,7 +53,7 @@
         }
 
         .favorite-icon.filled {
-            color: #e85454;
+            color: #e85454 !important;
         }
     </style>
     {% endblock %}
@@ -99,7 +99,7 @@
         .then(data => {
             const favoriteIcon = document.querySelector(`.favorite-icon[data-id="${artistId}"]`);
             if (data && data.success) {
-                favoriteIcon.classList.toggle('filled', data.favorited);
+            favoriteIcon.classList.toggle('filled', data.favorited);
             }
         })
 
