@@ -51,6 +51,12 @@ Neste primeiro projeto desenvolvemos uma aplicação web usando a framework Djan
 - Logout
 - Ver dados sobre os próprios produtos
 
+## Funcionalidades que poderiamos implementar no futuro
+
+- 
+-
+
+
 ## Informação de autenticação de users;
 
 ### Admin
@@ -77,7 +83,7 @@ Neste primeiro projeto desenvolvemos uma aplicação web usando a framework Djan
 | ---------------- | --------- | -------------------- |
 | Tomás Brás       | 112665    | tomasbras@ua.pt      |
 | Afonso Ferreira  | 113480    | afonso.ferreira@ua.pt|
-| Carolina Prata   |           | mendes.j@ua.pt       |
+| Carolina Prata   | 114246    | carolinaprata@ua.pt  |
 
 
 ## Deployment (PythonAnyWhere)
