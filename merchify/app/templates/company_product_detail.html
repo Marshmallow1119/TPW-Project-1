@@ -85,7 +85,7 @@
                 <i class="fa fa-heart text-danger"></i> Favoritos: {{ product.favorites_count }}
             </div>
             <div class="d-flex mt-3">
-                <a href="{% url 'edit_product' product.id company.id %}" class="btn btn-warning me-2">Edit</a>
+               <a href="{% url 'edit_product' company_id=product.company.id product_id=product.id %}" class="btn btn-warning me-2">Edit</a>
                 <form action="{% url 'delete_product' product.id %}" method="post" style="display:inline;">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this product?');">
