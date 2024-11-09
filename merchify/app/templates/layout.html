@@ -59,6 +59,9 @@
                     <li class="nav-item">
                         <a class="nav-link {% if request.resolver_match.url_name == 'artistas' %}active{% endif %}" href="{% url 'artistas' %}">Artistas e Bandas</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'companhias' %}active{% endif %}" href="{% url 'companhias' %}">Companhias</a>
+                    </li>
                 </ul>
 
                 {% if user.is_authenticated %}

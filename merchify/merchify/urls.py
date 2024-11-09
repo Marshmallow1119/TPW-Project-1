@@ -60,6 +60,7 @@ urlpatterns = [
     path('account/order_details/<int:order_id>/', views.order_details, name='order_details'),
     path('delete/review/<int:review_id>/', views.delete_review, name='delete_review'),
     path('apply_discount/', views.apply_discount, name='apply_discount'),
+    path('companhias/', views.companhias, name='companhias'),
 ]   
 
 

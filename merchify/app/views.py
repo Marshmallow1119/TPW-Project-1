@@ -65,8 +65,10 @@ def home(request):
 
     return render(request, 'home.html', {'artists': artists, 'products': recent_products, 'show_promotion': show_promotion, 'recently_viewed_products': recently_viewed_products})
 
-# def home(request):
-#     return render(request, 'home.html')
+
+def companhias(request):
+    companies = Company.objects.all()
+    return render(request, 'companhias.html', {'companhias': companies})
 
 def produtos(request):
     produtos= Product.objects.all()
@@ -747,7 +749,6 @@ def delete_review(request, review_id):
     product = review.product
     company = product.company
 
-    # Verifica se o utilizador é administrador ou proprietário da companhia do produto
     if request.user.user_type == 'admin' or (request.user.user_type == 'company' and request.user.company == company):
         review.delete()
         messages.success(request, "Avaliação removida com sucesso.")
