@@ -48,6 +48,7 @@ urlpatterns = [
     path('product/<int:product_id>/delete/', views.delete_product, name='delete_product'),
     path("favorites/", views.checkfavorite, name="favorites"),
     path('favorites/add/<int:product_id>/', views.addtofavorite, name='addtofavorite'),
+    path('favorites/add/artist/<int:artist_id>/', views.addtofavoriteartist, name="addtofavoriteartist"),
     path('favorites/remove/<int:product_id>/', views.remove_from_favorites, name='remove_from_favorites'),
     path('payment/', views.payment_page, name='payment_page'),
     path('delete_user/<int:user_id>/', views.delete_user, name='delete_user'),

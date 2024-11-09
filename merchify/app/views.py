@@ -79,8 +79,16 @@ def produtos(request):
 
 def artistas(request):
     artists = Artist.objects.all()
+    if request.user.is_authenticated:
+        favorited_artist_ids = FavoriteArtist.objects.filter(user=request.user).values_list('artist_id', flat=True)
+    else:
+        favorited_artist_ids = []
+
     for artist in artists:
-        print(artist.image)
+        artist.is_favorited = artist.id in favorited_artist_ids
+
+    print(favorited_artist_ids)
+
     return render(request, 'artistas.html', {'artists': artists})
 
 
@@ -486,6 +494,25 @@ def addtofavorite(request, product_id):
             favorite.delete()
             favorited = False
 
+        return JsonResponse({"success": True, "favorited": favorited})
+
+    except Product.DoesNotExist:
+        return JsonResponse({"success": False, "message": "Product not found."}, status=404)
+    except Exception as e:
+        return JsonResponse({"success": False, "message": str(e)}, status=500)
+
+def addtofavoriteartist(request, artist_id):
+    try:
+        artist = Artist.objects.get(id=artist_id)
+        user = request.user
+
+        favorite, created = FavoriteArtist.objects.get_or_create(user=user, artist=artist)
+
+        if created:
+            favorited = True
+        else:
+            favorite.delete()
+            favorited = False
         return JsonResponse({"success": True, "favorited": favorited})
 
     except Product.DoesNotExist:
