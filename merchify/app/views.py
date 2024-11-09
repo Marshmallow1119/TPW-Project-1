@@ -134,14 +134,12 @@ def produtos(request):
     max_price = request.GET.get('max_price')
     if min_price:
         try:
-            products = products.filter(price__gte=float(min_price))
-            logger.debug(f"Applied min price filter {min_price}, products count: {products.count()}")
+            produtos = produtos.filter(price__gte=float(min_price))
         except ValueError:
             logger.debug("Invalid minimum price provided.")
     if max_price:
         try:
-            products = products.filter(price__lte=float(max_price))
-            logger.debug(f"Applied max price filter {max_price}, products count: {products.count()}")
+            produtos = produtos.filter(price__lte=float(max_price))
         except ValueError:
             logger.debug("Invalid maximum price provided.")
 
