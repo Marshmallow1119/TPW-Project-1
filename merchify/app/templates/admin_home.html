@@ -106,7 +106,7 @@
                         <thead>
                             <tr>
                                 <th scope="col">Imagem</th>
-                                <th scope="col">Nome</th>
+                                <th scope="col">Username</th>
                                 <th scope="col">Email</th>
                                 <th scope="col">Número de Compras</th>
                                 <th scope="col"  >Ações</th>
@@ -123,7 +123,7 @@
                                                 <img src="/media/user.png" alt="{{ user.name }}" class="user-image">
                                             {% endif %}
                                         </td>
-                                        <td>{{ user.firstname }} {{ user.lastname }}</td>
+                                        <td>{{ user.username }}</td>
                                         <td>{{ user.email }}</td>
                                         <td>{{ user.number_of_purchases }}</td>
                                         <td  >
