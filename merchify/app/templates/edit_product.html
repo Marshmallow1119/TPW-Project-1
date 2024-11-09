@@ -7,40 +7,43 @@
         <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
 
+            <!-- General Product Information -->
             <div class="row mb-3">
                 <div class="col-md-6">
                     <label for="product_type" class="form-label">Tipo de Produto</label>
-                    {{ form.product_type|add_class:"form-select" }}
+                    {{ product_form.product_type|add_class:"form-select" }}
                 </div>
                 <div class="col-md-6">
                     <label for="artist" class="form-label">Artista</label>
-                    {{ form.artist|add_class:"form-select" }}
+                    {{ product_form.artist|add_class:"form-select" }}
                 </div>
             </div>
             <div class="mb-3">
                 <label for="name" class="form-label">Nome do Produto</label>
-                {{ form.name|add_class:"form-control" }}
+                {{ product_form.name|add_class:"form-control" }}
             </div>
             <div class="mb-3">
                 <label for="description" class="form-label">Descrição</label>
-                {{ form.description|add_class:"form-control" }}
+                {{ product_form.description|add_class:"form-control" }}
             </div>
             <div class="row mb-3">
                 <div class="col-md-4">
                     <label for="price" class="form-label">Preço (€)</label>
-                    {{ form.price|add_class:"form-control" }}
+                    {{ product_form.price|add_class:"form-control" }}
                 </div>
                 <div class="col-md-4">
                     <label for="category" class="form-label">Categoria</label>
-                    {{ form.category|add_class:"form-control" }}
+                    {{ product_form.category|add_class:"form-control" }}
                 </div>
                 <div class="col-md-4">
                     <label for="image" class="form-label">Imagem do Produto</label>
-                    {{ form.image|add_class:"form-control" }}
+                    {{ product_form.image|add_class:"form-control" }}
                 </div>
             </div>
 
-            <div id="vinil-fields" class="card p-4 mb-4 shadow-sm" style="display: none;">
+            <!-- Conditional Fields for Product Types -->
+            {% if vinil_form %}
+            <div id="vinil-fields" class="card p-4 mb-4 shadow-sm">
                 <h5>Detalhes do Vinil</h5>
                 <div class="row">
                     <div class="col-md-4">
@@ -61,8 +64,10 @@
                     </div>
                 </div>
             </div>
+            {% endif %}
 
-            <div id="cd-fields" class="card p-4 mb-4 shadow-sm" style="display: none;">
+            {% if cd_form %}
+            <div id="cd-fields" class="card p-4 mb-4 shadow-sm">
                 <h5>Detalhes do CD</h5>
                 <div class="row">
                     <div class="col-md-4">
@@ -79,16 +84,20 @@
                     </div>
                 </div>
             </div>
+            {% endif %}
 
-            <div id="clothing-fields" class="card p-4 mb-4 shadow-sm" style="display: none;">
+            {% if clothing_form %}
+            <div id="clothing-fields" class="card p-4 mb-4 shadow-sm">
                 <h5>Detalhes da Roupa</h5>
                 <div class="mb-3">
                     <label for="color" class="form-label">Cor</label>
                     {{ clothing_form.color|add_class:"form-control" }}
                 </div>
             </div>
+            {% endif %}
 
-            <div id="accessory-fields" class="card p-4 mb-4 shadow-sm" style="display: none;">
+            {% if accessory_form %}
+            <div id="accessory-fields" class="card p-4 mb-4 shadow-sm">
                 <h5>Detalhes de 'Outros'</h5>
                 <div class="row">
                     <div class="col-md-4">
@@ -109,11 +118,12 @@
                     </div>
                 </div>
             </div>
+            {% endif %}
 
-            <!-- Botões de Ação -->
+            <!-- Action Buttons -->
             <div class="d-flex justify-content-center mt-4">
                 <button type="submit" class="btn btn-success me-2">Salvar Alterações</button>
-                <a href="{% url 'company_products' product.company.id %}" class="btn btn-secondary">Cancelar</a>
+                <a href="{% url 'company_products' company_id=product.company.id %}" class="btn btn-secondary">Cancelar</a>
             </div>
         </form>
     </div>
@@ -122,6 +132,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const productTypeField = document.querySelector('[name="product_type"]');
+    const categoryField = document.getElementById('category');
     const vinilFields = document.getElementById('vinil-fields');
     const cdFields = document.getElementById('cd-fields');
     const clothingFields = document.getElementById('clothing-fields');
@@ -129,40 +140,48 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function disableFields(container) {
         container.querySelectorAll('input, select, textarea').forEach(field => {
-            field.disabled = true;
+            field.disabled = true;  // Disable hidden fields
         });
     }
 
     function enableFields(container) {
         container.querySelectorAll('input, select, textarea').forEach(field => {
-            field.disabled = false;
+            field.disabled = false;  // Enable visible fields
         });
     }
 
     function updateFieldVisibility() {
+        // Hide all sections and disable their fields
         [vinilFields, cdFields, clothingFields, accessoryFields].forEach(section => {
             section.style.display = 'none';
             disableFields(section);
         });
 
         const productType = productTypeField.value;
+        // Set category and show the relevant section
         if (productType === 'vinil') {
             vinilFields.style.display = 'block';
             enableFields(vinilFields);
+            categoryField.value = 'Vinyl';
         } else if (productType === 'cd') {
             cdFields.style.display = 'block';
             enableFields(cdFields);
+            categoryField.value = 'CD';
         } else if (productType === 'clothing') {
             clothingFields.style.display = 'block';
             enableFields(clothingFields);
+            categoryField.value = 'Clothing';
         } else if (productType === 'accessory') {
             accessoryFields.style.display = 'block';
             enableFields(accessoryFields);
+            categoryField.value = 'Accessory';
         }
     }
 
-    updateFieldVisibility(); 
+    updateFieldVisibility(); // Initial call to set the correct visibility and field state
+
     productTypeField.addEventListener('change', updateFieldVisibility);
 });
+
 </script>
 {% endblock %}
