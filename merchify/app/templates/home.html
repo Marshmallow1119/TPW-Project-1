@@ -56,7 +56,7 @@
     </button>
 </div>
     
-
+{% if user.is_authenticated %}
 <section class="artists container my-5">
     {% if recently_viewed_products %}
     <h2 class="text-center mb-4">Produtos vistos recentemente</h2>
@@ -78,6 +78,7 @@
     </div>
     {% endif %}
 </section>
+    {% endif %}
 <section class="artists container my-5">
     <h2 class="text-center mb-4">Artistas</h2>
     <div class="row">
