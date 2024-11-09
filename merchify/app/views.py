@@ -6,6 +6,8 @@ from itertools import product
 import re
 from sqlite3 import IntegrityError
 from urllib.parse import urlencode
+from django.contrib.auth.models import Group
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import make_password
@@ -328,6 +330,8 @@ def register(request):
                 password=raw_password,
                 image=image
             )
+            group = Group.objects.get(name='client')
+            user.groups.add(group)
             user.save()
 
             auth_login(request, user)
@@ -1164,6 +1168,8 @@ def add_company(request):
                 user.address = company.address
                 user.company = company
                 user.set_password(user_form.cleaned_data['password'])
+                group = Group.objects.get(name='company')
+                user.groups.add(group)
                 user.save()
 
                 messages.success(request, 'Company and associated user have been created successfully.')

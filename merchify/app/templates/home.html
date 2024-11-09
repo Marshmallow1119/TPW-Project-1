@@ -36,10 +36,14 @@
         <img src="/media/background_images/gutsTour.jpeg" class="d-block w-100" alt="Imagem 1" style="height: 700px; width: 100%; object-fit: cover;">
       </div>
       <div class="carousel-item">
+          <a href="{%  url 'artistsProducts' name="The Beatles"%}">
         <img src="/media/background_images/beatles.png" class="d-block w-100" alt="Imagem 2" style="height: 700px; width: 100%; object-fit: cover;">
+          </a>
       </div>
       <div class="carousel-item">
+          <a href="{%  url 'artistsProducts' name="Taylor Swift"%}">
         <img src="/media/background_images/taylor2.jpg" class="d-block w-100" alt="Imagem 3" style="height: 700px; width: 100%; object-fit: cover;">
+          </a>
       </div>
     </div>
     <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="prev">
@@ -55,7 +59,7 @@
 
 <section class="artists container my-5">
     {% if recently_viewed_products %}
-    <h2 class="text-center mb-4">Produtos recentemente adicionados</h2>
+    <h2 class="text-center mb-4">Produtos vistos recentemente</h2>
     <div class="row">
         {% for product in recently_viewed_products %}
         <div class="col-6 col-md-4 col-lg-3 mb-4">
