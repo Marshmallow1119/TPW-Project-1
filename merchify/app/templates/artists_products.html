@@ -120,7 +120,7 @@
         .produtos-container {
             padding: 0 15px;
             width: 100%;
-            margin-left: 10%; 
+            margin-left: 10%;
         }
 
         .hidden-filter {
@@ -157,7 +157,7 @@
                 <div class="col-md-3">
                     <h4>Filtros</h4>
                         <div class="sidebar-filter bg-light p-3 rounded mb-4">
-                            <form method="get" action="{% url 'product_list' %}" id="filterForm">
+                            <form method="get" id="filterForm">
                                 <h5>Tipo de Produto</h5>
                                 <div class="form-group">
                                     <input type="radio" name="type" value="Vinil" id="vinil" {% if request.GET.type == 'Vinil' %}checked{% endif %} onclick="showFilters(this.value)">
@@ -181,7 +181,7 @@
                             </select>
                         </div>
                     </div>
-                
+
                     <div id="cd-filters" class="hidden-filter">
                         <h5>Gênero</h5>
                         <div class="form-group">
@@ -194,7 +194,7 @@
                             </select>
                         </div>
                     </div>
-                
+
                     <div id="clothing-filters" class="hidden-filter">
                         <h5>Cor</h5>
                         <div class="form-group">
@@ -206,7 +206,7 @@
                             </select>
                         </div>
                     </div>
-                
+
                     <div id="accessory-filters" class="hidden-filter">
                         <h5>Cor</h5>
                         <div class="form-group">
@@ -216,7 +216,7 @@
                                 <option value="Branco" {% if request.GET.colorAccessory == 'Branco' %}selected{% endif %}>Branco</option>
                             </select>
                         </div>
-                
+
                         <h5>Tamanho</h5>
                         <div class="form-group">
                             <select name="size" class="form-control">
@@ -239,15 +239,14 @@
                                     </div>
                                 </div>
                                 <div class="form-group d-flex justify-content-between mt-3">
-                                    <button style="width: 48%"  type="button" class="btn btn-secondary" onclick="resetForm()">Reiniciar Filtros</button>
-                                    <button style="width: 48%" type="submit" class="btn btn-success">Aplicar Filtros</button>
-                
+                                    <button style="width: 48%" type="button" class="btn btn-secondary" onclick="resetForm()">Reiniciar Filtros</button>
+                                    <button style="width: 48%" type="submit" class="btn btn-success" onclick="applyFilters(event)">Aplicar Filtros</button>
                                 </div>
                             </form>
-                
+
                             </div>
                 </div>
-                
+
                 <div class="col-md-9">
                     <div class="row">
                         {% for product in products %}
@@ -321,24 +320,34 @@
         }
     });
 
-    // Reset form function to clear all inputs, selections, and radio buttons
+    function applyFilters(event) {
+        event.preventDefault(); // Prevent default form submission
+
+        const url = new URL(window.location.href); // Get the current URL
+        const formData = new FormData(document.getElementById("filterForm")); // Get form data
+
+        // Append each filter to the URL
+        formData.forEach((value, key) => {
+            if (value) {
+                url.searchParams.set(key, value); // Set or update URL parameters
+            } else {
+                url.searchParams.delete(key); // Remove empty parameters
+            }
+        });
+        window.location.href = url.toString();
+    }
+
     function resetForm() {
-        // Reset the form fields
+        // Clear the filter form
         document.getElementById("filterForm").reset();
 
-        // Uncheck any selected radio buttons for 'type' manually
-        document.querySelectorAll('input[name="type"]').forEach(radio => radio.checked = false);
-
-        // Hide all type-specific filters
-        document.getElementById("vinil-filters").classList.add("hidden-filter");
-        document.getElementById("cd-filters").classList.add("hidden-filter");
-        document.getElementById("clothing-filters").classList.add("hidden-filter");
-        document.getElementById("accessory-filters").classList.add("hidden-filter");
-
-        // Optional: Clear URL parameters for a full reset
+        // Reset URL by removing all query parameters
         const url = new URL(window.location.href);
         url.search = "";
         window.history.replaceState(null, "", url);
+
+        // Hide filter sections for a fresh view
+        document.querySelectorAll(".hidden-filter").forEach(filter => filter.classList.add("hidden-filter"));
     }
     </script>
 </body>

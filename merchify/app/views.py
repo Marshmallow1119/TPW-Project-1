@@ -77,6 +77,63 @@ def produtos(request):
         produtos = produtos.order_by('price')
     elif sort == 'priceDesc':
         produtos = produtos.order_by('-price')
+    if request.user.is_authenticated:
+       favorited_product_ids = Favorite.objects.filter(user=request.user).values_list('product_id', flat=True)
+    else:
+       favorited_product_ids = []
+
+    product_type = request.GET.get('type')
+    if product_type:
+        if product_type == 'Vinil':
+            produtos = produtos.filter(vinil__isnull=False)
+            genre = request.GET.get('genreVinyl')
+            if genre:
+                products = produtos.filter(vinil__genre=genre)
+            logger.debug(f"Filtered by 'Vinil' type and genre {genre}, products count: {produtos.count()}")
+
+        elif product_type == 'CD':
+            produtos = produtos.filter(cd__isnull=False)
+            genre = request.GET.get('genreCD')
+            if genre:
+                produtos = produtos.filter(cd__genre=genre)
+            logger.debug(f"Filtered by 'CD' type and genre {genre}, products count: {produtos.count()}")
+
+        elif product_type == 'Clothing':
+            produtos = produtos.filter(clothing__isnull=False)
+            color = request.GET.get('colorClothing')
+            if color:
+                produtos = produtos.filter(clothing__color=color)
+            logger.debug(f"Filtered by 'Clothing' type and color {color}, products count: {produtos.count()}")
+
+        elif product_type == 'Accessory':
+            produtos = produtos.filter(accessory__isnull=False)
+            color = request.GET.get('colorAccessory')
+            if color:
+                produtos = produtos.filter(accessory__color=color)
+            size = request.GET.get('size')
+            if size:
+                produtos = produtos.filter(accessory__size=size)
+            logger.debug(f"Filtered by 'Accessory' type, color {color}, and size {size}, products count: {produtos.count()}")
+
+    # Filter by price range
+    min_price = request.GET.get('min_price')
+    max_price = request.GET.get('max_price')
+    if min_price:
+        try:
+            products = products.filter(price__gte=float(min_price))
+            logger.debug(f"Applied min price filter {min_price}, products count: {products.count()}")
+        except ValueError:
+            logger.debug("Invalid minimum price provided.")
+    if max_price:
+        try:
+            products = products.filter(price__lte=float(max_price))
+            logger.debug(f"Applied max price filter {max_price}, products count: {products.count()}")
+        except ValueError:
+            logger.debug("Invalid maximum price provided.")
+
+    for product in produtos:
+       product.is_favorited = product.id in favorited_product_ids
+
     return render(request, 'products.html', {'produtos': produtos})
 
 def artistas(request):
@@ -99,6 +156,7 @@ def artistsProducts(request, name):
     artist = get_object_or_404(Artist, name=name)
 
     products = Product.objects.filter(artist=artist)
+    print(products)
     
     sort = request.GET.get('sort', 'featured')
     if sort == 'priceAsc':
@@ -117,13 +175,61 @@ def artistsProducts(request, name):
 
     background_url = artist.background_image.url
 
+    # Filter by product type
+    product_type = request.GET.get('type')
+    if product_type:
+        if product_type == 'Vinil':
+            products = products.filter(vinil__isnull=False)
+            genre = request.GET.get('genreVinyl')
+            if genre:
+                products = products.filter(vinil__genre=genre)
+            logger.debug(f"Filtered by 'Vinil' type and genre {genre}, products count: {products.count()}")
+
+        elif product_type == 'CD':
+            products = products.filter(cd__isnull=False)
+            genre = request.GET.get('genreCD')
+            if genre:
+                products = products.filter(cd__genre=genre)
+            logger.debug(f"Filtered by 'CD' type and genre {genre}, products count: {products.count()}")
+
+        elif product_type == 'Clothing':
+            products = products.filter(clothing__isnull=False)
+            color = request.GET.get('colorClothing')
+            if color:
+                products = products.filter(clothing__color=color)
+            logger.debug(f"Filtered by 'Clothing' type and color {color}, products count: {products.count()}")
+
+        elif product_type == 'Accessory':
+            products = products.filter(accessory__isnull=False)
+            color = request.GET.get('colorAccessory')
+            if color:
+                products = products.filter(accessory__color=color)
+            size = request.GET.get('size')
+            if size:
+                products = products.filter(accessory__size=size)
+            logger.debug(f"Filtered by 'Accessory' type, color {color}, and size {size}, products count: {products.count()}")
+
+    # Filter by price range
+    min_price = request.GET.get('min_price')
+    max_price = request.GET.get('max_price')
+    if min_price:
+        try:
+            products = products.filter(price__gte=float(min_price))
+            logger.debug(f"Applied min price filter {min_price}, products count: {products.count()}")
+        except ValueError:
+            logger.debug("Invalid minimum price provided.")
+    if max_price:
+        try:
+            products = products.filter(price__lte=float(max_price))
+            logger.debug(f"Applied max price filter {max_price}, products count: {products.count()}")
+        except ValueError:
+            logger.debug("Invalid maximum price provided.")
 
     context = {
         'artist': artist,
         'products': products,
         'background_url': background_url,
     }
-
     return render(request, 'artists_products.html', context)
 
 
@@ -154,9 +260,6 @@ def productDetails(request, identifier):
     return render(request, 'productDetails.html', context)
 
 
-from django.shortcuts import render
-from .models import Product, Artist
-
 def search(request):
     query = request.GET.get('search', '').strip()
 
@@ -166,6 +269,22 @@ def search(request):
     else:
         products = Product.objects.none()
         artists = Artist.objects.none()
+
+    if request.user.is_authenticated:
+        favorited_artist_ids = FavoriteArtist.objects.filter(user=request.user).values_list('artist_id', flat=True)
+        favorited_product_ids = Favorite.objects.filter(user=request.user).values_list('product_id', flat=True)
+
+    else:
+        favorited_artist_ids = []
+        favorited_product_ids = []
+
+
+    for artist in artists:
+        artist.is_favorited = artist.id in favorited_artist_ids
+
+    for product in products:
+        product.is_favorited = product.id in favorited_product_ids
+
 
     return render(request, 'search_results.html', {
         'products': products,  
@@ -918,67 +1037,3 @@ def apply_discount(request):
     
     return JsonResponse({"success": False, "message": "Método não permitido."}, status=405)
 
-
-def product_list(request):
-    products = Product.objects.all()
-    artists = Artist.objects.all()
-
-    # Filter by product type
-    product_type = request.GET.get('type')
-    if product_type:
-        if product_type == 'Vinil':
-            products = products.filter(vinil__isnull=False)
-            # Use getlist to retrieve all 'genre' parameters and filter out empty values
-            genre = next((g for g in request.GET.getlist('genreVinyl') if g), None)
-            if genre:
-                products = products.filter(vinil__genre=genre)
-        elif product_type == 'CD':
-            products = products.filter(cd__isnull=False)
-            genre = next((g for g in request.GET.getlist('genreCD') if g), None)
-            if genre:
-                products = products.filter(cd__genre=genre)
-        elif product_type == 'Clothing':
-            products = products.filter(clothing__isnull=False)
-            color = next((c for c in request.GET.getlist('colorClothing') if c), None)
-            if color:
-                products = products.filter(clothing__color=color)
-        elif product_type == 'Accessory':
-            products = products.filter(accessory__isnull=False)
-            color = next((c for c in request.GET.getlist('colorAccessory') if c), None)
-            if color:
-                products = products.filter(accessory__color=color)
-            size = next((s for s in request.GET.getlist('size') if s), None)
-            if size:
-                products = products.filter(accessory__size=size)
-
-    # Filter by price range
-    min_price = request.GET.get('min_price')
-    max_price = request.GET.get('max_price')
-    if min_price:
-        try:
-            products = products.filter(price__gte=float(min_price))
-        except ValueError:
-            pass
-    if max_price:
-        try:
-            products = products.filter(price__lte=float(max_price))
-        except ValueError:
-            pass
-
-    # Filter by category if provided
-    category = request.GET.get('category')
-    if category:
-        products = products.filter(category=category)
-
-    # Filter by artist ID if provided
-    artist_id = request.GET.get('artist')
-    if artist_id:
-        try:
-            products = products.filter(artist_id=int(artist_id))
-        except ValueError:
-            pass
-
-    return render(request, 'artists_products.html', {
-        'products': products,
-        'artists': artists,
-    })
