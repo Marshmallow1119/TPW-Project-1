@@ -76,6 +76,12 @@ def home(request):
 
 def companhias(request):
     companies = Company.objects.all()
+    if request.user.is_authenticated:
+       favorited_company_ids = FavoriteCompany.objects.filter(user=request.user).values_list('company_id', flat=True)
+    else:
+       favorited_company_ids = []
+    for company in companies:
+           company.is_favorited = company.id in favorited_company_ids
     return render(request, 'companhias.html', {'companhias': companies})
 
 def produtos(request):
@@ -649,7 +655,8 @@ def checkfavorite(request, category):
 def checkfavoriteOld(request):
     user = request.user
 
-    favorite_products = Favorite.objects.filter(user=user).select_related('product')
+    # Filter out any favorites where the product field is None
+    favorite_products = Favorite.objects.filter(user=user, product__isnull=False).select_related('product')
     products_list = [
         {
             'id': fav.product.id,
@@ -657,25 +664,39 @@ def checkfavoriteOld(request):
             'price': fav.product.price,
             'image': fav.product.image.url
         }
-        for fav in favorite_products
+        for fav in favorite_products if fav.product  # Add a check to ensure fav.product is not None
     ]
 
-    favorite_artists = FavoriteArtist.objects.filter(user=user).select_related('artist')
+    # Filter out any favorites where the artist field is None
+    favorite_artists = FavoriteArtist.objects.filter(user=user, artist__isnull=False).select_related('artist')
     artists_list = [
         {
             'id': fav.artist.id,
             'name': fav.artist.name,
             'image': fav.artist.image.url
         }
-        for fav in favorite_artists
+        for fav in favorite_artists if fav.artist  # Add a check to ensure fav.artist is not None
     ]
+
+    favorite_companies = FavoriteCompany.objects.filter(user=user, company__isnull=False).select_related('company')
+    companies_list = [
+        {
+            'id': fav.company.id,
+            'name': fav.company.name,
+            'image': fav.company.logo.url
+        }
+        for fav in favorite_companies if fav.company  # Add a check to ensure fav.artist is not None
+    ]
+
 
     category = request.GET.get('category', 'products')
     return render(request, 'favorites.html', {
         'category': category,
         'favorite_products': products_list,
-        'favorite_artists': artists_list
+        'favorite_artists': artists_list,
+        'favorite_companies': companies_list
     })
+
 
 # Adicionar ou remover produto favorito
 @require_POST
@@ -723,6 +744,33 @@ def addtofavoriteartist(request, artist_id):
         # Para capturar outros erros
         return JsonResponse({"success": False, "message": str(e)}, status=500)
 
+@require_POST
+@login_required(login_url='/login/')
+def addtofavoritecompany(request, company_id):
+    try:
+        company = get_object_or_404(Company, id=company_id)
+        user = request.user
+
+        # Verificar se o artista foi encontrado corretamente
+        if not company:
+            return JsonResponse({"success": False, "message": "Invalid artist."}, status=400)
+
+        # Obter ou criar o favorito
+        favorite_company, created = FavoriteCompany.objects.get_or_create(user=user, company=company)
+        favorited = created
+
+        # Se o favorito já existir, removê-lo
+        if not created:
+            favorite_company.delete()
+
+        return JsonResponse({"success": True, "favorited": favorited})
+
+    except Company.DoesNotExist:
+        return JsonResponse({"success": False, "message": "Artist not found."}, status=404)
+    except Exception as e:
+        # Para capturar outros erros
+        return JsonResponse({"success": False, "message": str(e)}, status=500)
+
 # Remover produto dos favoritos
 @login_required
 def remove_from_favorites(request, product_id):
@@ -747,6 +795,17 @@ def remove_from_favorites_artist(request, artist_id):
     except Artist.DoesNotExist:
         return JsonResponse({"success": False, "message": "Artist not found."}, status=404)
 
+
+@login_required
+def remove_from_favorites_company(request, company_id):
+    try:
+        company = get_object_or_404(Company, id=company_id)
+        user = request.user
+        FavoriteCompany.objects.filter(user=user, company=company).delete()
+        return redirect('favorites')
+
+    except Company.DoesNotExist:
+        return JsonResponse({"success": False, "message": "Company not found."}, status=404)
 
 @login_required
 def process_payment(request):

@@ -115,33 +115,35 @@
         <div class="col-md-9">
             <div class="row">
                 {% for product in produtos %}
-                <div class="col-12 col-md-6 col-lg-4 mb-4">
+                 <div class="col-12 col-md-6 col-lg-4 mb-4">
                     <div class="position-relative">
+                        <!-- Artist identifier -->
                         <div class="artist-identifier" style="position: absolute; top: 10px; right: 10px; width: 50px; height: 50px; border-radius: 50%; overflow: hidden;">
                             <a href="{% url 'artistsProducts' name=product.artist.name %}">
                                 <img src="{{ product.artist.image.url }}" alt="{{ product.artist.name }}" style="width: 100%; height: 100%; object-fit: cover;">
                             </a>
                         </div>
 
+                        <!-- Heart icon for favorite, positioned absolutely -->
+                        <i class="fa fa-heart favorite-icon {% if product.is_favorited %}filled{% endif %}"
+                           data-id="{{ product.id }}"
+                           onclick="handleFavoriteClick({{ product.id }})"></i>
+
                         <!-- Product Card -->
                         <a href="/product/{{ product.id }}" class="product-card d-block">
                             <img src="{{ product.image.url }}" alt="{{ product.name }}">
                             <div class="p-3 text-center">
-
-                                <!-- Wrapper for product name and favorite icon -->
+                                <!-- Wrapper for product name -->
                                 <div class="d-flex align-items-center justify-content-center mb-2">
                                     <p class="product-name mb-0">{{ product.name }}</p>
-                                    <i class="fa fa-heart favorite-icon {% if product.is_favorited %}filled{% endif %}"
-                                       data-id="{{ product.id }}"
-                                       onclick="handleFavoriteClick({{ product.id }})"></i>
                                 </div>
-
                                 <p class="product-price">{{ product.price }}€</p>
                                 <button class="btn btn-add-to-cart w-100">Adicionar ao carrinho</button>
                             </div>
                         </a>
                     </div>
                 </div>
+
                 {% endfor %}
             </div>
         </div>
@@ -306,22 +308,25 @@
             object-fit: cover;
         }
         .favorite-icon {
+            position: absolute;
+            top: 10px;
+            right: 10px;
             color: white;
-            font-size: 24px;
+            font-size: 31px;
             cursor: pointer;
             -webkit-text-stroke: 3px #434343;
             text-shadow: 2px 2px 1px rgba(0, 0, 0, 0.3);
-            position: relative;
-            display: block;
-            margin-left: 10px; /* Adjust spacing */
-            text-align: center;
+            margin-top: 330px;
+            margin-right: 20px;
+            z-index: 10; /* Ensures it appears above the card and image */
         }
+
         .favorite-icon:hover {
             color: #a6a6a6;
-            -webkit-text-stroke: 8px;
             transition: ease-in-out 0.3s;
             transform: scale(1.2);
         }
+
         .favorite-icon.filled {
             color: #e85454;
             -webkit-text-stroke: 0px;

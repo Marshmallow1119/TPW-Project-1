@@ -51,8 +51,11 @@ urlpatterns = [
     path('favorites/<str:category>/', views.checkfavorite, name='favorites2'),
     path('favorites/add/<int:product_id>/', views.addtofavorite, name='addtofavorite'),
     path('favorites/add/artist/<int:artist_id>/', views.addtofavoriteartist, name="addtofavoriteartist"),
+    path('favorites/add/company/<int:company_id>/', views.addtofavoritecompany, name="addtofavoritecompany"),
+
     path('favorites/remove/<int:product_id>/', views.remove_from_favorites, name='remove_from_favorites'),
-    path('favorites/remove/<int:artist_id>/', views.remove_from_favorites_artist, name='remove_from_favorites_artist'),
+    path('favorites/remove/artist/<int:artist_id>/', views.remove_from_favorites_artist, name='remove_from_favorites_artist'),
+    path('favorites/remove/company/<int:company_id>/', views.remove_from_favorites_company, name='remove_from_favorites_company'),
 
     path('payment/', views.payment_page, name='payment_page'),
     path('delete_user/<int:user_id>/', views.delete_user, name='delete_user'),
