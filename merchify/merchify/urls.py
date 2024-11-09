@@ -68,6 +68,8 @@ urlpatterns = [
     path('delete/review/<int:review_id>/', views.delete_review, name='delete_review'),
     path('apply_discount/', views.apply_discount, name='apply_discount'),
     path('companhias/', views.companhias, name='companhias'),
+    path('update-cart-item/<int:item_id>/', views.update_cart_item, name='update_cart_item'),
+    path('carrinho/', views.viewCart, name='viewCart'),
 ]   
 
 

@@ -108,15 +108,6 @@
                                                 <span>{{ purchase.date }}</span>
                                             </div>
                                             <div class="info-item">
-                                                <span class="text-muted"><strong>Desconto Aplicado:</strong></span>
-                                                {% if purchase.discount_applied %}
-                                                    <span>-{{ purchase.discount_value|floatformat:2 }}€</span>
-                                                {% else %}
-                                                    <span>Sem desconto</span>
-                                                {% endif %}
-                                            </div>
-                                            
-                                            <div class="info-item">
                                                 <span class="text-muted"><strong>Portes de Envio:</strong></span>
                                                 <span>{{ purchase.shipping_fee|floatformat:2 }}€</span>
                                             </div>
@@ -228,7 +219,7 @@
                 const orderDetailsContent = document.getElementById('orderDetailsContent');
                 orderDetailsContent.innerHTML = `
                     <p><strong>Data:</strong> ${data.date}</p>
-                    <p><strong>Total:</strong> ${data.total}€</p>
+                    <p><strong>Total:</strong> ${data.total_amount}€</p>
                     <p><strong>Método de Pagamento:</strong> ${data.paymentMethod}</p>
                     <p><strong>Endereço de Envio:</strong> ${data.shippingAddress}</p>
                     <p><strong>Status:</strong> ${data.status}</p>
