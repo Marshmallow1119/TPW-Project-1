@@ -1216,9 +1216,10 @@ def delete_product(request, product_id):
 def admin_home(request):
     users = User.objects.all()
     products = Product.objects.all()
+    companies = Company.objects.all()
     for product in products:
         product.review_count = Review.objects.filter(product=product).count()  # Count reviews for this product
-    return render(request, 'admin_home.html', {'users': users, 'products': products})
+    return render(request, 'admin_home.html', {'users': users, 'products': products, 'companies': companies})
 def delete_user(request, user_id):
     user = get_object_or_404(User, id=user_id)
     user.delete()
@@ -1268,6 +1269,7 @@ def add_company(request):
                 user.address = company.address
                 user.company = company
                 user.set_password(user_form.cleaned_data['password'])
+                user.save()
                 group = Group.objects.get(name='company')
                 user.groups.add(group)
                 user.save()
