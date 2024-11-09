@@ -42,8 +42,7 @@
             </div>
 
             <!-- Conditional Fields for Product Types -->
-            {% if vinil_form %}
-            <div id="vinil-fields" class="card p-4 mb-4 shadow-sm">
+            <div id="vinil-fields" class="card p-4 mb-4 shadow-sm" style="display: none;">
                 <h5>Detalhes do Vinil</h5>
                 <div class="row">
                     <div class="col-md-4">
@@ -64,10 +63,8 @@
                     </div>
                 </div>
             </div>
-            {% endif %}
 
-            {% if cd_form %}
-            <div id="cd-fields" class="card p-4 mb-4 shadow-sm">
+            <div id="cd-fields" class="card p-4 mb-4 shadow-sm" style="display: none;">
                 <h5>Detalhes do CD</h5>
                 <div class="row">
                     <div class="col-md-4">
@@ -84,20 +81,16 @@
                     </div>
                 </div>
             </div>
-            {% endif %}
 
-            {% if clothing_form %}
-            <div id="clothing-fields" class="card p-4 mb-4 shadow-sm">
+            <div id="clothing-fields" class="card p-4 mb-4 shadow-sm" style="display: none;">
                 <h5>Detalhes da Roupa</h5>
                 <div class="mb-3">
                     <label for="color" class="form-label">Cor</label>
                     {{ clothing_form.color|add_class:"form-control" }}
                 </div>
             </div>
-            {% endif %}
 
-            {% if accessory_form %}
-            <div id="accessory-fields" class="card p-4 mb-4 shadow-sm">
+            <div id="accessory-fields" class="card p-4 mb-4 shadow-sm" style="display: none;">
                 <h5>Detalhes de 'Outros'</h5>
                 <div class="row">
                     <div class="col-md-4">
@@ -118,7 +111,6 @@
                     </div>
                 </div>
             </div>
-            {% endif %}
 
             <!-- Action Buttons -->
             <div class="d-flex justify-content-center mt-4">
@@ -132,56 +124,67 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const productTypeField = document.querySelector('[name="product_type"]');
-    const categoryField = document.getElementById('category');
+    const categoryField = document.querySelector('[name="category"]');
     const vinilFields = document.getElementById('vinil-fields');
     const cdFields = document.getElementById('cd-fields');
     const clothingFields = document.getElementById('clothing-fields');
     const accessoryFields = document.getElementById('accessory-fields');
 
+    function clearFields(container) {
+        container.querySelectorAll('input, select, textarea').forEach(field => {
+            if (field.type !== "file") {
+                field.value = ""; // Limpa o valor do campo
+            }
+        });
+    }
+
     function disableFields(container) {
         container.querySelectorAll('input, select, textarea').forEach(field => {
-            field.disabled = true;  // Disable hidden fields
+            field.disabled = true; // Desabilita os campos escondidos
         });
     }
 
     function enableFields(container) {
         container.querySelectorAll('input, select, textarea').forEach(field => {
-            field.disabled = false;  // Enable visible fields
+            field.disabled = false; // Habilita os campos visíveis
         });
     }
 
     function updateFieldVisibility() {
-        // Hide all sections and disable their fields
+        // Esconde todos os campos de detalhe e desabilita-os
         [vinilFields, cdFields, clothingFields, accessoryFields].forEach(section => {
             section.style.display = 'none';
             disableFields(section);
         });
 
         const productType = productTypeField.value;
-        // Set category and show the relevant section
+        // Limpa campos e exibe a seção relevante com base no tipo de produto
         if (productType === 'vinil') {
+            clearFields(vinilFields);
             vinilFields.style.display = 'block';
             enableFields(vinilFields);
             categoryField.value = 'Vinyl';
         } else if (productType === 'cd') {
+            clearFields(cdFields);
             cdFields.style.display = 'block';
             enableFields(cdFields);
             categoryField.value = 'CD';
         } else if (productType === 'clothing') {
+            clearFields(clothingFields);
             clothingFields.style.display = 'block';
             enableFields(clothingFields);
             categoryField.value = 'Clothing';
         } else if (productType === 'accessory') {
+            clearFields(accessoryFields);
             accessoryFields.style.display = 'block';
             enableFields(accessoryFields);
             categoryField.value = 'Accessory';
         }
     }
 
-    updateFieldVisibility(); // Initial call to set the correct visibility and field state
+    updateFieldVisibility(); // Chamada inicial para definir o estado correto dos campos
 
-    productTypeField.addEventListener('change', updateFieldVisibility);
+    productTypeField.addEventListener('change', updateFieldVisibility); // Atualiza campos ao mudar o tipo de produto
 });
-
 </script>
 {% endblock %}
