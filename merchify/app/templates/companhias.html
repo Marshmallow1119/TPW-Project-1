@@ -32,6 +32,19 @@
             text-decoration: none;
             color: inherit;
         }
+        .favorite-icon {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 10;
+            -webkit-text-stroke: 2px #434343;
+        }
+        .favorite-icon.filled {
+            color: #e85454;
+        }
     </style>
     {% endblock %}
 </head>
@@ -45,14 +58,19 @@ Companhias
     <div class="row">
         {% for company in companhias %}
         <div class="col-6 col-md-4 col-lg-3 mb-4">
-            <a href="/products/{{ company.id }}" class="card-link">
-                <div class="card card-hover" style="height: 400px;">
+            <!-- Link para a página de produtos da companhia -->
+            <a href="{% url 'company_products_user' company.id %}" class="card-link">
+                <div class="card card-hover position-relative" style="height: 400px;">
                     <div class="card-img-wrapper" style="height: 85%;">
                         {% if company.logo %}
                         <img src="{{ company.logo.url }}" class="card-img-top" alt="{{ company.name }}" style="height: 100%; object-fit: cover;">
                         {% else %}
                         <img src="/static/default_logo.png" class="card-img-top" alt="Logo Padrão" style="height: 100%; object-fit: cover;">
                         {% endif %}
+                        <!-- Ícone de favorito -->
+                        <i class="fa fa-heart favorite-icon {% if company.is_favorited %}filled{% endif %}"
+                           data-id="{{ company.id }}"
+                           onclick="toggleFavoriteCompany('{{ company.id }}')"></i>
                     </div>
                     <div class="card-body text-center d-flex flex-column" style="height: 20%;">
                         <div>
@@ -65,12 +83,34 @@ Companhias
                             <p style="margin: 0;">Avaliação Média: {{ company.get_average_rating }}</p>
                         </div>
                     </div>
-                    
                 </div>
             </a>
         </div>
         {% endfor %}
     </div>
 </div>
+
+<script>
+    function toggleFavoriteCompany(companyId) {
+        fetch(`/favorite-company/toggle/${companyId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ company_id: companyId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const icon = document.querySelector(`.favorite-icon[data-id="${companyId}"]`);
+                icon.classList.toggle('filled', data.is_favorited);
+            } else {
+                alert(data.message || "Ocorreu um erro ao atualizar o favorito.");
+            }
+        })
+        .catch(error => console.error("Erro:", error));
+    }
+</script>
 {% endblock %}
 </html>
