@@ -480,103 +480,142 @@ def submit_review(request, product_id):
 
         return redirect("productDetails", identifier=product_id)
     
+
+# Verificar favoritos para produtos e artistas
 @login_required
 def checkfavorite(request, category):
+    user = request.user
     if category == 'products':
-        favorite_products = Favorite.objects.filter(user=request.user).select_related('product')
+        favorite_products = Favorite.objects.filter(user=user).select_related('product')
         products_list = [
-            {'id': fav.product.id, 'name': fav.product.name, 'price': fav.product.price, 'image': fav.product.image.url}
-            for fav in favorite_products]
+            {
+                'id': fav.product.id,
+                'name': fav.product.name,
+                'price': fav.product.price,
+                'image': fav.product.image.url
+            }
+            for fav in favorite_products
+        ]
         return render(request, "favorites.html", {"favorite_products": products_list})
-    else:
-        favorite_artists = FavoriteArtist.objects.filter(user=request.user)
-        artists_list = {
-            {'id': fav.product.id, 'name': fav.product.name, 'image': fav.product.image.url}
-            for fav in favorite_artists
-        }
-        return render(request, "favorites.html", {"favorite_artists": artists_list})
 
-@login_required
-def checkfavoriteOld(request):
-
-        favorite_products = Favorite.objects.filter(user=request.user).select_related('product')
-        products_list = [
-            {'id': fav.product.id, 'name': fav.product.name, 'price': fav.product.price, 'image': fav.product.image.url}
-            for fav in favorite_products]
-        favorite_artists = FavoriteArtist.objects.filter(user=request.user)
+    elif category == 'artists':
+        favorite_artists = FavoriteArtist.objects.filter(user=user).select_related('artist')
         artists_list = [
-            {'id': fav.artist.id, 'name': fav.artist.name, 'image': fav.artist.image.url}
+            {
+                'id': fav.artist.id,
+                'name': fav.artist.name,
+                'image': fav.artist.image.url
+            }
             for fav in favorite_artists
         ]
-        category = request.GET.get('category', 'products')  # Default to 'products' if not provided
-        # Assuming you have logic to fetch favorite products and artists
-        return render(request, 'favorites.html', {'category': category, 'favorite_products': products_list,
-                                                    'favorite_artists': artists_list})
+        return render(request, "favorites.html", {"favorite_artists": artists_list})
 
+    return JsonResponse({"success": False, "message": "Invalid category."}, status=400)
 
+# Versão antiga corrigida
+@login_required
+def checkfavoriteOld(request):
+    user = request.user
 
+    favorite_products = Favorite.objects.filter(user=user).select_related('product')
+    products_list = [
+        {
+            'id': fav.product.id,
+            'name': fav.product.name,
+            'price': fav.product.price,
+            'image': fav.product.image.url
+        }
+        for fav in favorite_products
+    ]
 
+    favorite_artists = FavoriteArtist.objects.filter(user=user).select_related('artist')
+    artists_list = [
+        {
+            'id': fav.artist.id,
+            'name': fav.artist.name,
+            'image': fav.artist.image.url
+        }
+        for fav in favorite_artists
+    ]
+
+    category = request.GET.get('category', 'products')
+    return render(request, 'favorites.html', {
+        'category': category,
+        'favorite_products': products_list,
+        'favorite_artists': artists_list
+    })
+
+# Adicionar ou remover produto favorito
 @require_POST
 @login_required(login_url='/login/')
 def addtofavorite(request, product_id):
     try:
-        product = Product.objects.get(id=product_id)
+        product = get_object_or_404(Product, id=product_id)
         user = request.user
 
         favorite, created = Favorite.objects.get_or_create(user=user, product=product)
+        favorited = created
 
-        if created:
-            favorited = True
-        else:
+        if not created:
             favorite.delete()
-            favorited = False
 
         return JsonResponse({"success": True, "favorited": favorited})
 
     except Product.DoesNotExist:
         return JsonResponse({"success": False, "message": "Product not found."}, status=404)
-    except Exception as e:
-        return JsonResponse({"success": False, "message": str(e)}, status=500)
 
 @require_POST
+@login_required(login_url='/login/')
 def addtofavoriteartist(request, artist_id):
     try:
-        artist = Artist.objects.get(id=artist_id)
+        artist = get_object_or_404(Artist, id=artist_id)
         user = request.user
 
-        favorite, created = FavoriteArtist.objects.get_or_create(user=user, artist=artist)
+        # Verificar se o artista foi encontrado corretamente
+        if not artist:
+            return JsonResponse({"success": False, "message": "Invalid artist."}, status=400)
 
-        if created:
-            favorited = True
-        else:
-            favorite.delete()
-            favorited = False
+        # Obter ou criar o favorito
+        favorite_artist, created = FavoriteArtist.objects.get_or_create(user=user, artist=artist)
+        favorited = created
+
+        # Se o favorito já existir, removê-lo
+        if not created:
+            favorite_artist.delete()
+
         return JsonResponse({"success": True, "favorited": favorited})
 
     except Artist.DoesNotExist:
-        return JsonResponse({"success": False, "message": "Product not found."}, status=404)
+        return JsonResponse({"success": False, "message": "Artist not found."}, status=404)
     except Exception as e:
+        # Para capturar outros erros
         return JsonResponse({"success": False, "message": str(e)}, status=500)
 
+# Remover produto dos favoritos
 @login_required
 def remove_from_favorites(request, product_id):
     try:
-        product = Product.objects.get(id=product_id)
+        product = get_object_or_404(Product, id=product_id)
         user = request.user
         Favorite.objects.filter(user=user, product=product).delete()
-        return redirect( 'favorites')
+        return redirect('favorites')
+
     except Product.DoesNotExist:
         return JsonResponse({"success": False, "message": "Product not found."}, status=404)
 
+# Remover artista dos favoritos
 @login_required
 def remove_from_favorites_artist(request, artist_id):
     try:
-        artist = Artist.objects.get(id=artist_id)
+        artist = get_object_or_404(Artist, id=artist_id)
         user = request.user
         FavoriteArtist.objects.filter(user=user, artist=artist).delete()
-        return redirect( 'favorites')
-    except Product.DoesNotExist:
-        return JsonResponse({"success": False, "message": "Product not found."}, status=404)
+        return redirect('favorites')
+
+    except Artist.DoesNotExist:
+        return JsonResponse({"success": False, "message": "Artist not found."}, status=404)
+
+
 @login_required
 def process_payment(request):
     if request.method == 'POST' and 'complete_payment' in request.POST:
