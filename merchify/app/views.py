@@ -963,24 +963,30 @@ def company_product_detail(request, company_id, product_id):
     company = get_object_or_404(Company, id=company_id)
     product = get_object_or_404(Product, id=product_id, company=company)
 
+    # Contar favoritos e obter reviews
     product.favorites_count = product.favorites.count()
     reviews = product.reviews.all()
 
-    sizes = product.clothing.sizes.all()
+    # Inicializar o dicionário de estoque de tamanhos
+    product.size_stock = {}
 
-    product.size_stock = {
-        'XS': sizes.filter(size='XS').first().stock if sizes.filter(size='XS').exists() else 0,
-        'S': sizes.filter(size='S').first().stock if sizes.filter(size='S').exists() else 0,
-        'M': sizes.filter(size='M').first().stock if sizes.filter(size='M').exists() else 0,
-        'L': sizes.filter(size='L').first().stock if sizes.filter(size='L').exists() else 0,
-        'XL': sizes.filter(size='XL').first().stock if sizes.filter(size='XL').exists() else 0,
-    }
+    # Verificar se o produto tem um relacionamento com Clothing
+    if hasattr(product, 'clothing'):
+        sizes = product.clothing.sizes.all()
+        product.size_stock = {
+            'XS': sizes.filter(size='XS').first().stock if sizes.filter(size='XS').exists() else 0,
+            'S': sizes.filter(size='S').first().stock if sizes.filter(size='S').exists() else 0,
+            'M': sizes.filter(size='M').first().stock if sizes.filter(size='M').exists() else 0,
+            'L': sizes.filter(size='L').first().stock if sizes.filter(size='L').exists() else 0,
+            'XL': sizes.filter(size='XL').first().stock if sizes.filter(size='XL').exists() else 0,
+        }
 
     return render(request, 'company_product_detail.html', {
         'company': company,
         'product': product,
         'reviews': reviews,
     })
+
 
 def company_products_user(request, company_id):
     company = get_object_or_404(Company, id=company_id)
@@ -1135,11 +1141,13 @@ def add_product_to_company(request, company_id):
 
     return render(request, 'add_product_to_company.html', context)
 @login_required
+@login_required
 def edit_product(request, company_id, product_id):
     company = get_object_or_404(Company, id=company_id)
     product = get_object_or_404(Product, id=product_id, company=company)
 
-    product_type = product.get_product_type().lower()  
+    # Determina o tipo inicial do produto
+    initial_product_type = product.get_product_type().lower()
 
     if request.method == 'POST':
         product_form = ProductForm(request.POST, request.FILES, instance=product)
@@ -1148,23 +1156,29 @@ def edit_product(request, company_id, product_id):
             product = product_form.save(commit=False)
             product.company = company
 
+            # Verifica se o preço foi fornecido
             price = product_form.cleaned_data.get('price')
             if price is None:
                 return render(request, 'edit_product.html', {
                     'product_form': product_form,
                     'error_message': "Price is required.",
                     'company': company,
+                    'initial_product_type': initial_product_type,
                 })
 
-            product.price = price 
+            product.price = price
             try:
-                product.save()  
+                product.save()
             except IntegrityError:
                 return render(request, 'edit_product.html', {
                     'product_form': product_form,
                     'error_message': "There was an error saving the product. Please try again.",
                     'company': company,
+                    'initial_product_type': initial_product_type,
                 })
+
+            # Atualiza o formulário de detalhes com base no tipo de produto selecionado
+            product_type = product_form.cleaned_data.get('product_type', initial_product_type)
 
             if product_type == 'vinil':
                 vinil = get_object_or_404(Vinil, product_ptr=product)
@@ -1193,31 +1207,13 @@ def edit_product(request, company_id, product_id):
             return redirect('company_products', company_id=company.id)
 
     else:
-        product_form = ProductForm(instance=product)
+        product_form = ProductForm(instance=product, initial={'product_type': initial_product_type})
 
-        if product_type == 'vinil':
-            vinil = get_object_or_404(Vinil, product_ptr=product)
-            vinil_form = VinilForm(instance=vinil)
-        else:
-            vinil_form = VinilForm()
-
-        if product_type == 'cd':
-            cd = get_object_or_404(CD, product_ptr=product)
-            cd_form = CDForm(instance=cd)
-        else:
-            cd_form = CDForm()
-
-        if product_type == 'clothing':
-            clothing = get_object_or_404(Clothing, product_ptr=product)
-            clothing_form = ClothingForm(instance=clothing)
-        else:
-            clothing_form = ClothingForm()
-
-        if product_type == 'accessory':
-            accessory = get_object_or_404(Accessory, product_ptr=product)
-            accessory_form = AccessoryForm(instance=accessory)
-        else:
-            accessory_form = AccessoryForm()
+        # Carrega os formulários de detalhes com base no tipo inicial do produto
+        vinil_form = VinilForm(instance=product.vinil) if initial_product_type == 'vinil' else VinilForm()
+        cd_form = CDForm(instance=product.cd) if initial_product_type == 'cd' else CDForm()
+        clothing_form = ClothingForm(instance=product.clothing) if initial_product_type == 'clothing' else ClothingForm()
+        accessory_form = AccessoryForm(instance=product.accessory) if initial_product_type == 'accessory' else AccessoryForm()
 
     context = {
         'company': company,
@@ -1227,6 +1223,7 @@ def edit_product(request, company_id, product_id):
         'cd_form': cd_form,
         'clothing_form': clothing_form,
         'accessory_form': accessory_form,
+        'initial_product_type': initial_product_type,  # Passa o tipo inicial para o template
     }
     return render(request, 'edit_product.html', context)
 
