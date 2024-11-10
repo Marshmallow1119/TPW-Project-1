@@ -838,13 +838,11 @@ def process_payment(request):
                 return redirect('payment_page')
 
             total = cart.total
-            discount_applied = False
             discount_value = 0
 
-            # Aplicar desconto se o código for válido
+
             if discount_code and discount_code.lower() == 'primeiracompra':
                 if not Purchase.objects.filter(user=user).exists():
-                    discount_applied = True
                     discount_value = total * 0.10
                     total -= discount_value
                     request.session['discount_applied'] = True
@@ -869,26 +867,33 @@ def process_payment(request):
 
                 for item in cart_items:
                     product = item.product
+                    product_type = product.get_product_type()
                     stock_available = product.get_stock()
-                
+
                     if stock_available is not None and stock_available >= item.quantity:
-                        if isinstance(product, (Vinil, CD, Accessory)):
-                            new_stock = max(0, product.stock - item.quantity)
-                            product.stock = new_stock
-                            product.save()
-                        elif isinstance(product, Clothing) and item.size:
+                        if product_type == 'Vinil':
+                            product.vinil.stock -= item.quantity
+                            product.vinil.stock = max(0, product.vinil.stock)
+                            product.vinil.save()
+
+                        elif product_type == 'CD':
+                            product.cd.stock -= item.quantity
+                            product.cd.stock = max(0, product.cd.stock)
+                            product.cd.save()
+
+                        elif product_type == 'Accessory':
+                            product.accessory.stock -= item.quantity
+                            product.accessory.stock = max(0, product.accessory.stock)
+                            product.accessory.save()
+
+                        elif product_type == 'Clothing' and item.size:
                             size = item.size
-                            if size.stock >= item.quantity:
-                                new_stock = max(0, size.stock - item.quantity)
-                                size.stock = new_stock
-                                size.save()
-                            else:
-                                messages.error(request, f"Estoque insuficiente para {product.name} no tamanho {size.size}. Disponível: {size.stock}")
-                                return redirect('payment_page')
+                            size.stock -= item.quantity
+                            size.stock = max(0, size.stock)
+                            size.save()
                     else:
                         messages.error(request, f"Estoque insuficiente para {product.name}. Disponível: {stock_available}")
                         return redirect('payment_page')
-                
 
                     PurchaseProduct.objects.create(
                         purchase=purchase,
@@ -911,7 +916,6 @@ def process_payment(request):
             return redirect('payment_page')
 
     return redirect('payment_page')
-
 
 
 @login_required
