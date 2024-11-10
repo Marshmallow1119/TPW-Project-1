@@ -933,11 +933,29 @@ def company_home(request):
 @login_required
 def company_products(request, company_id):
     company = get_object_or_404(Company, id=company_id)
-    products = company.products.prefetch_related('favorites', 'reviews')  
+    products = Product.objects.filter(company=company)
 
     for product in products:
-        product.favorites_count = product.favorites.count()  
-        product.reviews_count = product.reviews.count()      
+        if hasattr(product, 'clothing'):  # Check if it's a clothing product (with sizes)
+            sizes = product.clothing.sizes.all()
+            product.size_stock = {
+                'XS': sizes.filter(size='XS').first().stock if sizes.filter(size='XS').exists() else 0,
+                'S': sizes.filter(size='S').first().stock if sizes.filter(size='S').exists() else 0,
+                'M': sizes.filter(size='M').first().stock if sizes.filter(size='M').exists() else 0,
+                'L': sizes.filter(size='L').first().stock if sizes.filter(size='L').exists() else 0,
+                'XL': sizes.filter(size='XL').first().stock if sizes.filter(size='XL').exists() else 0,
+            }
+        else:
+            product.size_stock = None 
+
+    for product in products:
+        product.favorites_count = product.favorites.count()
+        product.reviews_count = product.reviews.count()
+
+    context = {
+        'company': company,
+        'products': products,
+    }
 
     return render(request, 'company_products.html', {'company': company, 'products': products})
 
@@ -1326,3 +1344,57 @@ def apply_discount(request):
     
     return JsonResponse({"success": False, "message": "Método não permitido."}, status=405)
 
+def add_clothing_stock(request, product_id):
+    if request.method == "POST":
+        product = get_object_or_404(Clothing, id=product_id)
+
+        # Retrieve quantities from form
+        size_quantities = {
+            "XS": int(request.POST.get("size_xs", 0)),
+            "S": int(request.POST.get("size_s", 0)),
+            "M": int(request.POST.get("size_m", 0)),
+            "L": int(request.POST.get("size_l", 0)),
+            "XL": int(request.POST.get("size_xl", 0)),
+        }
+
+        # Update stock for each size, or create new size if it doesn't exist
+        for size, quantity in size_quantities.items():
+            if quantity > 0:  # Only proceed if quantity is greater than zero
+                size_instance, created = Size.objects.get_or_create(
+                    clothing=product,
+                    size=size,
+                    defaults={'stock': quantity}
+                )
+                if not created:
+                    size_instance.stock = quantity
+                    size_instance.save()
+
+        messages.success(request, "Stock atualizado com sucesso!")
+        return redirect('productDetails', identifier=product.id)
+    return redirect('product_list')
+
+
+def add_stock(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+
+    # Ensure the product is not clothing (Vinil, CD, Accessory)
+    if product.get_product_type() == 'Clothing':
+        return JsonResponse({'error': 'Cannot add stock to clothing products this way'}, status=400)
+
+    # Process the form data if the request method is POST
+    if request.method == 'POST':
+        stock = int(request.POST.get('stock', 0))
+
+        # Update the stock for the product (Vinil, CD, Accessory)
+        if product.get_product_type() == 'Vinil':
+            product.vinil.stock += stock
+        elif product.get_product_type() == 'CD':
+            product.cd.stock += stock
+        elif product.get_product_type() == 'Accessory':
+            product.accessory.stock += stock
+
+        product.save()  # Save the updated stock
+
+        return redirect('company_product_detail', company_id=product.company.id, product_id=product.id)
+
+    return JsonResponse({'error': 'Invalid request method'}, status=400)
