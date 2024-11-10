@@ -94,7 +94,7 @@ def produtos(request):
             produtos = produtos.filter(vinil__isnull=False)
             genre = request.GET.get('genreVinyl')
             if genre:
-                products = produtos.filter(vinil__genre=genre)
+                produtos = produtos.filter(vinil__genre=genre)
             logger.debug(f"Filtered by 'Vinil' type and genre {genre}, products count: {produtos.count()}")
 
         elif product_type == 'CD':
@@ -137,7 +137,10 @@ def produtos(request):
     for product in produtos:
        product.is_favorited = product.id in favorited_product_ids
 
-    return render(request, 'products.html', {'produtos': produtos})
+    genres = Vinil.objects.values_list('genre', flat=True).distinct()
+    colors = Clothing.objects.values_list('color', flat=True).distinct()
+
+    return render(request, 'products.html', {'produtos': produtos, 'genres': genres, 'colors': colors })
 
 def artistas(request):
     artists = Artist.objects.all()
@@ -226,10 +229,15 @@ def artistsProducts(request, name):
         except ValueError:
             logger.debug("Invalid maximum price provided.")
 
+    genres = Vinil.objects.values_list('genre', flat=True).distinct()
+    colors = Clothing.objects.values_list('color', flat=True).distinct()
+
     context = {
         'artist': artist,
         'products': products,
         'background_url': background_url,
+        'genres': genres,
+        'colors': colors
     }
     return render(request, 'artists_products.html', context)
 
@@ -1038,7 +1046,10 @@ def company_products_user(request, company_id):
             logger.debug(f"Applied max price filter {max_price}, products count: {products.count()}")
         except ValueError:
             logger.debug("Invalid maximum price provided.")
-    return render(request, 'company_product_user.html', {'company': company, 'products': products})
+
+    genres = Vinil.objects.values_list('genre', flat=True).distinct()
+    colors = Clothing.objects.values_list('color', flat=True).distinct()
+    return render(request, 'company_product_user.html', {'company': company, 'products': products, 'genres': genres, 'colors': colors})
 
 
 @login_required
@@ -1146,7 +1157,6 @@ def edit_product(request, company_id, product_id):
     company = get_object_or_404(Company, id=company_id)
     product = get_object_or_404(Product, id=product_id, company=company)
 
-    # Determina o tipo inicial do produto
     initial_product_type = product.get_product_type().lower()
 
     if request.method == 'POST':
@@ -1156,7 +1166,6 @@ def edit_product(request, company_id, product_id):
             product = product_form.save(commit=False)
             product.company = company
 
-            # Verifica se o preço foi fornecido
             price = product_form.cleaned_data.get('price')
             if price is None:
                 return render(request, 'edit_product.html', {
@@ -1177,7 +1186,6 @@ def edit_product(request, company_id, product_id):
                     'initial_product_type': initial_product_type,
                 })
 
-            # Atualiza o formulário de detalhes com base no tipo de produto selecionado
             product_type = product_form.cleaned_data.get('product_type', initial_product_type)
 
             if product_type == 'vinil':
@@ -1204,12 +1212,14 @@ def edit_product(request, company_id, product_id):
                 if accessory_form.is_valid():
                     accessory_form.save()
 
-            return redirect('company_products', company_id=company.id)
+            if request.user.user_type == 'admin':
+                return redirect('admin_home')
+            else:
+                return redirect('company_products', company_id=company.id)
 
     else:
         product_form = ProductForm(instance=product, initial={'product_type': initial_product_type})
 
-        # Carrega os formulários de detalhes com base no tipo inicial do produto
         vinil_form = VinilForm(instance=product.vinil) if initial_product_type == 'vinil' else VinilForm()
         cd_form = CDForm(instance=product.cd) if initial_product_type == 'cd' else CDForm()
         clothing_form = ClothingForm(instance=product.clothing) if initial_product_type == 'clothing' else ClothingForm()
