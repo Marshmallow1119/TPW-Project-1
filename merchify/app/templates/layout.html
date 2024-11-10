@@ -65,15 +65,16 @@
                 </ul>
 
                 {% if user.is_authenticated %}
-                <div class="navbar-text me-3">
+                <div class="navbar-text me-3 fw-bold fs-5">
                     {% if user.user_type == 'individual' %}
-                        Welcome, User {{ user.username }}
+                        Bem-Vind@, User {{ user.username }}
                     {% elif user.user_type == 'admin' %}
-                        Welcome, Admin {{ user.username }}
+                        Bem-Vind@, Admin {{ user.username }}
                     {% elif user.user_type == 'company' %}
-                        Welcome, Company {{ user.username }}
+                        Bem-Vind@, Company {{ user.username }}
                     {% endif %}
                 </div>
+                
                 {% endif %}
 
 
