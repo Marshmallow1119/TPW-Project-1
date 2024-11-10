@@ -117,7 +117,7 @@
         {% for product in products %}
         <div class="col-6 col-md-4 col-lg-3 mb-4">
             <div class="card card-hover position-relative" style="height: 400px;">
-                <a href="/products/{{ product.name }}" class="card-link" style="display: block; height: 100%; color: black; text-decoration: none">
+                <a href="/product/{{ product.id }}" class="card-link" style="display: block; height: 100%; color: black; text-decoration: none">
                     <div class="card-img-wrapper" style="height: 85%;">
                         <img src="{{ product.image.url }}" class="card-img-top" alt="{{ artist.name }}" style="height: 100%; object-fit: cover;">
                     </div>
