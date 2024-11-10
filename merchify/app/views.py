@@ -1251,6 +1251,22 @@ def admin_home(request):
     products = Product.objects.all()
     companies = Company.objects.all()
     for product in products:
+        if hasattr(product, 'clothing'):  # Check if it's a clothing product (with sizes)
+            sizes = product.clothing.sizes.all()
+            product.size_stock = {
+                'XS': sizes.filter(size='XS').first().stock if sizes.filter(size='XS').exists() else 0,
+                'S': sizes.filter(size='S').first().stock if sizes.filter(size='S').exists() else 0,
+                'M': sizes.filter(size='M').first().stock if sizes.filter(size='M').exists() else 0,
+                'L': sizes.filter(size='L').first().stock if sizes.filter(size='L').exists() else 0,
+                'XL': sizes.filter(size='XL').first().stock if sizes.filter(size='XL').exists() else 0,
+            }
+        else:
+            product.size_stock = product.get_stock()
+    for product in products:
+        product.favorites_count = product.favorites.count()
+        product.reviews_count = product.reviews.count()
+
+    for product in products:
         product.review_count = Review.objects.filter(product=product).count() 
     return render(request, 'admin_home.html', {'users': users, 'products': products, 'companies': companies})
 def delete_user(request, user_id):

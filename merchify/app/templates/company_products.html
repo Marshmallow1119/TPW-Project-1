@@ -197,38 +197,31 @@
 </style>
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-    // Event listener for the clothing stock modal
     const clothingStockModal = document.getElementById('addClothingStockModal');
     clothingStockModal.addEventListener('show.bs.modal', function (event) {
         const button = event.relatedTarget;
         const productId = button.getAttribute('data-product-id');
 
-        // Retrieve size stock values from button's data attributes
         document.getElementById('size_xs').value = button.getAttribute('data-xs') || 0;
         document.getElementById('size_s').value = button.getAttribute('data-s') || 0;
         document.getElementById('size_m').value = button.getAttribute('data-m') || 0;
         document.getElementById('size_l').value = button.getAttribute('data-l') || 0;
         document.getElementById('size_xl').value = button.getAttribute('data-xl') || 0;
 
-        // Update the form action for the clothing product
         const form = document.getElementById('addClothingStockForm');
         form.action = `/product/${productId}/add_clothing_stock/`;
     });
 
-    // Event listener for the general stock modal (non-clothing products)
     const generalStockModal = document.getElementById('addStockOnlyModal');
     generalStockModal.addEventListener('show.bs.modal', function (event) {
         const button = event.relatedTarget;
         const productId = button.getAttribute('data-product-id');
 
-        // Retrieve stock value from button's data attributes and log for debugging
         const stock = button.getAttribute('data-stock');
         console.log("Current stock for non-clothing product:", stock); // Debugging line
 
-        // Display stock in the input field
         document.getElementById('stock').value = stock !== null ? stock : 0;
 
-        // Update the form action for the general product
         const form = document.getElementById('addStockOnlyForm');
         form.action = `/product/${productId}/add_stock/`;
     });

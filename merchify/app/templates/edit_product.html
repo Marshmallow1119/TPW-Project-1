@@ -63,10 +63,7 @@
                         <label for="releaseDate" class="form-label">Data de Lançamento</label>
                         {{ vinil_form.releaseDate|add_class:"form-control" }}
                     </div>
-                    <div class="col-md-4 mt-3">
-                        <label for="stock" class="form-label">Stock</label>
-                        {{ vinil_form.stock|add_class:"form-control" }}
-                    </div>
+                    <input type="hidden" name="stock" value="0">
                 </div>
             </div>
 
@@ -81,10 +78,7 @@
                         <label for="releaseDate" class="form-label">Data de Lançamento</label>
                         {{ cd_form.releaseDate|add_class:"form-control" }}
                     </div>
-                    <div class="col-md-4">
-                        <label for="stock" class="form-label">Stock</label>
-                        {{ cd_form.stock|add_class:"form-control" }}
-                    </div>
+                    <input type="hidden" name="stock" value="0">
                 </div>
             </div>
 
@@ -107,10 +101,7 @@
                         <label for="color" class="form-label">Cor</label>
                         {{ accessory_form.color|add_class:"form-control" }}
                     </div>
-                    <div class="col-md-4">
-                        <label for="stock" class="form-label">Stock</label>
-                        {{ accessory_form.stock|add_class:"form-control" }}
-                    </div>
+                    <input type="hidden" name="stock" value="0"> <!-- Set your default stock value here -->
                 </div>
             </div>
 
