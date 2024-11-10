@@ -2,7 +2,7 @@
 {% load filters %}
 {% block content %}
 <div class="container mt-5">
-    <h2 class="mb-4 text-center">Edit Product: {{ product.name }}</h2>
+    <h2 class="mb-4 text-center">Add Product: {{ product.name }}</h2>
 
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
@@ -101,10 +101,6 @@
                     {{ accessory_form.color|add_class:"form-control" }}
                 </div>
                 <div class="col-md-4">
-                    <label for="size" class="form-label">Size</label>
-                    {{ accessory_form.size|add_class:"form-control" }}
-                </div>
-                <div class="col-md-4 mt-3">
                     <label for="stock" class="form-label">Stock</label>
                     {{ accessory_form.stock|add_class:"form-control" }}
                 </div>

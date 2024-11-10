@@ -11,8 +11,14 @@
             <div class="row mb-3">
                 <div class="col-md-6">
                     <label for="product_type" class="form-label">Tipo de Produto</label>
-                    {{ product_form.product_type|add_class:"form-select" }}
+                    <select name="product_type" class="form-select" id="product_type">
+                        <option value="vinil" {% if initial_product_type == "vinil" %}selected{% endif %}>Vinil</option>
+                        <option value="cd" {% if initial_product_type == "cd" %}selected{% endif %}>CD</option>
+                        <option value="clothing" {% if initial_product_type == "clothing" %}selected{% endif %}>Roupa</option>
+                        <option value="accessory" {% if initial_product_type == "accessory" %}selected{% endif %}>Acessório</option>
+                    </select>
                 </div>
+                
                 <div class="col-md-6">
                     <label for="artist" class="form-label">Artista</label>
                     {{ product_form.artist|add_class:"form-select" }}
@@ -102,10 +108,6 @@
                         {{ accessory_form.color|add_class:"form-control" }}
                     </div>
                     <div class="col-md-4">
-                        <label for="size" class="form-label">Tamanho</label>
-                        {{ accessory_form.size|add_class:"form-control" }}
-                    </div>
-                    <div class="col-md-4 mt-3">
                         <label for="stock" class="form-label">Stock</label>
                         {{ accessory_form.stock|add_class:"form-control" }}
                     </div>
@@ -120,71 +122,67 @@
         </form>
     </div>
 </div>
-
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const productTypeField = document.querySelector('[name="product_type"]');
-    const categoryField = document.querySelector('[name="category"]');
-    const vinilFields = document.getElementById('vinil-fields');
-    const cdFields = document.getElementById('cd-fields');
-    const clothingFields = document.getElementById('clothing-fields');
-    const accessoryFields = document.getElementById('accessory-fields');
-
-    function clearFields(container) {
-        container.querySelectorAll('input, select, textarea').forEach(field => {
-            if (field.type !== "file") {
-                field.value = ""; // Limpa o valor do campo
-            }
-        });
-    }
-
-    function disableFields(container) {
-        container.querySelectorAll('input, select, textarea').forEach(field => {
-            field.disabled = true; // Desabilita os campos escondidos
-        });
-    }
-
-    function enableFields(container) {
-        container.querySelectorAll('input, select, textarea').forEach(field => {
-            field.disabled = false; // Habilita os campos visíveis
-        });
-    }
-
-    function updateFieldVisibility() {
-        // Esconde todos os campos de detalhe e desabilita-os
-        [vinilFields, cdFields, clothingFields, accessoryFields].forEach(section => {
-            section.style.display = 'none';
-            disableFields(section);
-        });
-
-        const productType = productTypeField.value;
-        // Limpa campos e exibe a seção relevante com base no tipo de produto
-        if (productType === 'vinil') {
-            clearFields(vinilFields);
-            vinilFields.style.display = 'block';
-            enableFields(vinilFields);
-            categoryField.value = 'Vinyl';
-        } else if (productType === 'cd') {
-            clearFields(cdFields);
-            cdFields.style.display = 'block';
-            enableFields(cdFields);
-            categoryField.value = 'CD';
-        } else if (productType === 'clothing') {
-            clearFields(clothingFields);
-            clothingFields.style.display = 'block';
-            enableFields(clothingFields);
-            categoryField.value = 'Clothing';
-        } else if (productType === 'accessory') {
-            clearFields(accessoryFields);
-            accessoryFields.style.display = 'block';
-            enableFields(accessoryFields);
-            categoryField.value = 'Accessory';
+    document.addEventListener('DOMContentLoaded', function() {
+        // Obtém o campo de seleção do tipo de produto e o tipo inicial do produto
+        const productTypeField = document.querySelector('[name="product_type"]');
+        const initialProductType = "{{ initial_product_type|escapejs }}";  // Tipo inicial do produto obtido da view
+    
+        // Obtém as seções dos detalhes de cada tipo de produto
+        const vinilFields = document.getElementById('vinil-fields');
+        const cdFields = document.getElementById('cd-fields');
+        const clothingFields = document.getElementById('clothing-fields');
+        const accessoryFields = document.getElementById('accessory-fields');
+    
+        // Função para esconder todas as seções de detalhe e desabilitar seus campos
+        function hideAllDetailSections() {
+            [vinilFields, cdFields, clothingFields, accessoryFields].forEach(section => {
+                if (section) {
+                    section.style.display = 'none';
+                    section.querySelectorAll('input, select, textarea').forEach(field => {
+                        field.disabled = true;  // Desabilita campos para evitar o envio de dados de seções escondidas
+                    });
+                }
+            });
         }
-    }
-
-    updateFieldVisibility(); // Chamada inicial para definir o estado correto dos campos
-
-    productTypeField.addEventListener('change', updateFieldVisibility); // Atualiza campos ao mudar o tipo de produto
-});
-</script>
+    
+        // Função para exibir a seção de detalhes apropriada e habilitar seus campos
+        function showDetailSection(section) {
+            if (section) {
+                section.style.display = 'block';
+                section.querySelectorAll('input, select, textarea').forEach(field => {
+                    field.disabled = false;  // Habilita campos visíveis para envio
+                });
+            }
+        }
+    
+        // Função para atualizar a visibilidade das seções de detalhe com base no tipo de produto
+        function updateFieldVisibility(productType) {
+            // Esconde todas as seções de detalhe inicialmente
+            hideAllDetailSections();
+    
+            // Exibe a seção correspondente ao tipo de produto atual
+            if (productType === 'vinil') {
+                showDetailSection(vinilFields);
+            } else if (productType === 'cd') {
+                showDetailSection(cdFields);
+            } else if (productType === 'clothing') {
+                showDetailSection(clothingFields);
+            } else if (productType === 'accessory') {
+                showDetailSection(accessoryFields);
+            }
+        }
+    
+        // Configura a exibição inicial dos campos com base no tipo inicial do produto
+        updateFieldVisibility(initialProductType);
+    
+        // Adiciona um ouvinte para atualizar os campos ao mudar o tipo de produto manualmente
+        productTypeField.addEventListener('change', function() {
+            const selectedProductType = productTypeField.value;
+            updateFieldVisibility(selectedProductType);
+        });
+    });
+    </script>
+    
+    
 {% endblock %}

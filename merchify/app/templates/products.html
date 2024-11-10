@@ -34,15 +34,14 @@
                                     <input type="radio" name="type" value="Accessory" id="accessory" {% if request.GET.type == 'Accessory' %}checked{% endif %} onclick="showFilters(this.value)">
                                     <label for="accessory">Outros</label>
                                 </div>
-                                <div id="vinil-filters" class="hidden-filter">
+                    <div id="vinil-filters" class="hidden-filter">
                         <h5>Gênero</h5>
                         <div class="form-group">
                             <select name="genreVinyl" class="form-control">
                                 <option value="">Todos</option>
-                                <option value="Rock" {% if request.GET.genreVinyl == 'Rock' %}selected{% endif %}>Rock</option>
-                                <option value="Pop" {% if request.GET.genreVinyl == 'Pop' %}selected{% endif %}>Pop</option>
-                                <option value="Jazz" {% if request.GET.genreVinyl == 'Jazz' %}selected{% endif %}>Jazz</option>
-                                <option value="Hip-Hop" {% if request.GET.genreVinyl == 'Hip-Hop' %}selected{% endif %}>Hip-Hop</option>
+                                {% for genre in genres %}
+                                    <option value="{{ genre }}" {% if request.GET.genreVinyl == genre %}selected{% endif %}>{{ genre }}</option>
+                                {% endfor %}
                             </select>
                         </div>
                     </div>
@@ -52,10 +51,9 @@
                         <div class="form-group">
                             <select name="genreCD" class="form-control">
                                 <option value="">Todos</option>
-                                <option value="Rock" {% if request.GET.genreCD == 'Rock' %}selected{% endif %}>Rock</option>
-                                <option value="Pop" {% if request.GET.genreCD == 'Pop' %}selected{% endif %}>Pop</option>
-                                <option value="Jazz" {% if request.GET.genreCD == 'Jazz' %}selected{% endif %}>Jazz</option>
-                                <option value="Hip-Hop" {% if request.GET.genreCD == 'Hip-Hop' %}selected{% endif %}>Hip-Hop</option>
+                                {% for genre in genres %}
+                                    <option value="{{ genre }}" {% if request.GET.genreCD == genre %}selected{% endif %}>{{ genre }}</option>
+                                {% endfor %}
                             </select>
                         </div>
                     </div>
@@ -65,9 +63,9 @@
                         <div class="form-group">
                             <select name="colorClothing" class="form-control">
                                 <option value="">Todas</option>
-                                <option value="Preto" {% if request.GET.colorClothing == 'Preto' %}selected{% endif %}>Preto</option>
-                                <option value="Branco" {% if request.GET.colorClothing == 'Branco' %}selected{% endif %}>Branco</option>
-                                <option value="Vermelho" {% if request.GET.colorClothing == 'Vermelho' %}selected{% endif %}>Vermelho</option>
+                                {% for color in colors %}
+                                    <option value="{{ color }}" {% if request.GET.colorClothing == color %}selected{% endif %}>{{ color }}</option>
+                                {% endfor %}
                             </select>
                         </div>
                     </div>
@@ -76,9 +74,9 @@
                         <h5>Cor</h5>
                         <div class="form-group">
                             <select name="colorAccessory" class="form-control">
-                                <option value="">Todas</option>
-                                <option value="Preto" {% if request.GET.colorAccessory == 'Preto' %}selected{% endif %}>Preto</option>
-                                <option value="Branco" {% if request.GET.colorAccessory == 'Branco' %}selected{% endif %}>Branco</option>
+                            {% for color in colors %}
+                                <option value="{{ color }}" {% if request.GET.colorAccessory == color %}selected{% endif %}>{{ color }}</option>
+                            {% endfor %}
                             </select>
                         </div>
 
@@ -108,7 +106,6 @@
                                     <button style="width: 48%" type="submit" class="btn btn-success" onclick="applyFilters(event)">Aplicar Filtros</button>
                                 </div>
                             </form>
-
                             </div>
                 </div>
         <!-- Product Cards on the right, taking up 8 columns -->

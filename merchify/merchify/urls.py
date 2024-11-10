@@ -70,6 +70,9 @@ urlpatterns = [
     path('companhias/', views.companhias, name='companhias'),
     path('update-cart-item/<int:item_id>/', views.update_cart_item, name='update_cart_item'),
     path('carrinho/', views.viewCart, name='viewCart'),
+    path('product/<int:product_id>/add_clothing_stock/', views.add_clothing_stock, name='add_clothing_stock'),
+    path('product/<int:product_id>/add_stock/', views.add_stock, name='add_stock'),
+
 ]   
 
 

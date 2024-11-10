@@ -4,88 +4,76 @@
     <div class="row">
         <!-- Coluna para a Imagem do Produto -->
         <div class="col-md-5 d-flex justify-content-center">
-            <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-img imagem" style="width: 95%; height: auto; object-fit: cover;">
+            <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-img imagem" style="max-width: 100%; height: auto; object-fit: contain;">
         </div>
+        
 
-        <!-- Coluna para os Detalhes e Reviews -->
+        <!-- Coluna para os Detalhes do Produto -->
         <div class="col-md-7">
             <h1 class="display-6">{{ product.name }}</h1>
             <p class="text-muted">{{ product.artist.name }}</p>
             <h3 class="text-success">{{ product.price|floatformat:2 }}€</h3>
             <p class="lead">{{ product.description }}</p>
 
-            <!-- Detalhes do Produto e Reviews -->
-            <div class="row">
-                <!-- Tabela de Detalhes do Produto -->
-                <div class="col-md-6">
-                    <h5>Detalhes do Produto</h5>
-                    <table class="table table-bordered">
-                        <tbody>
-                            <tr><th>Categoria</th><td>{{ product.category }}</td></tr>
-                            <tr><th>Artista</th><td>{{ product.artist.name }}</td></tr>
-                            <tr><th>Empresa</th><td>{{ product.company.name }}</td></tr>
-                            <tr><th>Data de Adição</th><td>{{ product.addedProduct|date:"d/m/Y" }}</td></tr>
+            <!-- Tabela de Detalhes do Produto -->
+            <h5>Detalhes do Produto</h5>
+            <table class="table table-bordered">
+                <tbody>
+                    <tr><th>Categoria</th><td>{{ product.category }}</td></tr>
+                    <tr><th>Artista</th><td>{{ product.artist.name }}</td></tr>
+                    <tr><th>Empresa</th><td>{{ product.company.name }}</td></tr>
+                    <tr><th>Data de Adição</th><td>{{ product.addedProduct|date:"d/m/Y" }}</td></tr>
 
-                            {% if product.get_product_type == "Vinil" %}
-                                <tr><th>Gênero</th><td>{{ product.vinil.genre }}</td></tr>
-                                <tr><th>Tamanho do LP</th><td>{{ product.vinil.lpSize }}</td></tr>
-                                <tr><th>Data de Lançamento</th><td>{{ product.vinil.releaseDate|date:"d/m/Y" }}</td></tr>
-                                <tr><th>Stock</th><td>{{ product.vinil.stock }}</td></tr>
-                            {% elif product.get_product_type == "CD" %}
-                                <tr><th>Gênero</th><td>{{ product.cd.genre }}</td></tr>
-                                <tr><th>Data de Lançamento</th><td>{{ product.cd.releaseDate|date:"d/m/Y" }}</td></tr>
-                                <tr><th>Stock</th><td>{{ product.cd.stock }}</td></tr>
-                            {% elif product.get_product_type == "Clothing" %}
-                                <tr><th>Cor</th><td>{{ product.clothing.color }}</td></tr>
-                            {% elif product.get_product_type == "Accessory" %}
-                                <tr><th>Material</th><td>{{ product.accessory.material }}</td></tr>
-                                <tr><th>Cor</th><td>{{ product.accessory.color }}</td></tr>
-                                <tr><th>Tamanho</th><td>{{ product.accessory.size }}</td></tr>
-                                <tr><th>Stock</th><td>{{ product.accessory.stock }}</td></tr>
-                            {% endif %}
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- Reviews -->
-                <div class="col-md-6">
-                    <h5>Reviews:</h5>
-                    {% if reviews %}
-                        {% for review in reviews %}
-                            <div class="card p-3 mb-3">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <h6>{{ review.user.username }} <small class="text-muted">- {{ review.date|date:"d/m/Y" }}</small></h6>
-                                    <form method="post" action="{% url 'delete_review' review.id %}" class="d-inline-block">
-                                        {% csrf_token %}
-                                        <button type="submit" class="btn btn-sm btn-danger" title="Remover avaliação">
-                                            <i class="fas fa-trash-alt"></i>
-                                        </button>
-                                    </form>
-                                </div>
-                                <p>{{ review.text }}</p>
-                                <div>
-                                    {% for i in "12345" %}
-                                        {% if forloop.counter <= review.rating %}
-                                            <span class="star selected">★</span>
-                                        {% else %}
-                                            <span class="star">☆</span>
-                                        {% endif %}
-                                    {% endfor %}
-                                </div>
-                            </div>
-                        {% endfor %}
-                    {% else %}
-                        <p class="text-muted">Este produto ainda não possui reviews.</p>
+                    {% if product.get_product_type == "Vinil" %}
+                        <tr><th>Gênero</th><td>{{ product.vinil.genre }}</td></tr>
+                        <tr><th>Tamanho do LP</th><td>{{ product.vinil.lpSize }}</td></tr>
+                        <tr><th>Data de Lançamento</th><td>{{ product.vinil.releaseDate|date:"d/m/Y" }}</td></tr>
+                        <tr><th>Stock</th><td>{{ product.vinil.stock }}</td></tr>
+                    {% elif product.get_product_type == "CD" %}
+                        <tr><th>Gênero</th><td>{{ product.cd.genre }}</td></tr>
+                        <tr><th>Data de Lançamento</th><td>{{ product.cd.releaseDate|date:"d/m/Y" }}</td></tr>
+                        <tr><th>Stock</th><td>{{ product.cd.stock }}</td></tr>
+                    {% elif product.get_product_type == "Clothing" %}
+                        <tr><th>Cor</th><td>{{ product.clothing.color }}</td></tr>
+                    {% elif product.get_product_type == "Accessory" %}
+                        <tr><th>Material</th><td>{{ product.accessory.material }}</td></tr>
+                        <tr><th>Cor</th><td>{{ product.accessory.color }}</td></tr>
+                        <tr><th>Stock</th><td>{{ product.accessory.stock }}</td></tr>
                     {% endif %}
-                </div>
-            </div>
+                </tbody>
+            </table>
 
             <!-- Favoritos e Botões de Editar/Apagar -->
             <div class="mt-4">
                 <i class="fa fa-heart text-danger"></i> Favoritos: {{ product.favorites_count }}
             </div>
             <div class="d-flex mt-3">
-               <a href="{% url 'edit_product' company_id=product.company.id product_id=product.id %}" class="btn btn-warning me-2">Edit</a>
+                {% if product.get_product_type == 'Clothing' %}
+                    <!-- Clothing Product - Modal with Sizes -->
+                    <button
+                        class="btn btn-sm btn-success me-2"
+                        data-product-id="{{ product.id }}"
+                        data-bs-toggle="modal"
+                        data-bs-target="#addClothingStockModal"
+                        data-xs="{{ product.size_stock.XS }}"
+                        data-s="{{ product.size_stock.S }}"
+                        data-m="{{ product.size_stock.M }}"
+                        data-l="{{ product.size_stock.L }}"
+                        data-xl="{{ product.size_stock.XL }}">
+                        <i class="fas fa-plus" style="margin-right: 4px; color: black"></i> Adicionar Stock
+                    </button>
+                {% else %}
+                    <!-- Non-Clothing Product - Modal with Stock only -->
+                    <button
+                        class="btn btn-sm btn-success me-2"
+                        data-product-id="{{ product.id }}"
+                        data-bs-toggle="modal"
+                        data-bs-target="#addStockOnlyModal"
+                        data-stock="{{ product.size_stock }}">
+                        <i class="fas fa-plus" style="margin-right: 4px; color: black"></i> Adicionar Stock
+                    </button>
+                {% endif %}
+                <a href="{% url 'edit_product' company_id=product.company.id product_id=product.id %}" class="btn btn-warning me-2">Edit</a>
                 <form action="{% url 'delete_product' product.id %}" method="post" style="display:inline;">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this product?');">
@@ -95,6 +83,49 @@
             </div>
         </div>
     </div>
+
+    <!-- Reviews Section - Moved Below Product Details -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <h5>Reviews:</h5>
+            {% if reviews %}
+                {% for review in reviews %}
+                    <div class="card p-3 mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h6>{{ review.user.username }} <small class="text-muted">- {{ review.date|date:"d/m/Y" }}</small></h6>
+                            <form method="post" action="{% url 'delete_review' review.id %}" class="d-inline-block">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-danger" title="Remover avaliação">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </form>
+                        </div>
+                        <p>{{ review.text }}</p>
+                        <div>
+                            {% for i in "12345" %}
+                                {% if forloop.counter <= review.rating %}
+                                    <span class="star selected">★</span>
+                                {% else %}
+                                    <span class="star">☆</span>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-muted">Este produto ainda não possui reviews.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modals for Adding Stock -->
+<div class="modal fade" id="addClothingStockModal" tabindex="-1" aria-labelledby="addClothingStockModalLabel" aria-hidden="true">
+    <!-- Modal content for adding stock to clothing products -->
+</div>
+
+<div class="modal fade" id="addStockOnlyModal" tabindex="-1" aria-labelledby="addStockOnlyModalLabel" aria-hidden="true">
+    <!-- Modal content for adding stock to non-clothing products -->
 </div>
 
 <style>
@@ -106,4 +137,8 @@
         color: #FFD700;
     }
 </style>
+<script>
+// JavaScript for handling modals and dynamic form actions
+</script>
+
 {% endblock %}
