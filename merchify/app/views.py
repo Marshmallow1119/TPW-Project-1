@@ -1,38 +1,30 @@
-from datetime import timedelta, date
+from datetime import date
 import json
 import logging
-from itertools import product
-
 import re
-from sqlite3 import IntegrityError
 from urllib.parse import urlencode
 from django.contrib.auth.models import Group
-
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout, get_user_model
 from django.contrib.auth.hashers import make_password
-from django.db.models import Avg, Count
-from django.http import JsonResponse, Http404
-from django.urls import reverse
-from django.utils import timezone
-from django.shortcuts import redirect, render, get_object_or_404
-from django.shortcuts import render
-from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_POST
 from django.contrib.auth import password_validation
 from django.core.exceptions import ValidationError
+from django.db import transaction, IntegrityError
+from django.db.models import Avg, Count
+from django.http import JsonResponse, Http404
+from django.shortcuts import redirect, render, get_object_or_404
+from django.urls import reverse
+from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
 
-from app.models import *
-from app.forms import RegisterForm, ProductForm, CompanyForm, UserForm, VinilForm, CDForm, ClothingForm, AccessoryForm
-from django.contrib.auth import authenticate, login as auth_login, get_user_model
-from django.contrib.auth import logout as auth_logout
-from .forms import RegisterForm, UploadUserProfilePicture, UpdatePassword, UpdateProfile
-from django.contrib.auth.models import User
-from django.db import transaction
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.decorators import login_required
-from .models import Product, Company
-from .forms import ProductForm, VinilForm, CDForm, ClothingForm, AccessoryForm
+from app.models import Product, Company, Cart, CartItem, Purchase, Vinil, CD, Clothing, Accessory, Size, Favorite, FavoriteArtist, FavoriteCompany, Artist, Review, PurchaseProduct
+from app.forms import RegisterForm, ProductForm, CompanyForm, UserForm, VinilForm, CDForm, ClothingForm, AccessoryForm, UploadUserProfilePicture, UpdatePassword, UpdateProfile
+
+User = get_user_model()
+logger = logging.getLogger(__name__)
+
 
 
 
@@ -129,7 +121,6 @@ def produtos(request):
                 produtos = produtos.filter(accessory__size=size)
             logger.debug(f"Filtered by 'Accessory' type, color {color}, and size {size}, products count: {produtos.count()}")
 
-    # Filter by price range
     min_price = request.GET.get('min_price')
     max_price = request.GET.get('max_price')
     if min_price:
@@ -187,7 +178,6 @@ def artistsProducts(request, name):
 
     background_url = artist.background_image.url
 
-    # Filter by product type
     product_type = request.GET.get('type')
     if product_type:
         if product_type == 'Vinil':
@@ -221,7 +211,6 @@ def artistsProducts(request, name):
                 products = products.filter(accessory__size=size)
             logger.debug(f"Filtered by 'Accessory' type, color {color}, and size {size}, products count: {products.count()}")
 
-    # Filter by price range
     min_price = request.GET.get('min_price')
     max_price = request.GET.get('max_price')
     if min_price:
@@ -450,11 +439,9 @@ def update_cart_item(request, item_id):
             quantity = int(request.POST.get('quantity', 1))
             cart_item = get_object_or_404(CartItem, id=item_id)
 
-            # Atualizar a quantidade do item
-            cart_item.quantity = max(1, quantity)  # Garantir que a quantidade seja pelo menos 1
+            cart_item.quantity = max(1, quantity) 
             cart_item.save()
 
-            # Redirecionar de volta para a página do carrinho
             return redirect('viewCart')
         except Exception as e:
             messages.error(request, f"Erro ao atualizar o carrinho: {str(e)}")
@@ -471,10 +458,6 @@ def remove_from_cart(request, product_id):
         raise Http404("CartItem does not exist")
     return redirect('cart')
 
-
-
-
-logger = logging.getLogger(__name__)
 
 @login_required(login_url='/login')
 def profile(request):
@@ -633,7 +616,6 @@ def submit_review(request, product_id):
         return redirect("productDetails", identifier=product_id)
     
 
-# Verificar favoritos para produtos e artistas
 @login_required
 def checkfavorite(request, category):
     user = request.user
@@ -664,12 +646,10 @@ def checkfavorite(request, category):
 
     return JsonResponse({"success": False, "message": "Invalid category."}, status=400)
 
-# Versão antiga corrigida
 @login_required
 def checkfavoriteOld(request):
     user = request.user
 
-    # Filter out any favorites where the product field is None
     favorite_products = Favorite.objects.filter(user=user, product__isnull=False).select_related('product')
     products_list = [
         {
@@ -678,10 +658,9 @@ def checkfavoriteOld(request):
             'price': fav.product.price,
             'image': fav.product.image.url
         }
-        for fav in favorite_products if fav.product  # Add a check to ensure fav.product is not None
+        for fav in favorite_products if fav.product  
     ]
 
-    # Filter out any favorites where the artist field is None
     favorite_artists = FavoriteArtist.objects.filter(user=user, artist__isnull=False).select_related('artist')
     artists_list = [
         {
@@ -689,7 +668,7 @@ def checkfavoriteOld(request):
             'name': fav.artist.name,
             'image': fav.artist.image.url
         }
-        for fav in favorite_artists if fav.artist  # Add a check to ensure fav.artist is not None
+        for fav in favorite_artists if fav.artist  
     ]
 
     favorite_companies = FavoriteCompany.objects.filter(user=user, company__isnull=False).select_related('company')
@@ -699,7 +678,7 @@ def checkfavoriteOld(request):
             'name': fav.company.name,
             'image': fav.company.logo.url
         }
-        for fav in favorite_companies if fav.company  # Add a check to ensure fav.artist is not None
+        for fav in favorite_companies if fav.company  
     ]
 
 
@@ -712,7 +691,6 @@ def checkfavoriteOld(request):
     })
 
 
-# Adicionar ou remover produto favorito
 @require_POST
 @login_required(login_url='/login/')
 def addtofavorite(request, product_id):
@@ -738,15 +716,12 @@ def addtofavoriteartist(request, artist_id):
         artist = get_object_or_404(Artist, id=artist_id)
         user = request.user
 
-        # Verificar se o artista foi encontrado corretamente
         if not artist:
             return JsonResponse({"success": False, "message": "Invalid artist."}, status=400)
 
-        # Obter ou criar o favorito
         favorite_artist, created = FavoriteArtist.objects.get_or_create(user=user, artist=artist)
         favorited = created
 
-        # Se o favorito já existir, removê-lo
         if not created:
             favorite_artist.delete()
 
@@ -755,7 +730,6 @@ def addtofavoriteartist(request, artist_id):
     except Artist.DoesNotExist:
         return JsonResponse({"success": False, "message": "Artist not found."}, status=404)
     except Exception as e:
-        # Para capturar outros erros
         return JsonResponse({"success": False, "message": str(e)}, status=500)
 
 @require_POST
@@ -765,15 +739,12 @@ def addtofavoritecompany(request, company_id):
         company = get_object_or_404(Company, id=company_id)
         user = request.user
 
-        # Verificar se o artista foi encontrado corretamente
         if not company:
             return JsonResponse({"success": False, "message": "Invalid artist."}, status=400)
 
-        # Obter ou criar o favorito
         favorite_company, created = FavoriteCompany.objects.get_or_create(user=user, company=company)
         favorited = created
 
-        # Se o favorito já existir, removê-lo
         if not created:
             favorite_company.delete()
 
@@ -782,10 +753,8 @@ def addtofavoritecompany(request, company_id):
     except Company.DoesNotExist:
         return JsonResponse({"success": False, "message": "Artist not found."}, status=404)
     except Exception as e:
-        # Para capturar outros erros
         return JsonResponse({"success": False, "message": str(e)}, status=500)
 
-# Remover produto dos favoritos
 @login_required
 def remove_from_favorites(request, product_id):
     try:
@@ -797,7 +766,6 @@ def remove_from_favorites(request, product_id):
     except Product.DoesNotExist:
         return JsonResponse({"success": False, "message": "Product not found."}, status=404)
 
-# Remover artista dos favoritos
 @login_required
 def remove_from_favorites_artist(request, artist_id):
     try:
@@ -990,7 +958,6 @@ def company_product_detail(request, company_id, product_id):
 def company_products_user(request, company_id):
     company = get_object_or_404(Company, id=company_id)
     products = Product.objects.filter(company=company)
-    # Filter by product type
     product_type = request.GET.get('type')
     if product_type:
         if product_type == 'Vinil':
@@ -1024,7 +991,6 @@ def company_products_user(request, company_id):
                 products = products.filter(accessory__size=size)
             logger.debug(f"Filtered by 'Accessory' type, color {color}, and size {size}, products count: {products.count()}")
 
-    # Filter by price range
     min_price = request.GET.get('min_price')
     max_price = request.GET.get('max_price')
     if min_price:
@@ -1047,31 +1013,25 @@ def add_product_to_company(request, company_id):
     company = get_object_or_404(Company, id=company_id)
 
     if request.method == 'POST':
-        # Initialize forms with POST data
         product_form = ProductForm(request.POST, request.FILES)
 
-        # Empty type-specific forms for rendering in case of errors
         vinil_form = VinilForm()
         cd_form = CDForm()
         clothing_form = ClothingForm()
         accessory_form = AccessoryForm()
 
-        # Check the validity of the main product form
         if product_form.is_valid():
-            # Create the Product instance without saving yet
             product = product_form.save(commit=False)
-            product.company = company  # Assign company
+            product.company = company  
 
-            # Check for price explicitly to avoid null values
             price = product_form.cleaned_data.get('price')
             if price is None:
                 return render(request, 'add_product_to_company.html', {
                     'form': product_form,
                     'error_message': "Price is required."
                 })
-            product.price = price  # Set price
+            product.price = price 
 
-            # Now, handle specific fields based on product type
             product_type = product_form.cleaned_data['product_type']
 
             if product_type == 'vinil':
@@ -1125,22 +1085,18 @@ def add_product_to_company(request, company_id):
                     accessory.company = product.company
                     accessory.category = product.category
                     accessory.save()
-            # Redirect to company products after successful save
             return redirect('company_products', company_id=company.id)
 
         else:
-            # Log form errors if the main product form is invalid
             print("Product form errors:", product_form.errors)
 
     else:
-        # Initialize forms for GET request
         product_form = ProductForm()
         vinil_form = VinilForm()
         cd_form = CDForm()
         clothing_form = ClothingForm()
         accessory_form = AccessoryForm()
 
-    # Context for the template
     context = {
         'company': company,
         'form': product_form,
@@ -1156,18 +1112,15 @@ def edit_product(request, company_id, product_id):
     company = get_object_or_404(Company, id=company_id)
     product = get_object_or_404(Product, id=product_id, company=company)
 
-    # Get the dynamic product type
-    product_type = product.get_product_type().lower()  # e.g., 'vinil', 'cd', etc.
+    product_type = product.get_product_type().lower()  
 
     if request.method == 'POST':
         product_form = ProductForm(request.POST, request.FILES, instance=product)
 
         if product_form.is_valid():
-            # Save base product fields
             product = product_form.save(commit=False)
             product.company = company
 
-            # Ensure price is provided
             price = product_form.cleaned_data.get('price')
             if price is None:
                 return render(request, 'edit_product.html', {
@@ -1176,9 +1129,9 @@ def edit_product(request, company_id, product_id):
                     'company': company,
                 })
 
-            product.price = price  # Explicitly set price
+            product.price = price 
             try:
-                product.save()  # Save the Product instance with price
+                product.save()  
             except IntegrityError:
                 return render(request, 'edit_product.html', {
                     'product_form': product_form,
@@ -1186,7 +1139,6 @@ def edit_product(request, company_id, product_id):
                     'company': company,
                 })
 
-            # Save type-specific fields based on product type
             if product_type == 'vinil':
                 vinil = get_object_or_404(Vinil, product_ptr=product)
                 vinil_form = VinilForm(request.POST, instance=vinil)
@@ -1214,10 +1166,8 @@ def edit_product(request, company_id, product_id):
             return redirect('company_products', company_id=company.id)
 
     else:
-        # Load existing data into forms
         product_form = ProductForm(instance=product)
 
-        # Initialize type-specific form with the current product's data
         if product_type == 'vinil':
             vinil = get_object_or_404(Vinil, product_ptr=product)
             vinil_form = VinilForm(instance=vinil)
@@ -1258,7 +1208,7 @@ def edit_product(request, company_id, product_id):
 @login_required
 def delete_product(request, product_id):
     product = get_object_or_404(Product, id=product_id)
-    company_id = product.company.id  # Guarda o ID da empresa para redirecionamento
+    company_id = product.company.id 
     product.delete()
     return redirect('company_products', company_id=company_id)
 
@@ -1267,7 +1217,7 @@ def admin_home(request):
     products = Product.objects.all()
     companies = Company.objects.all()
     for product in products:
-        product.review_count = Review.objects.filter(product=product).count()  # Count reviews for this product
+        product.review_count = Review.objects.filter(product=product).count() 
     return render(request, 'admin_home.html', {'users': users, 'products': products, 'companies': companies})
 def delete_user(request, user_id):
     user = get_object_or_404(User, id=user_id)
@@ -1305,10 +1255,8 @@ def add_company(request):
 
         if company_form.is_valid() and user_form.is_valid():
             with transaction.atomic():
-                # Save the company instance first
                 company = company_form.save()
 
-                # Prepare the user data with company info
                 user = user_form.save(commit=False)
                 user.user_type = 'company'
                 user.firstname = 'Company'
@@ -1368,9 +1316,7 @@ def apply_discount(request):
         discount_code = data.get('discount_code')
 
         if discount_code and discount_code.lower() == 'primeiracompra':
-            # Verificar se o usuário já fez uma compra
             if not Purchase.objects.filter(user=user).exists():
-                # Retorna sucesso com o sinal de desconto aplicado
                 request.session['discount_applied'] = True
                 return JsonResponse({"success": True})
             else:

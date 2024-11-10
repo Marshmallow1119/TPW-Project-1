@@ -116,10 +116,8 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Verifique se o modal de sucesso deve ser exibido
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.has('success')) {
-            // Exibe o modal
             const successModal = new bootstrap.Modal(document.getElementById('successModal'));
             successModal.show();
 
@@ -131,7 +129,7 @@
     });
     document.getElementById('apply_discount').addEventListener('click', function() {
         const discountCode = document.getElementById('discount_code').value;
-        const csrfToken = '{{ csrf_token }}'; // Django CSRF token for security
+        const csrfToken = '{{ csrf_token }}'; 
     
         fetch("{% url 'apply_discount' %}", {
             method: 'POST',
@@ -144,9 +142,9 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                location.reload(); // Recarrega a página se o desconto for aplicado com sucesso
+                location.reload(); 
             } else {
-                alert(data.message); // Mostra uma mensagem de erro caso o código seja inválido
+                alert(data.message); 
             }
         })
         .catch(error => console.error('Erro ao aplicar o desconto:', error));

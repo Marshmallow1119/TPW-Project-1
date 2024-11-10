@@ -211,11 +211,9 @@
     }, 5000);
 
     function showOrderDetails(orderId) {
-        // Enviar uma requisição AJAX para buscar os detalhes da encomenda
         fetch(`/account/order_details/${orderId}/`)
             .then(response => response.json())
             .then(data => {
-                // Exibir os detalhes no modal
                 const orderDetailsContent = document.getElementById('orderDetailsContent');
                 orderDetailsContent.innerHTML = `
                     <p><strong>Data:</strong> ${data.date}</p>
@@ -236,7 +234,6 @@
                         `).join('')}
                     </ul>
                 `;
-                // Exibir o modal
                 const orderDetailsModal = new bootstrap.Modal(document.getElementById('orderDetailsModal'));
                 orderDetailsModal.show();
             })
