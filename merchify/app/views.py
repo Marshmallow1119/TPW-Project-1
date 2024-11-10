@@ -11,7 +11,7 @@ from django.contrib.auth.hashers import make_password
 from django.contrib.auth import password_validation
 from django.core.exceptions import ValidationError
 from django.db import transaction, IntegrityError
-from django.db.models import Avg, Count
+from django.db.models import Avg, Q
 from django.http import JsonResponse, Http404
 from django.shortcuts import redirect, render, get_object_or_404
 from django.urls import reverse
@@ -273,7 +273,7 @@ def search(request):
     query = request.GET.get('search', '').strip()
 
     if query:
-        products = Product.objects.filter(name__icontains=query.strip()).exclude(name__isnull=True).exclude(name='')
+        products = Product.objects.filter(Q(name__icontains=query) | Q(artist__name__icontains=query)).exclude(name__isnull=True).exclude(name='')
         artists = Artist.objects.filter(name__icontains=query.strip()).exclude(name__isnull=True).exclude(name='')
     else:
         products = Product.objects.none()
@@ -485,7 +485,8 @@ def profile(request):
         })
         password_form = UpdatePassword()
         
-        purchases = Purchase.objects.filter(user=user)
+        purchases = Purchase.objects.filter(user=user) if user.purchases.exists() else []
+        
         for purchase in purchases:
             if purchase.total_amount > 100:
                 purchase.shipping_fee = 0
@@ -499,7 +500,7 @@ def profile(request):
             'image_form': image_form,
             'profile_form': profile_form,
             'password_form': password_form,
-            'number_of_purchases': purchases.count(),
+            'number_of_purchases': len(purchases),
             'purchases': purchases,
         })
 

@@ -90,7 +90,7 @@
                 </form>
             </div>
 
-            <!-- Encomendas -->
+            {% if user.user_type == 'individual'%}
             <div class="p-3 bg-secondary text-white rounded mt-4">
                 <h4 class="mb-4">Encomendas</h4>
                 {% if purchases %}
@@ -146,6 +146,7 @@
                     <p class="text-light">Você ainda não fez nenhuma encomenda.</p>
                 {% endif %}
             </div>
+            {% endif %}
 
             <div class="modal fade" id="orderDetailsModal" tabindex="-1" aria-labelledby="orderDetailsModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-lg">
