@@ -198,6 +198,7 @@ class Purchase(models.Model):
     status = models.CharField(max_length=50)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)  
     discount_applied = models.BooleanField(default=False)
+    discount_value = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)  # Adicionado
     
     def __str__(self):
         return self.user.username + ' - ' + str(self.date)
