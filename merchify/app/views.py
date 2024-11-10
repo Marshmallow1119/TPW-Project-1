@@ -975,7 +975,7 @@ def company_product_detail(request, company_id, product_id):
         'L': sizes.filter(size='L').first().stock if sizes.filter(size='L').exists() else 0,
         'XL': sizes.filter(size='XL').first().stock if sizes.filter(size='XL').exists() else 0,
     }
-    
+
     return render(request, 'company_product_detail.html', {
         'company': company,
         'product': product,
