@@ -53,7 +53,7 @@
                                 data-product-id="{{ product.id }}"
                                 data-bs-toggle="modal"
                                 data-bs-target="#addStockOnlyModal"
-                                data-stock="{{ product.stock }}">
+                                data-stock="{{ product.size_stock }}">
                                 <i class="fas fa-plus" style="margin-right: 4px; color: black"></i> Adicionar Stock
                             </button>
                             {% endif %}
@@ -73,7 +73,6 @@
     </div>
 </div>
 
-<!-- Modal for adding stock -->
 <!-- Modal for adding stock for Clothing products -->
 <div class="modal fade" id="addClothingStockModal" tabindex="-1" aria-labelledby="addClothingStockModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -198,44 +197,44 @@
 </style>
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-    const addStockModal = document.getElementById('addStockModal');
-    addStockModal.addEventListener('show.bs.modal', function (event) {
+    // Event listener for the clothing stock modal
+    const clothingStockModal = document.getElementById('addClothingStockModal');
+    clothingStockModal.addEventListener('show.bs.modal', function (event) {
         const button = event.relatedTarget;
         const productId = button.getAttribute('data-product-id');
-        const productType = button.getAttribute('data-product-type');  // Get the product type (Clothing, Vinil, CD, etc.)
 
-        // Handle clothing product
-        if (productType === 'Clothing') {
-            // Show size fields for Clothing
-            document.getElementById('size_fields').style.display = 'block';
-            document.getElementById('stock_field').style.display = 'none';
-            
-            // Set the size stock values (from button's data attributes)
-            document.getElementById('size_xs').value = button.getAttribute('data-xs');
-            document.getElementById('size_s').value = button.getAttribute('data-s');
-            document.getElementById('size_m').value = button.getAttribute('data-m');
-            document.getElementById('size_l').value = button.getAttribute('data-l');
-            document.getElementById('size_xl').value = button.getAttribute('data-xl');
-            
-            // Update the form action for Clothing
-            const form = document.getElementById('addStockForm');
-            form.action = `/product/${productId}/add_clothing_stock/`;
-        }
-        else {
-            // Show total stock field for non-clothing products
-            document.getElementById('size_fields').style.display = 'none';
-            document.getElementById('stock_field').style.display = 'block';
-            
-            // Set the stock value (from button's data attributes)
-            document.getElementById('stock').value = button.getAttribute('data-stock');
-            
-            // Update the form action for non-clothing products
-            const form = document.getElementById('addStockForm');
-            form.action = `/product/${productId}/add_stock/`;
-        }
+        // Retrieve size stock values from button's data attributes
+        document.getElementById('size_xs').value = button.getAttribute('data-xs') || 0;
+        document.getElementById('size_s').value = button.getAttribute('data-s') || 0;
+        document.getElementById('size_m').value = button.getAttribute('data-m') || 0;
+        document.getElementById('size_l').value = button.getAttribute('data-l') || 0;
+        document.getElementById('size_xl').value = button.getAttribute('data-xl') || 0;
+
+        // Update the form action for the clothing product
+        const form = document.getElementById('addClothingStockForm');
+        form.action = `/product/${productId}/add_clothing_stock/`;
+    });
+
+    // Event listener for the general stock modal (non-clothing products)
+    const generalStockModal = document.getElementById('addStockOnlyModal');
+    generalStockModal.addEventListener('show.bs.modal', function (event) {
+        const button = event.relatedTarget;
+        const productId = button.getAttribute('data-product-id');
+
+        // Retrieve stock value from button's data attributes and log for debugging
+        const stock = button.getAttribute('data-stock');
+        console.log("Current stock for non-clothing product:", stock); // Debugging line
+
+        // Display stock in the input field
+        document.getElementById('stock').value = stock !== null ? stock : 0;
+
+        // Update the form action for the general product
+        const form = document.getElementById('addStockOnlyForm');
+        form.action = `/product/${productId}/add_stock/`;
     });
 });
 
 </script>
+
 
 {% endblock %}

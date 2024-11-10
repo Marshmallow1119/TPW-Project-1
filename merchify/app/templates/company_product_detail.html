@@ -85,6 +85,31 @@
                 <i class="fa fa-heart text-danger"></i> Favoritos: {{ product.favorites_count }}
             </div>
             <div class="d-flex mt-3">
+                {% if product.get_product_type == 'Clothing' %}
+                            <!-- Clothing Product - Modal with Sizes -->
+                            <button
+                                class="btn btn-sm btn-success me-2"
+                                data-product-id="{{ product.id }}"
+                                data-bs-toggle="modal"
+                                data-bs-target="#addClothingStockModal"
+                                data-xs="{{ product.size_stock.XS }}"
+                                data-s="{{ product.size_stock.S }}"
+                                data-m="{{ product.size_stock.M }}"
+                                data-l="{{ product.size_stock.L }}"
+                                data-xl="{{ product.size_stock.XL }}">
+                                <i class="fas fa-plus" style="margin-right: 4px; color: black"></i> Adicionar Stock
+                            </button>
+                            {% else %}
+                            <!-- Non-Clothing Product - Modal with Stock only -->
+                            <button
+                                class="btn btn-sm btn-success me-2"
+                                data-product-id="{{ product.id }}"
+                                data-bs-toggle="modal"
+                                data-bs-target="#addStockOnlyModal"
+                                data-stock="{{ product.size_stock }}">
+                                <i class="fas fa-plus" style="margin-right: 4px; color: black"></i> Adicionar Stock
+                            </button>
+                {% endif %}
                <a href="{% url 'edit_product' company_id=product.company.id product_id=product.id %}" class="btn btn-warning me-2">Edit</a>
                 <form action="{% url 'delete_product' product.id %}" method="post" style="display:inline;">
                     {% csrf_token %}
@@ -93,6 +118,75 @@
                     </button>
                 </form>
             </div>
+        </div>
+    </div>
+</div>
+    
+<!-- Modal for adding stock for Clothing products -->
+<div class="modal fade" id="addClothingStockModal" tabindex="-1" aria-labelledby="addClothingStockModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="addClothingStockForm" method="post" action="">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addClothingStockModalLabel">Adicionar Stock para Roupas</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Input fields for clothing stock sizes -->
+                    <div class="d-flex mb-3">
+                        <label for="size_xs" class="col-form-label me-2" style="min-width: 70px;">XS:</label>
+                        <input type="number" name="size_xs" id="size_xs" class="form-control" min="0" value="0">
+                    </div>
+
+                    <div class="d-flex mb-3">
+                        <label for="size_s" class="col-form-label me-2" style="min-width: 70px;">S:</label>
+                        <input type="number" name="size_s" id="size_s" class="form-control" min="0" value="0">
+                    </div>
+
+                    <div class="d-flex mb-3">
+                        <label for="size_m" class="col-form-label me-2" style="min-width: 70px;">M:</label>
+                        <input type="number" name="size_m" id="size_m" class="form-control" min="0" value="0">
+                    </div>
+
+                    <div class="d-flex mb-3">
+                        <label for="size_l" class="col-form-label me-2" style="min-width: 70px;">L:</label>
+                        <input type="number" name="size_l" id="size_l" class="form-control" min="0" value="0">
+                    </div>
+
+                    <div class="d-flex mb-3">
+                        <label for="size_xl" class="col-form-label me-2" style="min-width: 70px;">XL:</label>
+                        <input type="number" name="size_xl" id="size_xl" class="form-control" min="0" value="0">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Adicionar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+    <!-- Modal for adding stock for Non-Clothing products -->
+<div class="modal fade" id="addStockOnlyModal" tabindex="-1" aria-labelledby="addStockOnlyModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="addStockOnlyForm" method="post" action="">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addStockOnlyModalLabel">Adicionar Stock</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Input field for stock quantity -->
+                    <label for="stock">Stock:</label>
+                    <input type="number" name="stock" id="stock" class="form-control" min="0" value="0">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Adicionar</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -106,4 +200,45 @@
         color: #FFD700;
     }
 </style>
+    <script>
+document.addEventListener("DOMContentLoaded", function () {
+    // Event listener for the clothing stock modal
+    const clothingStockModal = document.getElementById('addClothingStockModal');
+    clothingStockModal.addEventListener('show.bs.modal', function (event) {
+        const button = event.relatedTarget;
+        const productId = button.getAttribute('data-product-id');
+
+        // Retrieve size stock values from button's data attributes
+        document.getElementById('size_xs').value = button.getAttribute('data-xs') || 0;
+        document.getElementById('size_s').value = button.getAttribute('data-s') || 0;
+        document.getElementById('size_m').value = button.getAttribute('data-m') || 0;
+        document.getElementById('size_l').value = button.getAttribute('data-l') || 0;
+        document.getElementById('size_xl').value = button.getAttribute('data-xl') || 0;
+
+        // Update the form action for the clothing product
+        const form = document.getElementById('addClothingStockForm');
+        form.action = `/product/${productId}/add_clothing_stock/`;
+    });
+
+    // Event listener for the general stock modal (non-clothing products)
+    const generalStockModal = document.getElementById('addStockOnlyModal');
+    generalStockModal.addEventListener('show.bs.modal', function (event) {
+        const button = event.relatedTarget;
+        const productId = button.getAttribute('data-product-id');
+
+        // Retrieve stock value from button's data attributes and log for debugging
+        const stock = button.getAttribute('data-stock');
+        console.log("Current stock for non-clothing product:", stock); // Debugging line
+
+        // Display stock in the input field
+        document.getElementById('stock').value = stock !== null ? stock : 0;
+
+        // Update the form action for the general product
+        const form = document.getElementById('addStockOnlyForm');
+        form.action = `/product/${productId}/add_stock/`;
+    });
+});
+
+</script>
+
 {% endblock %}

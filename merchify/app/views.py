@@ -946,8 +946,7 @@ def company_products(request, company_id):
                 'XL': sizes.filter(size='XL').first().stock if sizes.filter(size='XL').exists() else 0,
             }
         else:
-            product.size_stock = None 
-
+            product.size_stock = product.get_stock()
     for product in products:
         product.favorites_count = product.favorites.count()
         product.reviews_count = product.reviews.count()
@@ -967,6 +966,16 @@ def company_product_detail(request, company_id, product_id):
     product.favorites_count = product.favorites.count()
     reviews = product.reviews.all()
 
+    sizes = product.clothing.sizes.all()
+
+    product.size_stock = {
+        'XS': sizes.filter(size='XS').first().stock if sizes.filter(size='XS').exists() else 0,
+        'S': sizes.filter(size='S').first().stock if sizes.filter(size='S').exists() else 0,
+        'M': sizes.filter(size='M').first().stock if sizes.filter(size='M').exists() else 0,
+        'L': sizes.filter(size='L').first().stock if sizes.filter(size='L').exists() else 0,
+        'XL': sizes.filter(size='XL').first().stock if sizes.filter(size='XL').exists() else 0,
+    }
+    
     return render(request, 'company_product_detail.html', {
         'company': company,
         'product': product,
@@ -1373,28 +1382,43 @@ def add_clothing_stock(request, product_id):
         return redirect('productDetails', identifier=product.id)
     return redirect('product_list')
 
-
 def add_stock(request, product_id):
     product = get_object_or_404(Product, id=product_id)
-
-    # Ensure the product is not clothing (Vinil, CD, Accessory)
-    if product.get_product_type() == 'Clothing':
-        return JsonResponse({'error': 'Cannot add stock to clothing products this way'}, status=400)
 
     # Process the form data if the request method is POST
     if request.method == 'POST':
         stock = int(request.POST.get('stock', 0))
 
-        # Update the stock for the product (Vinil, CD, Accessory)
-        if product.get_product_type() == 'Vinil':
-            product.vinil.stock += stock
-        elif product.get_product_type() == 'CD':
-            product.cd.stock += stock
-        elif product.get_product_type() == 'Accessory':
-            product.accessory.stock += stock
+        # Use the get_product_type method to determine the type of the product
+        product_type = product.get_product_type()
 
-        product.save()  # Save the updated stock
+        # Check the product type and update the corresponding stock
+        if product_type == 'Vinil':
+            vinil = product.vinil  # Get the related Vinil object
+            vinil.stock += stock   # Update stock
+            vinil.save()           # Save the Vinil object
+        elif product_type == 'CD':
+            cd = product.cd        # Get the related CD object
+            cd.stock += stock      # Update stock
+            cd.save()              # Save the CD object
+        elif product_type == 'Accessory':
+            accessory = product.accessory  # Get the related Accessory object
+            accessory.stock += stock       # Update stock
+            accessory.save()               # Save the Accessory object
+        elif product_type == 'Clothing':
+            clothing = product.clothing   # Get the related Clothing object
+            for size in clothing.sizes.all():  # For each size, update stock
+                size.stock += stock
+                size.save()
+            clothing.save()   # Save the Clothing object itself
+        else:
+            # Handle case where no valid product type is found
+            return JsonResponse({'error': 'Invalid product type for stock update'}, status=400)
 
+        # After updating, save the main product (if needed)
+        product.save()
+
+        # Redirect to the product detail page (you can adjust the URL as needed)
         return redirect('company_product_detail', company_id=product.company.id, product_id=product.id)
 
     return JsonResponse({'error': 'Invalid request method'}, status=400)
