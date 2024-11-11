@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 {% load filters %}
 {% block content %}
-<div class="container mt-5">
+<div class="container mt-5" style="margin-bottom: 60px">
     <h2 class="text-center mb-4">Editar Produto: {{ product.name }}</h2>
     <div class="card shadow-sm p-4">
         <form method="post" enctype="multipart/form-data">
@@ -33,15 +33,11 @@
                 {{ product_form.description|add_class:"form-control" }}
             </div>
             <div class="row mb-3">
-                <div class="col-md-4">
+                <div class="col-md-6">
                     <label for="price" class="form-label">Preço (€)</label>
                     {{ product_form.price|add_class:"form-control" }}
                 </div>
-                <div class="col-md-4">
-                    <label for="category" class="form-label">Categoria</label>
-                    {{ product_form.category|add_class:"form-control" }}
-                </div>
-                <div class="col-md-4">
+                <div class="col-md-6">
                     <label for="image" class="form-label">Imagem do Produto</label>
                     {{ product_form.image|add_class:"form-control" }}
                 </div>
