@@ -974,11 +974,8 @@ def company_product_detail(request, company_id, product_id):
     product.favorites_count = product.favorites.count()
     reviews = product.reviews.all()
 
-    # Inicializar o dicionário de estoque de tamanhos
-    product.size_stock = {}
 
-    # Verificar se o produto tem um relacionamento com Clothing
-    if hasattr(product, 'clothing'):
+    if hasattr(product, 'clothing'):  # Check if it's a clothing product (with sizes)
         sizes = product.clothing.sizes.all()
         product.size_stock = {
             'XS': sizes.filter(size='XS').first().stock if sizes.filter(size='XS').exists() else 0,
@@ -987,7 +984,8 @@ def company_product_detail(request, company_id, product_id):
             'L': sizes.filter(size='L').first().stock if sizes.filter(size='L').exists() else 0,
             'XL': sizes.filter(size='XL').first().stock if sizes.filter(size='XL').exists() else 0,
         }
-
+    else:
+        product.size_stock = product.get_stock()
     return render(request, 'company_product_detail.html', {
         'company': company,
         'product': product,

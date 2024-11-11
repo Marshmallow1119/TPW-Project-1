@@ -165,7 +165,7 @@
                                             <img src="/media/default-product.png" alt="{{ product.name }}" class="product-image">
                                         {% endif %}
                                     </td>
-                                    <td><a href="{% url 'productDetails' product.id %}" style="color: black; text-decoration: none">{{ product.name }}</a></td>
+                                    <td><a href="{% url 'company_product_detail' company_id=product.company.id product_id=product.id %}" style="color: black; text-decoration: none">{{ product.name }}</a></td>
                                     <td>{{ product.price }}€</td>
                                     <td>{{ product.get_stock }}</td>
                                     <td>{{ product.review_count }}</td>
