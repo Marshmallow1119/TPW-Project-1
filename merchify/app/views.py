@@ -1235,7 +1235,6 @@ def edit_product(request, company_id, product_id):
                 return redirect('company_products', company_id=company.id)
 
     else:
-        # Initialize all forms based on product type
         product_form = ProductForm(instance=product)
         vinil_form = VinilForm(
             instance=getattr(product, 'vinil', None)) if initial_product_type == 'vinil' else VinilForm()
@@ -1299,10 +1298,12 @@ def admin_home(request):
     for user in users:
         user.number_of_purchases = Purchase.objects.filter(user=user).count()
     return render(request, 'admin_home.html', {'users': users, 'products': products, 'companies': companies})
+
 def delete_user(request, user_id):
     user = get_object_or_404(User, id=user_id)
     user.delete()
-    return redirect('_home')
+    return redirect('admin_home')
+
 def admin_product_delete(request, product_id):
     product = get_object_or_404(Product, id=product_id)
     product.delete()
