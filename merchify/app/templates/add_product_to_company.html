@@ -2,7 +2,7 @@
 {% load filters %}
 {% block content %}
 <div class="container mt-5">
-    <h2 class="mb-4 text-center">Add Product: {{ product.name }}</h2>
+    <h2 class="mb-4 text-center">Adicionar Produto: {{ product.name }}</h2>
 
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
@@ -11,49 +11,48 @@
         <div class="card p-4 mb-4 shadow-sm">
             <div class="row mb-3">
                 <div class="col-md-6">
-                    <label for="product_type" class="form-label">Product Type</label>
+                    <label for="product_type" class="form-label">Tipo de Produto</label>
                     {{ form.product_type|add_class:"form-select" }}
                 </div>
                 <div class="col-md-6">
-                    <label for="artist" class="form-label">Artist</label>
+                    <label for="artist" class="form-label">Artista</label>
                     {{ form.artist|add_class:"form-select" }}
                 </div>
             </div>
             <div class="mb-3">
-                <label for="name" class="form-label">Product Name</label>
+                <label for="name" class="form-label">Nome do Produto</label>
                 {{ form.name|add_class:"form-control" }}
             </div>
             <div class="mb-3">
-                <label for="description" class="form-label">Description</label>
+                <label for="description" class="form-label">Descrição</label>
                 {{ form.description|add_class:"form-control" }}
             </div>
             <div class="row mb-3">
                 <div class="col-md-4">
-                    <label for="price" class="form-label">Price (€)</label>
+                    <label for="price" class="form-label">Preço (€)</label>
                     {{ form.price|add_class:"form-control" }}
                 </div>
                 <input type="hidden" name="category" id="category" value="{{ form.category.value }}">
                 <div class="col-md-4">
-                    <label for="image" class="form-label">Product Image</label>
+                    <label for="image" class="form-label">Imagem do Produto</label>
                     {{ form.image|add_class:"form-control" }}
                 </div>
             </div>
         </div>
 
-        <!-- Conditional fields based on Product Type -->
         <div id="vinil-fields" class="card p-4 mb-4 shadow-sm" style="display: none;">
             <h5>Vinil Details</h5>
             <div class="row">
                 <div class="col-md-4">
-                    <label for="genre" class="form-label">Genre</label>
+                    <label for="genre" class="form-label">Género</label>
                     {{ vinil_form.genre|add_class:"form-control" }}
                 </div>
                 <div class="col-md-4">
-                    <label for="lpSize" class="form-label">LP Size</label>
+                    <label for="lpSize" class="form-label">Tamanho do LP</label>
                     {{ vinil_form.lpSize|add_class:"form-control" }}
                 </div>
                 <div class="col-md-4">
-                    <label for="releaseDate" class="form-label">Release Date</label>
+                    <label for="releaseDate" class="form-label">Data de Lançamento</label>
                     {{ vinil_form.releaseDate|add_class:"form-control" }}
                 </div>
                  <input type="hidden" name="stock" value="100">
@@ -64,34 +63,34 @@
             <h5>CD Details</h5>
             <div class="row">
                 <div class="col-md-4">
-                    <label for="genre" class="form-label">Genre</label>
+                    <label for="genre" class="form-label">Género</label>
                     {{ cd_form.genre|add_class:"form-control" }}
                 </div>
                 <div class="col-md-4">
-                    <label for="releaseDate" class="form-label">Release Date</label>
+                    <label for="releaseDate" class="form-label">Data de Lançamento</label>
                     {{ cd_form.releaseDate|add_class:"form-control" }}
                 </div>
-                <input type="hidden" name="stock" value="100"> <!-- Set your default stock value here -->
+                <input type="hidden" name="stock" value="100"> 
             </div>
         </div>
 
         <div id="clothing-fields" class="card p-4 mb-4 shadow-sm" style="display: none;">
-            <h5>Clothing Details</h5>
+            <h5>Detalhes da Roupa</h5>
             <div class="mb-3">
-                <label for="color" class="form-label">Color</label>
+                <label for="color" class="form-label">Cor</label>
                 {{ clothing_form.color|add_class:"form-control" }}
             </div>
         </div>
 
         <div id="accessory-fields" class="card p-4 mb-4 shadow-sm" style="display: none;">
-            <h5>Accessory Details</h5>
+            <h5>Detalhes do Acessório</h5>
             <div class="row">
                 <div class="col-md-4">
                     <label for="material" class="form-label">Material</label>
                     {{ accessory_form.material|add_class:"form-control" }}
                 </div>
                 <div class="col-md-4">
-                    <label for="color" class="form-label">Color</label>
+                    <label for="color" class="form-label">Cor</label>
                     {{ accessory_form.color|add_class:"form-control" }}
                 </div>
                 <input type="hidden" name="stock" value="100">
@@ -100,8 +99,8 @@
 
         <!-- Form Actions -->
         <div class="d-flex justify-content-center mt-4 mb-5">
-            <button type="submit" class="btn btn-success me-2">Save Changes</button>
-            <a href="{% url 'company_products' company.id %}" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-success me-2">Salvar Alterações</button>
+            <a href="{% url 'company_products' company.id %}" class="btn btn-secondary">Cancelar</a>
         </div>
     </form>
 </div>
