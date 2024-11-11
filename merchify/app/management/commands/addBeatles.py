@@ -11,7 +11,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         try:
-            artist = Artist.objects.get(name="The Weeknd")
+            artist = Artist.objects.get(name="The Beatles")
             company = Company.objects.get(name="Sony Music")
         except Artist.DoesNotExist:
             self.stdout.write(self.style.ERROR("Artista 'The Weeknd' não encontrado."))
