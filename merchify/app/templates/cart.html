@@ -81,8 +81,9 @@
             </tbody>
         </table>
         <div class="text-right">
-            <h4 id="cart-total">Total: {{ cart_total }}€</h4>
+            <h4 id="cart-total">Total: {{ cart_total|floatformat:2 }}€</h4>
         </div>
+        
         <div class="text-right">
             <form action="{% url 'payment_page' %}" method="get">
                 <button type="submit" id="finalizar_compra" name="finalizar_compra" class="btn btn-success btn-lg">
