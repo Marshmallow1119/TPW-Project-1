@@ -6,9 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ company.name }}</title>
-    <!-- Bootstrap CSS -->
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <style>
         .product-card {
@@ -286,13 +284,11 @@
             .catch(error => console.error("Erro:", error));
         }
         function showFilters(type) {
-            // Hide all type-specific filters initially
             document.getElementById("vinil-filters").classList.add("hidden-filter");
             document.getElementById("cd-filters").classList.add("hidden-filter");
             document.getElementById("clothing-filters").classList.add("hidden-filter");
             document.getElementById("accessory-filters").classList.add("hidden-filter");
 
-            // Show only the selected type's filters
             if (type === "Vinil") {
                 document.getElementById("vinil-filters").classList.remove("hidden-filter");
             } else if (type === "CD") {
@@ -304,29 +300,23 @@
             }
         }
 
-        // Automatically call showFilters() based on the currently selected product type when the page loads
         document.addEventListener("DOMContentLoaded", function() {
             const selectedType = document.querySelector('input[name="type"]:checked');
             if (selectedType) {
-                showFilters(selectedType.value); // Pass the selected type's value
+                showFilters(selectedType.value);
             }
         });
 
-        // Reset form function to clear all inputs, selections, and radio buttons
         function resetForm() {
-            // Reset the form fields
             document.getElementById("filterForm").reset();
 
-            // Uncheck any selected radio buttons for 'type' manually
             document.querySelectorAll('input[name="type"]').forEach(radio => radio.checked = false);
 
-            // Hide all type-specific filters
             document.getElementById("vinil-filters").classList.add("hidden-filter");
             document.getElementById("cd-filters").classList.add("hidden-filter");
             document.getElementById("clothing-filters").classList.add("hidden-filter");
             document.getElementById("accessory-filters").classList.add("hidden-filter");
 
-            // Optional: Clear URL parameters for a full reset
             const url = new URL(window.location.href);
             url.search = "";
             window.history.replaceState(null, "", url);

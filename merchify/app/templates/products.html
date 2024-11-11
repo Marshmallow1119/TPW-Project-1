@@ -108,30 +108,25 @@
                             </form>
                             </div>
                 </div>
-        <!-- Product Cards on the right, taking up 8 columns -->
         <div class="col-md-9">
             <div class="row">
                 {% for product in produtos %}
                  <div class="col-12 col-md-6 col-lg-4 mb-4">
                     <div class="position-relative">
-                        <!-- Artist identifier -->
                         <div class="artist-identifier" style="position: absolute; top: 10px; right: 10px; width: 50px; height: 50px; border-radius: 50%; overflow: hidden;">
                             <a href="{% url 'artistsProducts' name=product.artist.name %}">
                                 <img src="{{ product.artist.image.url }}" alt="{{ product.artist.name }}" style="width: 100%; height: 100%; object-fit: cover;">
                             </a>
                         </div>
 
-                        <!-- Heart icon for favorite, positioned absolutely -->
                         {% if not user.is_authenticated or user.user_type == 'individual' %}
                             <i class="fa fa-heart favorite-icon {% if product.is_favorited %}filled{% endif %}"
                                data-id="{{ product.id }}"
                                onclick="handleFavoriteClick({{ product.id }})"></i>
                         {% endif %}
-                        <!-- Product Card -->
                         <a href="/product/{{ product.id }}" class="product-card d-block">
                             <img src="{{ product.image.url }}" alt="{{ product.name }}">
                             <div class="p-3 text-center">
-                                <!-- Wrapper for product name -->
                                 <div class="d-flex align-items-center justify-content-center mb-2">
                                     <p class="product-name mb-0">{{ product.name }}</p>
                                 </div>
@@ -157,13 +152,11 @@
         function handleFavoriteClick(productId) {
             const isAuthenticated = {{ user.is_authenticated|yesno:"true,false" }};
 
-            // Se o usuário não estiver logado, redireciona para a página de login
             if (!isAuthenticated) {
                 window.location.href = '/login/';
                 return;
             }
 
-            // Se estiver logado, adiciona ou remove dos favoritos
             fetch(`/favorites/add/${productId}/`, {
                 method: 'POST',
                 headers: {
@@ -175,7 +168,6 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    // Atualiza o estado do ícone de favorito
                     const favoriteIcon = document.querySelector(`.favorite-icon[data-id="${productId}"]`);
                     favoriteIcon.classList.toggle('filled', data.favorited);
                 } else {
@@ -203,13 +195,11 @@
             .catch(error => console.error("Erro:", error));
         }
     function showFilters(type) {
-        // Hide all type-specific filters initially
         document.getElementById("vinil-filters").classList.add("hidden-filter");
         document.getElementById("cd-filters").classList.add("hidden-filter");
         document.getElementById("clothing-filters").classList.add("hidden-filter");
         document.getElementById("accessory-filters").classList.add("hidden-filter");
 
-        // Show only the selected type's filters
         if (type === "Vinil") {
             document.getElementById("vinil-filters").classList.remove("hidden-filter");
         } else if (type === "CD") {
@@ -221,41 +211,36 @@
         }
     }
 
-    // Automatically call showFilters() based on the currently selected product type when the page loads
     document.addEventListener("DOMContentLoaded", function() {
         const selectedType = document.querySelector('input[name="type"]:checked');
         if (selectedType) {
-            showFilters(selectedType.value); // Pass the selected type's value
+            showFilters(selectedType.value);
         }
     });
 
     function applyFilters(event) {
-        event.preventDefault(); // Prevent default form submission
+        event.preventDefault(); 
 
-        const url = new URL(window.location.href); // Get the current URL
-        const formData = new FormData(document.getElementById("filterForm")); // Get form data
+        const url = new URL(window.location.href); 
+        const formData = new FormData(document.getElementById("filterForm")); 
 
-        // Append each filter to the URL
         formData.forEach((value, key) => {
             if (value) {
-                url.searchParams.set(key, value); // Set or update URL parameters
+                url.searchParams.set(key, value); 
             } else {
-                url.searchParams.delete(key); // Remove empty parameters
+                url.searchParams.delete(key); 
             }
         });
         window.location.href = url.toString();
     }
 
     function resetForm() {
-        // Clear the filter form
         document.getElementById("filterForm").reset();
 
-        // Reset URL by removing all query parameters
         const url = new URL(window.location.href);
         url.search = "";
         window.history.replaceState(null, "", url);
 
-        // Hide filter sections for a fresh view
         document.querySelectorAll(".hidden-filter").forEach(filter => filter.classList.add("hidden-filter"));
     }
     </script>
@@ -281,7 +266,7 @@
         }
         .product-name {
             font-weight: bold;
-            margin-right: 8px; /* Adjust spacing between the name and heart icon */
+            margin-right: 8px;
 
         }
         .product-price {
@@ -318,7 +303,7 @@
             text-shadow: 2px 2px 1px rgba(0, 0, 0, 0.3);
             margin-top: 330px;
             margin-right: 20px;
-            z-index: 10; /* Ensures it appears above the card and image */
+            z-index: 10;
         }
 
         .favorite-icon:hover {
@@ -336,7 +321,7 @@
     padding-right: 10px;
 }
 .hidden-filter {
-    display: none; /* Hide elements with this class */
+    display: none; 
 }
 
     </style>

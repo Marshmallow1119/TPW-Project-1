@@ -6,14 +6,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Product Page</title>
 
-  <!-- Bootstrap CSS -->
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 {% block css %}
   <style>
     .product-container {
       display: flex;
-      align-items: center; /* Aligns items to start */
+      align-items: center; 
     }
 
     .product-img {
@@ -31,12 +30,10 @@
 
 <div class="container my-5">
   <div class="row product-container">
-    <!-- Product Image -->
     <div class="col-md-6 d-flex justify-content-center">
         <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-img imagem">
     </div>
 
-    <!-- Product Details -->
     <div class="col-md-6">
         <div style="display: flex; justify-content: space-between; align-items: center;">
             <h1 class="display-6">{{ product.name }}</h1>
@@ -47,17 +44,14 @@
       <h3 class="text-success">{{ product.price|floatformat:2 }}€</h3>
       <p class="lead">{{ product.description }}</p>
 
-      <!-- Product-Specific Table -->
       <h5>Detalhes do Produto</h5>
       <table class="table table-bordered">
         <tbody>
-          <!-- Common Fields -->
           <tr><th>Categoria</th><td>{{ product.category }}</td></tr>
           <tr><th>Artista</th><td>{{ product.artist.name }}</td></tr>
           <tr><th>Empresa</th><td>{{ product.company.name }}</td></tr>
           <tr><th>Data de Adição</th><td>{{ product.addedProduct|date:"d/m/Y" }}</td></tr>
 
-          <!-- Dynamic Fields Based on Product Type -->
           {% if product.get_product_type == "Vinil" %}
             <tr><th>Gênero</th><td>{{ product.vinil.genre }}</td></tr>
             <tr><th>Tamanho do LP</th><td>{{ product.vinil.lpSize }}</td></tr>
@@ -92,7 +86,6 @@
         </div>
       {% endif %}
 
-      <!-- Add to Cart Button -->
       <div class="mb-3">
         <label for="quantity" class="form-label">Quantidade</label>
         <input type="number" id="quantity" class="form-control" value="1" min="1">
@@ -103,7 +96,6 @@
     </div>
   </div>
 
-  <!-- Average Rating Display -->
   <div class="d-flex align-items-center mb-3" style="gap: 5px;">
     <h5 class="m-0">Classificação Média:</h5>
     <div class="star-rating d-flex align-items-center">
@@ -119,11 +111,9 @@
   </div>
 
 
-    <!-- Ratings and Reviews Section -->
   <div class="mt-5">
     <h5>Classificação e Avaliações</h5>
 
-    <!-- User Rating Form -->
     {% if user.is_authenticated and user.user_type == 'individual' %}
       <div class="card p-3 mb-4">
         <h6>Dê uma Avaliação:</h6>

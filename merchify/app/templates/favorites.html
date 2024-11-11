@@ -31,7 +31,6 @@
             vertical-align: middle;
         }
 
-        /* Horizontal navbar style */
         .navzinha {
             width: 100%;
             justify-content: center;
@@ -67,7 +66,6 @@
 {% load filters %}
 
 <div class="container-fluid" style="padding-left: 0px !important; padding-right: 0px !important; font-size: 20px;">
-    <!-- Horizontal Navbar for selecting Products, Artists, or Companies -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="collapse navbar-collapse">
             <ul class="navbar-nav navzinha">
@@ -84,7 +82,6 @@
         </div>
     </nav>
 
-    <!-- Product Favorites Section -->
     <div id="products" class="favorite-section {% if category == 'products' %}active{% endif %}">
         <h2 class="text-center">Os meus produtos favoritos:</h2>
         {% if favorite_products %}
@@ -130,7 +127,6 @@
         {% endif %}
     </div>
 
-    <!-- Artist Favorites Section -->
     <div id="artists" class="favorite-section {% if category == 'artists' %}active{% endif %}">
         <h2 class="text-center">Os meus artistas favoritos:</h2>
         {% if favorite_artists %}
@@ -167,7 +163,6 @@
         {% endif %}
     </div>
 
-    <!-- Company Favorites Section -->
     <div id="companies" class="favorite-section {% if category == 'companies' %}active{% endif %}">
         <h2 class="text-center">As minhas companhias favoritas:</h2>
         {% if favorite_companies %}

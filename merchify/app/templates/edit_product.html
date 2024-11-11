@@ -7,7 +7,6 @@
         <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
 
-            <!-- General Product Information -->
             <div class="row mb-3">
                 <div class="col-md-6">
                     <label for="product_type" class="form-label">Tipo de Produto</label>
@@ -43,7 +42,6 @@
                 </div>
             </div>
 
-            <!-- Conditional Fields for Product Types -->
             <div id="vinil-fields" class="card p-4 mb-4 shadow-sm" style="display: none;">
                 <h5>Detalhes do Vinil</h5>
                 <div class="row">
@@ -97,11 +95,10 @@
                         <label for="color" class="form-label">Cor</label>
                         {{ accessory_form.color|add_class:"form-control" }}
                     </div>
-                    <input type="hidden" name="stock" value="0"> <!-- Set your default stock value here -->
+                    <input type="hidden" name="stock" value="0"> 
                 </div>
             </div>
 
-            <!-- Action Buttons -->
             <div class="d-flex justify-content-center mt-4">
                 <button type="submit" class="btn btn-success me-2">Salvar Alterações</button>
                 <a href="{% url 'company_products' company_id=product.company.id %}" class="btn btn-secondary">Cancelar</a>
@@ -111,44 +108,37 @@
 </div>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Obtém o campo de seleção do tipo de produto e o tipo inicial do produto
         const productTypeField = document.querySelector('[name="product_type"]');
-        const initialProductType = "{{ initial_product_type|escapejs }}";  // Tipo inicial do produto obtido da view
+        const initialProductType = "{{ initial_product_type|escapejs }}";  
     
-        // Obtém as seções dos detalhes de cada tipo de produto
         const vinilFields = document.getElementById('vinil-fields');
         const cdFields = document.getElementById('cd-fields');
         const clothingFields = document.getElementById('clothing-fields');
         const accessoryFields = document.getElementById('accessory-fields');
     
-        // Função para esconder todas as seções de detalhe e desabilitar seus campos
         function hideAllDetailSections() {
             [vinilFields, cdFields, clothingFields, accessoryFields].forEach(section => {
                 if (section) {
                     section.style.display = 'none';
                     section.querySelectorAll('input, select, textarea').forEach(field => {
-                        field.disabled = true;  // Desabilita campos para evitar o envio de dados de seções escondidas
+                        field.disabled = true;  
                     });
                 }
             });
         }
     
-        // Função para exibir a seção de detalhes apropriada e habilitar seus campos
         function showDetailSection(section) {
             if (section) {
                 section.style.display = 'block';
                 section.querySelectorAll('input, select, textarea').forEach(field => {
-                    field.disabled = false;  // Habilita campos visíveis para envio
+                    field.disabled = false;
                 });
             }
         }
     
-        // Função para atualizar a visibilidade das seções de detalhe com base no tipo de produto
         function updateFieldVisibility(productType) {
-            // Esconde todas as seções de detalhe inicialmente
             hideAllDetailSections();
     
-            // Exibe a seção correspondente ao tipo de produto atual
             if (productType === 'vinil') {
                 showDetailSection(vinilFields);
             } else if (productType === 'cd') {
@@ -160,10 +150,8 @@
             }
         }
     
-        // Configura a exibição inicial dos campos com base no tipo inicial do produto
         updateFieldVisibility(initialProductType);
     
-        // Adiciona um ouvinte para atualizar os campos ao mudar o tipo de produto manualmente
         productTypeField.addEventListener('change', function() {
             const selectedProductType = productTypeField.value;
             updateFieldVisibility(selectedProductType);

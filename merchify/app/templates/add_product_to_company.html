@@ -7,7 +7,6 @@
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
 
-        <!-- Main Product Information Section -->
         <div class="card p-4 mb-4 shadow-sm">
             <div class="row mb-3">
                 <div class="col-md-6">
@@ -97,7 +96,6 @@
             </div>
         </div>
 
-        <!-- Form Actions -->
         <div class="d-flex justify-content-center mt-4 mb-5">
             <button type="submit" class="btn btn-success me-2">Salvar Alterações</button>
             <a href="{% url 'company_products' company.id %}" class="btn btn-secondary">Cancelar</a>
@@ -105,7 +103,6 @@
     </form>
 </div>
 
-<!-- JavaScript to handle dynamic field visibility and category assignment based on product type -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const productTypeField = document.querySelector('[name="product_type"]');
@@ -128,14 +125,12 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function updateFieldVisibility() {
-        // Hide all sections and disable their fields
         [vinilFields, cdFields, clothingFields, accessoryFields].forEach(section => {
             section.style.display = 'none';
             disableFields(section);
         });
 
         const productType = productTypeField.value;
-        // Set category and show the relevant section
         if (productType === 'vinil') {
             vinilFields.style.display = 'block';
             enableFields(vinilFields);
@@ -155,8 +150,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    updateFieldVisibility(); // Initial call to set the correct visibility and field state
-
+    updateFieldVisibility(); 
     productTypeField.addEventListener('change', updateFieldVisibility);
 });
 </script>

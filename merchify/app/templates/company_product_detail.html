@@ -2,20 +2,16 @@
 {% block content %}
 <div class="container my-5">
     <div class="row">
-        <!-- Coluna para a Imagem do Produto -->
         <div class="col-md-5 d-flex justify-content-center">
             <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-img imagem" style="max-width: 100%; height: auto; object-fit: contain;">
         </div>
         
-
-        <!-- Coluna para os Detalhes do Produto -->
         <div class="col-md-7">
             <h1 class="display-6">{{ product.name }}</h1>
             <p class="text-muted">{{ product.artist.name }}</p>
             <h3 class="text-success">{{ product.price|floatformat:2 }}€</h3>
             <p class="lead">{{ product.description }}</p>
 
-            <!-- Tabela de Detalhes do Produto -->
             <h5>Detalhes do Produto</h5>
             <table class="table table-bordered">
                 <tbody>
@@ -43,13 +39,11 @@
                 </tbody>
             </table>
 
-            <!-- Favoritos e Botões de Editar/Apagar -->
             <div class="mt-4">
                 <i class="fa fa-heart text-danger"></i> Favoritos: {{ product.favorites_count }}
             </div>
             <div class="d-flex mt-3">
                 {% if product.get_product_type == 'Clothing' %}
-                    <!-- Clothing Product - Modal with Sizes -->
                     <button
                         class="btn btn-sm btn-success me-2"
                         data-product-id="{{ product.id }}"
@@ -63,7 +57,6 @@
                         <i class="fas fa-plus" style="margin-right: 4px; color: black"></i> Adicionar Stock
                     </button>
                 {% else %}
-                    <!-- Non-Clothing Product - Modal with Stock only -->
                     <button
                         class="btn btn-sm btn-success me-2"
                         data-product-id="{{ product.id }}"
@@ -84,7 +77,6 @@
         </div>
     </div>
 
-    <!-- Reviews Section - Moved Below Product Details -->
     <div class="row mt-5">
         <div class="col-12">
             <h5>Reviews:</h5>
@@ -119,13 +111,10 @@
     </div>
 </div>
 
-<!-- Modals for Adding Stock -->
 <div class="modal fade" id="addClothingStockModal" tabindex="-1" aria-labelledby="addClothingStockModalLabel" aria-hidden="true">
-    <!-- Modal content for adding stock to clothing products -->
 </div>
 
 <div class="modal fade" id="addStockOnlyModal" tabindex="-1" aria-labelledby="addStockOnlyModalLabel" aria-hidden="true">
-    <!-- Modal content for adding stock to non-clothing products -->
 </div>
 
 <style>
@@ -138,7 +127,6 @@
     }
 </style>
 <script>
-// JavaScript for handling modals and dynamic form actions
 </script>
 
 {% endblock %}
