@@ -78,7 +78,7 @@
           <div class="size-selector">
             {% for size in product.clothing.sizes.all %}
               <button type="button" class="btn size-btn btn-dark"
-                      data-size-id="{{ size.id }}" {% if size.stock == 0 %}disabled{% endif %}>
+                      data-size-id="{{ size.id }}" {% if size.stock == 0 %}disabled{% endif %} style="margin:3px; width:250px">
                 {{ size.size }} - {{ size.stock }} Unidades Disponíveis
               </button>
             {% endfor %}
