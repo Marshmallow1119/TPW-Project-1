@@ -811,6 +811,7 @@ def process_payment(request):
 
             total = cart.total
             discount_value = 0
+            discount_applied = False
 
 
             if discount_code and discount_code.lower() == 'primeiracompra':
@@ -834,7 +835,9 @@ def process_payment(request):
                     paymentMethod=payment_method,
                     shippingAddress=shipping_address,
                     total_amount=final_total,
-                    status='Processing'
+                    status='Processing',
+                    discount_applied=discount_applied,
+                    discount_value=discount_value
                 )
 
                 for item in cart_items:
@@ -1147,7 +1150,8 @@ def add_product_to_company(request, company_id):
     }
 
     return render(request, 'add_product_to_company.html', context)
-@login_required
+
+
 @login_required
 def edit_product(request, company_id, product_id):
     company = get_object_or_404(Company, id=company_id)
