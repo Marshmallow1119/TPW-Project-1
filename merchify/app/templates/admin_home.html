@@ -401,33 +401,29 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script>
         function showSection(sectionId) {
-            // Hide all sections
             document.querySelectorAll('.content-table').forEach(section => {
                 section.classList.remove('active');
             });
-            // Show the selected section
             document.getElementById(sectionId).classList.add('active');
         }
 
         $('#exampleModal').on('show.bs.modal', function (event) {
-            var button = $(event.relatedTarget); // Button that triggered the modal
-            var productId = button.data('product-id'); // Extract product ID from data-* attribute
+            var button = $(event.relatedTarget); 
+            var productId = button.data('product-id'); 
 
-            // Manually construct the URL for the delete action using the product ID
-            var deleteUrl = "/admin_home/delete/" + productId ; // Adjust this path based on your URL structure
+            var deleteUrl = "/admin_home/delete/" + productId ;
             $('#confirmDeleteButton').attr('href', deleteUrl);
         });
         $('#exampleModal1').on('show.bs.modal', function (event) {
-            var button = $(event.relatedTarget); // Button that triggered the modal
-            var companyId = button.data('company-id'); // Extract product ID from data-* attribute
+            var button = $(event.relatedTarget); 
+            var companyId = button.data('company-id');
 
-            // Manually construct the URL for the delete action using the product ID
-            var deleteUrl = "/admin_home/delete/company/" + companyId ; // Adjust this path based on your URL structure
+            var deleteUrl = "/admin_home/delete/company/" + companyId ; 
             $('#confirmDeleteButton1').attr('href', deleteUrl);
         });
         $('#exampleModal2').on('show.bs.modal', function (event) {
-            var button = $(event.relatedTarget); // Button that triggered the modal
-            var userId = button.data('user-id'); // Extract product ID from data-* attribute
+            var button = $(event.relatedTarget); 
+            var userId = button.data('user-id'); 
 
             var deleteUrl = "/delete_user/" + userId;
             $('#confirmDeleteButton2').attr('href', deleteUrl);
@@ -454,7 +450,7 @@
         const productId = button.getAttribute('data-product-id');
 
         const stock = button.getAttribute('data-stock');
-        console.log("Current stock for non-clothing product:", stock); // Debugging line
+        console.log("Current stock for non-clothing product:", stock); 
 
         document.getElementById('stock').value = stock !== null ? stock : 0;
 
