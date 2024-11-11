@@ -14,7 +14,7 @@
                         <option value="vinil" {% if initial_product_type == "vinil" %}selected{% endif %}>Vinil</option>
                         <option value="cd" {% if initial_product_type == "cd" %}selected{% endif %}>CD</option>
                         <option value="clothing" {% if initial_product_type == "clothing" %}selected{% endif %}>Roupa</option>
-                        <option value="accessory" {% if initial_product_type == "accessory" %}selected{% endif %}>Acessório</option>
+                        <option value="accessory" {% if initial_product_type == "accessory" %}selected{% endif %}>Outros</option>
                     </select>
                 </div>
                 
@@ -101,7 +101,11 @@
 
             <div class="d-flex justify-content-center mt-4">
                 <button type="submit" class="btn btn-success me-2">Salvar Alterações</button>
-                <a href="{% url 'company_products' company_id=product.company.id %}" class="btn btn-secondary">Cancelar</a>
+                {%  if user.user_type == 'company' %}
+                    <a href="{% url 'company_products' company_id=product.company.id %}" class="btn btn-secondary">Cancelar</a>
+                {% else %}
+                    <a href="{% url 'admin_home' %}" class="btn btn-secondary">Cancelar</a>
+                {% endif %}
             </div>
         </form>
     </div>

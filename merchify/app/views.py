@@ -1152,6 +1152,11 @@ def add_product_to_company(request, company_id):
     return render(request, 'add_product_to_company.html', context)
 
 
+from django.shortcuts import render, get_object_or_404, redirect
+from django.db import IntegrityError
+from django.contrib.auth.decorators import login_required
+
+
 @login_required
 def edit_product(request, company_id, product_id):
     company = get_object_or_404(Company, id=company_id)
@@ -1174,8 +1179,11 @@ def edit_product(request, company_id, product_id):
                     'company': company,
                     'initial_product_type': initial_product_type,
                 })
-
             product.price = price
+
+            product_type = product_form.cleaned_data['product_type'].lower()
+
+            # Save the main product instance
             try:
                 product.save()
             except IntegrityError:
@@ -1186,45 +1194,64 @@ def edit_product(request, company_id, product_id):
                     'initial_product_type': initial_product_type,
                 })
 
-            product_type = product_form.cleaned_data.get('product_type', initial_product_type)
-
+            # Handle specific forms based on product type
             if product_type == 'vinil':
-                vinil = get_object_or_404(Vinil, product_ptr=product)
+                vinil = getattr(product, 'vinil', None) or Vinil(product_ptr=product)
                 vinil_form = VinilForm(request.POST, instance=vinil)
                 if vinil_form.is_valid():
-                    vinil_form.save()
+                    vinil_instance = vinil_form.save(commit=False)
+                    vinil_instance.product_ptr = product
+                    vinil_instance.save()
 
             elif product_type == 'cd':
-                cd = get_object_or_404(CD, product_ptr=product)
+                cd = getattr(product, 'cd', None) or CD(product_ptr=product)
                 cd_form = CDForm(request.POST, instance=cd)
                 if cd_form.is_valid():
-                    cd_form.save()
+                    cd_instance = cd_form.save(commit=False)
+                    cd_instance.product_ptr = product
+                    cd_instance.save()
 
             elif product_type == 'clothing':
-                clothing = get_object_or_404(Clothing, product_ptr=product)
+                clothing = getattr(product, 'clothing', None) or Clothing(product_ptr=product)
                 clothing_form = ClothingForm(request.POST, instance=clothing)
                 if clothing_form.is_valid():
-                    clothing_form.save()
+                    clothing_instance = clothing_form.save(commit=False)
+                    clothing_instance.product_ptr = product
+                    clothing_instance.save()
+
 
             elif product_type == 'accessory':
-                accessory = get_object_or_404(Accessory, product_ptr=product)
+                accessory = getattr(product, 'accessory', None) or Accessory(product_ptr=product)
                 accessory_form = AccessoryForm(request.POST, instance=accessory)
                 if accessory_form.is_valid():
-                    accessory_form.save()
+                    accessory_instance = accessory_form.save(commit=False)
+                    accessory_instance.product_ptr = product
+                    accessory_instance.save()
 
+            # Redirect based on user type
             if request.user.user_type == 'admin':
                 return redirect('admin_home')
             else:
                 return redirect('company_products', company_id=company.id)
 
     else:
-        product_form = ProductForm(instance=product, initial={'product_type': initial_product_type})
+        # Initialize all forms based on product type
+        product_form = ProductForm(instance=product)
+        vinil_form = VinilForm(
+            instance=getattr(product, 'vinil', None)) if initial_product_type == 'vinil' else VinilForm()
+        cd_form = CDForm(instance=getattr(product, 'cd', None)) if initial_product_type == 'cd' else CDForm()
+        clothing_form = ClothingForm(
+            instance=getattr(product, 'clothing', None)) if initial_product_type == 'clothing' else ClothingForm()
+        accessory_form = AccessoryForm(
+            instance=getattr(product, 'accessory', None)) if initial_product_type == 'accessory' else AccessoryForm()
 
-        vinil_form = VinilForm(instance=product.vinil) if initial_product_type == 'vinil' else VinilForm()
-        cd_form = CDForm(instance=product.cd) if initial_product_type == 'cd' else CDForm()
-        clothing_form = ClothingForm(instance=product.clothing) if initial_product_type == 'clothing' else ClothingForm()
-        accessory_form = AccessoryForm(instance=product.accessory) if initial_product_type == 'accessory' else AccessoryForm()
-
+    vinil_form = VinilForm(
+            instance=getattr(product, 'vinil', None)) if initial_product_type == 'vinil' else VinilForm()
+    cd_form = CDForm(instance=getattr(product, 'cd', None)) if initial_product_type == 'cd' else CDForm()
+    clothing_form = ClothingForm(
+            instance=getattr(product, 'clothing', None)) if initial_product_type == 'clothing' else ClothingForm()
+    accessory_form = AccessoryForm(
+            instance=getattr(product, 'accessory', None)) if initial_product_type == 'accessory' else AccessoryForm()
     context = {
         'company': company,
         'product': product,
@@ -1233,10 +1260,10 @@ def edit_product(request, company_id, product_id):
         'cd_form': cd_form,
         'clothing_form': clothing_form,
         'accessory_form': accessory_form,
-        'initial_product_type': initial_product_type,  # Passa o tipo inicial para o template
+        'initial_product_type': initial_product_type,
     }
-    return render(request, 'edit_product.html', context)
 
+    return render(request, 'edit_product.html', context)
 
 
 @login_required

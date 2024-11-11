@@ -166,30 +166,25 @@ class ProductForm(forms.ModelForm):
 
     class Meta:
         model = Product
-        fields = ['product_type', 'name', 'description', 'price', 'image', 'artist', 'category']
-        widgets = {
-            'category': forms.HiddenInput(),  # This makes 'category' hidden since it's set by JS
-        }
+        fields = ['product_type', 'name', 'description', 'price', 'image', 'artist']
 
 class VinilForm(forms.ModelForm):
     class Meta:
         model = Vinil
-        fields = ['genre', 'lpSize', 'releaseDate', 'stock']
+        fields = ['genre', 'lpSize', 'releaseDate']
         widgets = {
             'genre': forms.TextInput(attrs={'required': False}),
             'lpSize': forms.NumberInput(attrs={'required': False}),
             'releaseDate': forms.DateInput(attrs={'type': 'date', 'required': False}),
-            'stock': forms.NumberInput(attrs={'required': False}),
         }
 
 class CDForm(forms.ModelForm):
     class Meta:
         model = CD
-        fields = ['genre', 'releaseDate', 'stock']
+        fields = ['genre', 'releaseDate']
         widgets = {
             'genre': forms.TextInput(attrs={'required': False}),
             'releaseDate': forms.DateInput(attrs={'type': 'date', 'required': False}),
-            'stock': forms.NumberInput(attrs={'required': False}),
         }
 
 class ClothingForm(forms.ModelForm):
@@ -203,12 +198,11 @@ class ClothingForm(forms.ModelForm):
 class AccessoryForm(forms.ModelForm):
     class Meta:
         model = Accessory
-        fields = ['material', 'color', 'size', 'stock']
+        fields = ['material', 'color', 'size']
         widgets = {
             'material': forms.TextInput(attrs={'required': False}),
             'color': forms.TextInput(attrs={'required': False}),
             'size': forms.NumberInput(attrs={'required': False}),
-            'stock': forms.NumberInput(attrs={'required': False}),
         }
 
 class CompanyForm(forms.ModelForm):
