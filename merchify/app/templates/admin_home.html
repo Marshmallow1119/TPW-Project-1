@@ -17,6 +17,10 @@
             object-fit: cover;
             border-radius: 50%;
         }
+        #product-section, #user-section, #company-section {
+    max-height: 900px; /* adjust as needed */
+    overflow-y: auto;
+}
 
         .product-image {
             width: 50px;
@@ -85,7 +89,7 @@
 </head>
 {% block content %}
 <body>
-    <div class="container-fluid">
+    <div class="container-fluid" style="margin-bottom: 100px">
         <div class="sidebar">
             <h3>Dashboard do Administrador</h3>
             <a href="#" onclick="showSection('user-section')">Lista de Utilizadores</a>
@@ -136,7 +140,7 @@
                 {% endif %}
             </div>
 
-            <div id="product-section" class="content-table">
+            <div id="product-section" class="content-table" style="margin-bottom: 2000px">
                 <h1>Lista de Produtos:</h1>
                 {% if products %}
                     <table class="table">
@@ -251,6 +255,7 @@
                 </div>
             </div>
         </div>
+    </div>
     <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
