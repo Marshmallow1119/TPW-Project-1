@@ -136,7 +136,7 @@
                                     <p class="product-name mb-0">{{ product.name }}</p>
                                 </div>
                                 <p class="product-price">{{ product.price }}€</p>
-                                {% if not user.is_authenticated or user.user_type == 'user' %}
+                                {% if not user.is_authenticated or user.user_type == 'individual' %}
                                 <button class="btn btn-add-to-cart w-100">Adicionar ao carrinho</button>
                                 {% endif %}
                             </div>
