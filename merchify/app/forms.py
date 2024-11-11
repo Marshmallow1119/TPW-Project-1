@@ -99,7 +99,6 @@ class RegisterForm(UserCreationForm):
     def clean_address(self):
         address = self.cleaned_data.get('address', '').strip()
         if address:
-            address = self.validate_invisible_characters(address)
             if len(address) < 5 and len(address) < 20:
                 raise ValidationError("O campo 'Address' deve ter pelo menos 5 caracteres.")
         return address
