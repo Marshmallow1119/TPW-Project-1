@@ -60,18 +60,18 @@
                         <a class="nav-link {% if request.resolver_match.url_name == 'artistas' %}active{% endif %}" href="{% url 'artistas' %}">Artistas e Bandas</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {% if request.resolver_match.url_name == 'companhias' %}active{% endif %}" href="{% url 'companhias' %}">Companhias</a>
+                        <a class="nav-link {% if request.resolver_match.url_name == 'companhias' %}active{% endif %}" href="{% url 'companhias' %}">Empresas</a>
                     </li>
                 </ul>
 
                 {% if user.is_authenticated %}
                 <div class="navbar-text me-3 fw-bold fs-5">
                     {% if user.user_type == 'individual' %}
-                        Bem-Vind@, User {{ user.username }}
+                        Bem-Vind@, Utilizador {{ user.username }}
                     {% elif user.user_type == 'admin' %}
-                        Bem-Vind@, Admin {{ user.username }}
+                        Bem-Vind@, Administrador {{ user.username }}
                     {% elif user.user_type == 'company' %}
-                        Bem-Vind@, Company {{ user.username }}
+                        Bem-Vind@, Empresa {{ user.username }}
                     {% endif %}
                 </div>
                 
@@ -79,7 +79,7 @@
 
 
                 <form class="d-flex me-3" method="GET" action="{% url 'search' %}" onsubmit="return validateSearch()">
-                    <input class="form-control me-2 search-input" type="search" name="search" id="search-input" placeholder="Search">
+                    <input class="form-control me-2 search-input" type="search" name="search" id="search-input" placeholder="Pesquisar">
                     <button class="btn btn-outline-dark" type="submit">
                         <i class="fa fa-search"></i>
                     </button>
@@ -92,10 +92,12 @@
                             <a href="{% url 'favorites' %}" class="btn btn-outline-dark me-2"><i   class="fa fa-heart text-danger"></i></a>
                             <a href="{% url 'logout' %}" class="btn btn-outline-dark"><i   class="fas fa-sign-out-alt"></i></a>
                         {%  elif user.user_type == 'admin' %}
-                            <a href="{% url 'add_company' %}" class="btn btn-outline-dark me-2"><i  class="fa fa-plus"></i> Add Company </a>
+                            <a href="{% url 'profile' %}" class="btn btn-outline-dark me-2"><i   class="fa fa-user"></i></a>
+                            <a href="{% url 'add_company' %}" class="btn btn-outline-dark me-2"><i  class="fa fa-plus"></i> Adicionar Empresa </a>
                             <a href="{% url 'logout' %}" class="btn btn-outline-dark"><i   class="fas fa-sign-out-alt"></i></a>
                         {% elif user.user_type == 'company' %}
-                            <a href="{% url 'company_products' user.company.id %}" class="btn btn-outline-dark me-2"><i class="bi bi-archive-fill"></i> See My Products </a>
+                            <a href="{% url 'profile' %}" class="btn btn-outline-dark me-2"><i   class="fa fa-user"></i></a>
+                            <a href="{% url 'company_products' user.company.id %}" class="btn btn-outline-dark me-2"><i class="bi bi-archive-fill"></i> Ver os meus produtos </a>
                             <a href="{% url 'profile' %}" class="btn btn-outline-dark me-2"><i class="fa fa-user"></i></a>
                             <a href="{% url 'logout' %}" class="btn btn-outline-dark"><i class="fas fa-sign-out-alt"></i></a>
                         {% else %}
@@ -106,7 +108,7 @@
                 </div>
             </div>
         </div>
-    </nav>
+    </nav>  
     
     {% if messages %}
     <div class="alert-messages">
