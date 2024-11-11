@@ -97,8 +97,8 @@
         <label for="quantity" class="form-label">Quantidade</label>
         <input type="number" id="quantity" class="form-control" value="1" min="1">
       </div>
-      {% if not user.is_authenticated or user.user_type == 'user' %}
-      <button id="add-to-cart-btn" class="btn btn-dark w-100" data-product-id="{{ product.id }}" data-stock="{{ product.get_stock }}">Adicionar ao carrinho</button>
+      {% if user.is_authenticated and user.user_type == 'individual' %}
+            <button id="add-to-cart-btn" class="btn btn-dark w-100" data-product-id="{{ product.id }}" data-stock="{{ product.get_stock }}">Adicionar ao carrinho</button>
       {% endif %}
     </div>
   </div>
@@ -124,9 +124,9 @@
     <h5>Classificação e Avaliações</h5>
 
     <!-- User Rating Form -->
-    {% if user.is_authenticated %}
+    {% if user.is_authenticated and user.user_type == 'individual' %}
       <div class="card p-3 mb-4">
-        <h6>Dê uma Avaliação: </h6>
+        <h6>Dê uma Avaliação:</h6>
         <div class="star-rating" id="user-star-rating">
             <span class="star" data-rating="1">☆</span>
             <span class="star" data-rating="2">☆</span>
@@ -136,12 +136,23 @@
         </div>
         <form method="post" action="{% url 'submit_review' product.id %}">
             {% csrf_token %}
-            <input type="hidden" id="rating-input" name="rating" value="0">
-            <div class="form-group mt-3">
-                <label for="review">Escreva uma avaliação:</label>
-                <textarea id="review" name="review" class="form-control" rows="3" placeholder="Partilha a tua experiência com este produto"></textarea>
+            <input type="hidden" id="rating-input" name="rating" value="0" class="{% if form.errors.rating %}is-invalid{% endif %}">
+            <div class="invalid-feedback d-block">
+                {% if form.errors.rating %}
+                    {{ form.errors.rating.0 }}
+                {% endif %}
             </div>
-            <button type="submit" class="btn btn-dark" style="margin-top: 20px">Enviar Avaliação</button>
+          
+            <div class="form-group mt-3">
+                <label for="review">Escreva uma avaliação (opcional):</label>
+                <textarea id="review" name="review" class="form-control {% if form.errors.review %}is-invalid{% endif %}" rows="3" placeholder="Partilha a tua experiência com este produto (opcional)"></textarea>
+                <div class="invalid-feedback">
+                    {% if form.errors.review %}
+                        {{ form.errors.review.0 }}
+                    {% endif %}
+                </div>
+            </div>
+            <button type="submit" class="btn btn-dark mt-3">Enviar Avaliação</button>
         </form>
       </div>
     {% else %}
@@ -172,8 +183,8 @@
                 {% endif %}
             </div>
           </div>
-          <p class="mb-0">{{ review.text }}</p>
-        </div>
+          <p class="mb-0">{{ review.text|default_if_none:"" }}</p>
+          </div>
       {% empty %}
         <p>Seja o primeiro a avaliar este produto!</p>
       {% endfor %}
@@ -250,35 +261,36 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 
-document.addEventListener("DOMContentLoaded", function () {
+  document.addEventListener("DOMContentLoaded", function () {
     const starRating = document.querySelectorAll("#user-star-rating .star");
-    let userRating = 0; 
-
+    let userRating = 0;
+  
     starRating.forEach(star => {
         star.addEventListener("mouseover", function () {
             const rating = this.getAttribute("data-rating");
-            highlightStars(rating); 
+            highlightStars(rating);
         });
-
+      
         star.addEventListener("mouseout", function () {
-            highlightStars(userRating); 
+            highlightStars(userRating);
         });
-
+      
         star.addEventListener("click", function () {
             const rating = this.getAttribute("data-rating");
-            userRating = rating; 
-            highlightStars(userRating); 
+            userRating = rating;
+            highlightStars(userRating);
             document.getElementById("rating-input").value = userRating;
         });
     });
-
+  
     function highlightStars(rating) {
         starRating.forEach(star => {
             const starRating = star.getAttribute("data-rating");
-            star.textContent = (starRating <= rating) ? "★" : "☆"; 
+            star.textContent = (starRating <= rating) ? "★" : "☆";
         });
     }
   });
+
     document.addEventListener("DOMContentLoaded", function () {
         const isAuthenticated = {{ user.is_authenticated|lower }};
         const addToCartBtn = document.getElementById("add-to-cart-btn");

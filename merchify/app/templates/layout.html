@@ -78,10 +78,10 @@
                 {% endif %}
 
 
-                <form class="d-flex me-3" method="GET" action="{% url 'search' %}">
-                    <input class="form-control me-2 search-input" type="search" name="search" placeholder="Search">
+                <form class="d-flex me-3" method="GET" action="{% url 'search' %}" onsubmit="return validateSearch()">
+                    <input class="form-control me-2 search-input" type="search" name="search" id="search-input" placeholder="Search">
                     <button class="btn btn-outline-dark" type="submit">
-                        <i   class="fa fa-search"></i>
+                        <i class="fa fa-search"></i>
                     </button>
                 </form>
                 <div class="d-flex">
@@ -142,9 +142,17 @@
                 setTimeout(() => {
                     alert.classList.add('fade');
                     setTimeout(() => alert.remove(), 500);  // remove after transition
-                }, 5000); // 5 seconds
+                }, 1000); // 5 seconds
             });
         });
+        function validateSearch() {
+            const searchInput = document.getElementById('search-input').value.trim();
+            if (searchInput === "") {
+                alert("Por favor, insira o que pretende pesquisar.");
+                return false; // Impede o envio do formulário
+            }
+            return true; // Permite o envio do formulário
+        }
     </script>
     {% endblock %}
 </body>

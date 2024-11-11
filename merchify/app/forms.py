@@ -7,6 +7,20 @@ from .models import Product, Company, Vinil, CD, Accessory, Clothing
 User = get_user_model()
 
 
+from django import forms
+from django.core.exceptions import ValidationError
+from django.contrib.auth.forms import UserCreationForm
+from django.core.validators import EmailValidator
+from .models import User
+
+
+from django import forms
+from django.core.exceptions import ValidationError
+from django.core.validators import EmailValidator
+from django.contrib.auth.forms import UserCreationForm
+from .models import User
+import re
+
 class RegisterForm(UserCreationForm):
     username = forms.CharField(max_length=100, required=True)
     email = forms.EmailField(max_length=100, help_text='Required. Inform a valid email address.')
@@ -21,14 +35,83 @@ class RegisterForm(UserCreationForm):
 
     class Meta:
         model = User
-        fields = ('username', 'email', 'password1', 'password2', 'first_name', 'last_name', 'address', 'phone', 'country')
+        fields = (
+            'username', 'email', 'password1', 'password2', 
+            'first_name', 'last_name', 'address', 'phone', 'country', 'image'
+        )
+
+    def validate_invisible_characters(self, value):
+        # Remove espaços e caracteres invisíveis (zero-width spaces, tabs, etc.)
+        value = re.sub(r'\s+|\u200B|\u200C|\u200D|\u2060', '', value)
+        if not value:
+            raise ValidationError("O campo não pode conter apenas caracteres invisíveis.")
+        return value
+
+    def clean_username(self):
+        username = self.cleaned_data.get('username', '').strip()
+        username = self.validate_invisible_characters(username)
+        if len(username) < 3 and len(username) < 9:
+            raise ValidationError("O campo 'Username' deve ter pelo menos 3 caracteres.")
+        if User.objects.filter(username=username).exists():
+            raise ValidationError("Este username já está em uso.")
+        return username
+
+    def clean_email(self) :
+        email = self.cleaned_data.get('email', '').strip()
+        email_validator = EmailValidator()
+        try:
+            email_validator(email)
+        except ValidationError:
+            raise ValidationError("O campo 'Email' deve conter um endereço de email válido.")
+        if User.objects.filter(email=email).exists():
+            raise ValidationError("Este email já está em uso.")
+        return email
+
+    def clean_first_name(self):
+        first_name = self.cleaned_data.get('first_name', '').strip()
+        first_name = self.validate_invisible_characters(first_name)
+        if len(first_name) < 2 and len(first_name) < 9:
+            raise ValidationError("O campo 'First Name' deve ter pelo menos 2 caracteres.")
+        return first_name
+
+    def clean_last_name(self):
+        last_name = self.cleaned_data.get('last_name', '').strip()
+        last_name = self.validate_invisible_characters(last_name)
+        if len(last_name) < 2 and len(last_name) < 9 :
+            raise ValidationError("O campo 'Last Name' deve ter pelo menos 2 caracteres.")
+        return last_name
 
     def clean_phone(self):
-        phone = self.cleaned_data.get('phone')
-        if not phone.isdigit() or len(phone) != 9:
+        phone = self.cleaned_data.get('phone', '').strip()
+        if not phone.isdigit():
+            raise ValidationError("O número de telefone deve conter apenas dígitos.")
+        if len(phone) != 9:
             raise ValidationError("O número de telefone deve conter exatamente 9 dígitos.")
         return phone
 
+    def clean_country(self):
+        country = self.cleaned_data.get('country', '').strip()
+        country = self.validate_invisible_characters(country)
+        if len(country) < 2  and len(country) < 9:
+            raise ValidationError("O campo 'Country' deve ter pelo menos 2 caracteres.")
+        return country
+
+    def clean_address(self):
+        address = self.cleaned_data.get('address', '').strip()
+        if address:
+            address = self.validate_invisible_characters(address)
+            if len(address) < 5 and len(address) < 20:
+                raise ValidationError("O campo 'Address' deve ter pelo menos 5 caracteres.")
+        return address
+
+    def clean_password2(self):
+        password1 = self.cleaned_data.get("password1")
+        password2 = self.cleaned_data.get("password2")
+        if password1 != password2:
+            raise ValidationError("As senhas não coincidem.")
+        if len(password1) < 8:
+            raise ValidationError("A senha deve ter pelo menos 8 caracteres.")
+        return password2
 
 class UploadUserProfilePicture(forms.Form):
     image = forms.ImageField(widget=forms.FileInput(attrs={'class': 'form-control', 
@@ -153,3 +236,16 @@ class UserForm(forms.ModelForm):
             'country': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Country'}),
         }
 
+
+class ReviewForm(forms.Form):
+    rating = forms.IntegerField(required=False)
+    review = forms.CharField(required=False, widget=forms.Textarea)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        rating = cleaned_data.get('rating')
+        review = cleaned_data.get('review', '').strip()
+
+        if not rating and not review:
+            raise forms.ValidationError("Por favor, forneça uma avaliação com estrelas ou escreva um texto.")
+        return cleaned_data

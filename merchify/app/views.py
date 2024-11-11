@@ -18,6 +18,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
+from .forms import ReviewForm
 
 from app.models import Product, Company, Cart, CartItem, Purchase, Vinil, CD, Clothing, Accessory, Size, Favorite, FavoriteArtist, FavoriteCompany, Artist, Review, PurchaseProduct
 from app.forms import RegisterForm, ProductForm, CompanyForm, UserForm, VinilForm, CDForm, ClothingForm, AccessoryForm, UploadUserProfilePicture, UpdatePassword, UpdateProfile
@@ -244,7 +245,7 @@ def artistsProducts(request, name):
 
 def productDetails(request, identifier):
     product = get_object_or_404(Product, id=identifier)
-    product.count = product.count + 1
+    product.count += 1
     product.save()
 
     recently_viewed = request.session.get('recently_viewed', [])
@@ -259,12 +260,11 @@ def productDetails(request, identifier):
     }
 
     if isinstance(product, Clothing):
-        sizes = product.sizes.all() 
-        context['sizes'] = sizes 
+        sizes = product.sizes.all()
+        context['sizes'] = sizes
 
-    average_rating = product.reviews.aggregate(Avg('rating'))['rating__avg'] or 0 
-    context['average_rating'] = average_rating  
-    print(isinstance(product, Clothing))
+    average_rating = product.reviews.aggregate(Avg('rating'))['rating__avg'] or 0
+    context['average_rating'] = average_rating
 
     return render(request, 'productDetails.html', context)
 
@@ -596,34 +596,29 @@ def profile(request):
 
 @login_required
 def submit_review(request, product_id):
-    if request.method == "POST":
-        rating = request.POST.get("rating")
-        review_text = request.POST.get("review")
-        product = get_object_or_404(Product, id=product_id)
+    product = get_object_or_404(Product, id=product_id)
+    if request.method == 'POST':
+        form = ReviewForm(request.POST)
+        rating = int(request.POST.get('rating', 0))
+        review_text = request.POST.get('review', '').strip()
 
-        if rating and review_text:
-            try:
-                rating = int(rating)
-                if not 1 <= rating <= 5:
-                    messages.error(request, "Rating must be between 1 and 5.")
-                    return redirect("productDetails", identifier=product_id)
-            except ValueError:
-                messages.error(request, "Invalid rating.")
-                return redirect("productDetails", identifier=product_id)
+        if not rating and not review_text:
+            form.add_error('rating', "Por favor, forneça uma avaliação com estrelas ou escreva um texto.")
+            return render(request, 'productDetails.html', {'product': product, 'form': form})
 
-            Review.objects.create(
-                product=product,
-                user=request.user,
-                rating=rating,
-                text=review_text,
-                date=timezone.now().date() 
-            )
-            messages.success(request, "Your review has been submitted.")
-        else:
-            messages.error(request, "Please provide both a rating and a review.")
+        # Substituir `None` por string vazia
+        review_text = review_text if review_text else ""
 
-        return redirect("productDetails", identifier=product_id)
-    
+        review = Review.objects.create(
+            product=product,
+            user=request.user,
+            rating=rating if rating > 0 else None,
+            text=review_text
+        )
+        review.save()
+
+        return redirect('productDetails', identifier=product_id)
+
 
 @login_required
 def checkfavorite(request, category):

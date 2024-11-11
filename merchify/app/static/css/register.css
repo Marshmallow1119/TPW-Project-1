@@ -25,6 +25,7 @@ body {
   border-radius: 10px;
   margin-left:27%;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+  margin-bottom: 100px;
 }
 
 .container .title {
@@ -118,4 +119,13 @@ body {
   .user-details .input-box {
     min-width: 100%;
   }
+}
+
+.is-invalid {
+  border-color: red;
+}
+
+.invalid-feedback {
+  color: red;
+  font-size: 0.875em;
 }
