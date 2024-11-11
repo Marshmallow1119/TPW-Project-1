@@ -1294,7 +1294,10 @@ def admin_home(request):
         product.reviews_count = product.reviews.count()
 
     for product in products:
-        product.review_count = Review.objects.filter(product=product).count() 
+        product.review_count = Review.objects.filter(product=product).count()
+
+    for user in users:
+        user.number_of_purchases = Purchase.objects.filter(user=user).count()
     return render(request, 'admin_home.html', {'users': users, 'products': products, 'companies': companies})
 def delete_user(request, user_id):
     user = get_object_or_404(User, id=user_id)
