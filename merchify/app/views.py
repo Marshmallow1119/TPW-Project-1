@@ -1302,7 +1302,7 @@ def admin_home(request):
 def delete_user(request, user_id):
     user = get_object_or_404(User, id=user_id)
     user.delete()
-    return redirect('admin_home')
+    return redirect('_home')
 def admin_product_delete(request, product_id):
     product = get_object_or_404(Product, id=product_id)
     product.delete()
@@ -1448,20 +1448,20 @@ def add_stock(request, product_id):
         # Check the product type and update the corresponding stock
         if product_type == 'Vinil':
             vinil = product.vinil  # Get the related Vinil object
-            vinil.stock += stock   # Update stock
+            vinil.stock = stock   # Update stock
             vinil.save()           # Save the Vinil object
         elif product_type == 'CD':
             cd = product.cd        # Get the related CD object
-            cd.stock += stock      # Update stock
+            cd.stock = stock      # Update stock
             cd.save()              # Save the CD object
         elif product_type == 'Accessory':
             accessory = product.accessory  # Get the related Accessory object
-            accessory.stock += stock       # Update stock
+            accessory.stock = stock       # Update stock
             accessory.save()               # Save the Accessory object
         elif product_type == 'Clothing':
             clothing = product.clothing   # Get the related Clothing object
             for size in clothing.sizes.all():  # For each size, update stock
-                size.stock += stock
+                size.stock = stock
                 size.save()
             clothing.save()   # Save the Clothing object itself
         else:
