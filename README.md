@@ -73,7 +73,7 @@ Neste primeiro projeto desenvolvemos uma aplicação web usando a framework Djan
 - Sistema de Recomendações
 - Sistema de Chat
 - Sistema de Notificações
-- Promoções em específico para um utilizador
+- Promoções específicas para cada produto
 
 ## Informação de autenticação de users;
 

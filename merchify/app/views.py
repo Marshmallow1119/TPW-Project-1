@@ -307,12 +307,13 @@ def search(request):
 
 
 User = get_user_model()  # Get the custom user model
-def register_view(request):
-    next_url = request.GET.get('next', None)
 
+def register_view(request):
+    next_url = request.GET.get('next', request.POST.get('next', ''))
     if request.method == 'POST':
-        next_url = request.POST.get('next', None)
-        form = RegisterForm(request.POST, request.FILES)
+        next_url = request.POST.get('next', 'home')
+        form = RegisterForm(request.POST, request.FILES) 
+
         if form.is_valid():
             user = User.objects.create_user(
                 first_name=form.cleaned_data['first_name'],
@@ -331,10 +332,14 @@ def register_view(request):
             user.save()
 
             auth_login(request, user)
-            return redirect(next_url or 'home')
+            
+            if not is_valid_url(next_url):
+                next_url = 'home'
+            
+            return redirect(next_url)
         else:
             messages.error(request, "Formulário inválido. Verifique os campos.")
-            return render(request, 'register_user.html', {'form': form})
+            return render(request, 'register_user.html', {'form': form, 'next': next_url})
     else:
         form = RegisterForm()
     return render(request, 'register_user.html', {'form': form, 'next': next_url})
