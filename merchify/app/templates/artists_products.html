@@ -348,13 +348,10 @@
     }
 
     function resetForm() {
-        // Resetar o formulário de filtros
         document.getElementById("filterForm").reset();
     
-        // Esconder todos os filtros específicos
         document.querySelectorAll(".hidden-filter").forEach(filter => filter.classList.add("hidden-filter"));
     
-        // Limpar os parâmetros de query da URL e recarregar a página
         const baseUrl = window.location.pathname;
         window.history.pushState({}, '', baseUrl);
         window.location.reload();
