@@ -309,18 +309,21 @@
 
         function resetForm() {
             document.getElementById("filterForm").reset();
-
+        
             document.querySelectorAll('input[name="type"]').forEach(radio => radio.checked = false);
-
+        
             document.getElementById("vinil-filters").classList.add("hidden-filter");
             document.getElementById("cd-filters").classList.add("hidden-filter");
             document.getElementById("clothing-filters").classList.add("hidden-filter");
             document.getElementById("accessory-filters").classList.add("hidden-filter");
-
+        
             const url = new URL(window.location.href);
             url.search = "";
             window.history.replaceState(null, "", url);
+        
+            document.getElementById("filterForm").submit();
         }
+        
     </script>
 </body>
 </html>
