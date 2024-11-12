@@ -79,13 +79,13 @@ Neste primeiro projeto desenvolvemos uma aplicação web usando a framework Djan
 
 | Username | Password       |
 | -------- | -------------- |
-| joao1    | usertestado123 |
+| joao1    | testaruser123  |
 
 ### Companhias
 
 | Username | Password           |
 | -------- | ------------------ |
-| mea123   | testarcompanhia123 |
+| republic | republic123        |
 
 ## Autores
 
