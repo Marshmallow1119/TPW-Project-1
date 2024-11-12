@@ -21,6 +21,7 @@ from django.views.decorators.http import require_POST
 from .forms import ReviewForm
 from app.models import Product, Company, Cart, CartItem, Purchase, Vinil, CD, Clothing, Accessory, Size, Favorite, FavoriteArtist, FavoriteCompany, Artist, Review, PurchaseProduct
 from app.forms import RegisterForm, ProductForm, CompanyForm, UserForm, VinilForm, CDForm, ClothingForm, AccessoryForm, UploadUserProfilePicture, UpdatePassword, UpdateProfile
+from django.urls import resolve, Resolver404
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
@@ -302,11 +303,10 @@ def search(request):
         'query': query,
     })
 def register(request):
-    next_url = request.GET.get('next', None)  
+    next_url = request.GET.get('next', 'home')  
 
     if request.method == 'POST':
-        next_url = request.POST.get('next', None)  
-        form = RegisterForm(request.POST, request.FILES)
+        next_url = request.POST.get('next', 'home') 
         if form.is_valid():
             user = User.objects.create_user(
                 first_name=form.cleaned_data['first_name'],
@@ -325,7 +325,10 @@ def register(request):
             user.save()
 
             auth_login(request, user)
-            return redirect(next_url or 'home')
+            if not is_valid_url(next_url):
+                next_url = 'home'
+            
+            return redirect(next_url)
         else:
             messages.error(request, "Formulário inválido. Verifique os campos.")
             return render(request, 'register_user.html', {'form': form})
@@ -333,7 +336,14 @@ def register(request):
         form = RegisterForm()
     return render(request, 'register_user.html', {'form': form, 'next': next_url})
 
-    
+def is_valid_url(url_name):
+    try:
+        resolve(url_name)
+        return True
+    except Resolver404:
+        return False
+
+
 def login(request):
     if request.method == 'POST':
         next_url = request.GET.get('next', None)
