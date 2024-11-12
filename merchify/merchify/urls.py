@@ -71,7 +71,7 @@ urlpatterns = [
     path('carrinho/', views.viewCart, name='viewCart'),
     path('product/<int:product_id>/add_clothing_stock/', views.add_clothing_stock, name='add_clothing_stock'),
     path('product/<int:product_id>/add_stock/', views.add_stock, name='add_stock'),
-    
+
 ]   
 
 

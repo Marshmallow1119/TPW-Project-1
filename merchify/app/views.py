@@ -14,6 +14,8 @@ from django.db import transaction, IntegrityError
 from django.db.models import Avg, Q
 from django.http import JsonResponse, Http404
 from django.shortcuts import redirect, render, get_object_or_404
+from django.core.exceptions import PermissionDenied
+
 from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
@@ -308,13 +310,15 @@ def search(request):
 
 User = get_user_model()  # Get the custom user model
 
+
 def register_view(request):
     next_url = request.GET.get('next', request.POST.get('next', ''))
+
     if request.method == 'POST':
-        next_url = request.POST.get('next', 'home')
-        form = RegisterForm(request.POST, request.FILES) 
+        form = RegisterForm(request.POST, request.FILES)
 
         if form.is_valid():
+            # Create a new user
             user = User.objects.create_user(
                 first_name=form.cleaned_data['first_name'],
                 last_name=form.cleaned_data['last_name'],
@@ -327,21 +331,26 @@ def register_view(request):
                 image=form.cleaned_data['image']
             )
 
+            # Add user to 'client' group
             group = Group.objects.get(name='client')
             user.groups.add(group)
             user.save()
 
+            # Log in the user
             auth_login(request, user)
-            
-            if not is_valid_url(next_url):
-                next_url = 'home'
-            
-            return redirect(next_url)
+            print(next_url)
+            if next_url:
+                return redirect(next_url)
+            else:
+                return redirect('home')
         else:
+            # Error message and redirect with form errors and `next` parameter
             messages.error(request, "Formulário inválido. Verifique os campos.")
             return render(request, 'register_user.html', {'form': form, 'next': next_url})
     else:
+        # For GET request, display the empty form with `next` parameter
         form = RegisterForm()
+
     return render(request, 'register_user.html', {'form': form, 'next': next_url})
 
 def is_valid_url(url_name):
@@ -1179,6 +1188,8 @@ def add_product_to_company(request, company_id):
 
 @login_required
 def edit_product(request, company_id, product_id):
+    if not (request.user.user_type == 'admin' or request.user.user_type == 'company'):
+        raise PermissionDenied
     company = get_object_or_404(Company, id=company_id)
     product = get_object_or_404(Product, id=product_id, company=company)
 
@@ -1272,6 +1283,8 @@ def edit_product(request, company_id, product_id):
 
 @login_required
 def delete_product(request, product_id):
+    if not (request.user.user_type == 'admin' or request.user.user_type == 'company'):
+        raise PermissionDenied
     product = get_object_or_404(Product, id=product_id)
     company_id = product.company.id 
     product.delete()
@@ -1279,6 +1292,8 @@ def delete_product(request, product_id):
 
 @login_required
 def admin_home(request):
+    if not request.user.is_superuser:  # Ensure user is an admin
+        raise PermissionDenied
     users = User.objects.all()
     products = Product.objects.all()
     companies = Company.objects.all()
@@ -1307,18 +1322,24 @@ def admin_home(request):
 
 @login_required
 def delete_user(request, user_id):
+    if not request.user.is_superuser:
+        raise PermissionDenied
     user = get_object_or_404(User, id=user_id)
     user.delete()
     return redirect('admin_home')
 
 @login_required
 def admin_product_delete(request, product_id):
+    if not request.user.is_superuser:
+        raise PermissionDenied
     product = get_object_or_404(Product, id=product_id)
     product.delete()
     return redirect('admin_home')
 
 @login_required
 def delete_review(request, review_id):
+    if not request.user.is_superuser:
+        raise PermissionDenied
     review = get_object_or_404(Review, id=review_id)
     product = review.product
     company = product.company
@@ -1333,6 +1354,8 @@ def delete_review(request, review_id):
 
 @login_required
 def admin_company_delete(request, company_id):
+    if not request.user.is_superuser:
+        raise PermissionDenied
     company = get_object_or_404(Company, id=company_id)
     company.delete()
     return redirect('admin_home')
