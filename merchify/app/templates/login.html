@@ -38,7 +38,7 @@
                     }, 5000); 
                 </script>
             {% endif %}
-
+            <input type="hidden" name="next" value="{{ next }}">
             <div class="input-group uf-input-group input-group-lg mb-3">
                 <span class="input-group-text"><i class="fas fa-user" style="color: black;"></i></span>
                 <input type="text" name="username" class="form-control" placeholder="Username" required>
@@ -55,7 +55,7 @@
             
             <div class="mt-4 text-center">
                 <span class="text-black">Não tem conta?</span>
-                <a href="{% url 'register' %}">Registar</a>
+                    <a href="{% url 'register' %}{% if request.GET.next %}?next={{ request.GET.next }}{% endif %}">Registar</a>
             </div>
         </form>
     </div>
