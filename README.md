@@ -106,7 +106,7 @@ Neste primeiro projeto desenvolvemos uma aplicação web usando a framework Djan
 - **DjangoTemplates** - Usámos para criar as páginas HTML, como por exemplo, a página de login, registo, ver produtos, ver artistas, etc.
 - **DjangoTemplatesTags** - Usámos para criar tags personalizadas, como por exemplo, a tag que calcula o preço total de uma encomenda.
 - **DjangoSessions** - Usámos para guardar os produtos que o utilizador viu recentemente.
--
+- **DjangoMiddleware** - Usámos para redirecionar o utilizador para uma página de erro default caso o utilizador tente aceder a uma página que não existe.
 - **DjangoForms** - Usámos para criar formulários de registo, login, atualização de perfil, adicionar produtos, adicionar companhias, adicionar avaliações.
 
 ## Deployment (PythonAnyWhere)
