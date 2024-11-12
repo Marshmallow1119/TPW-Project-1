@@ -348,17 +348,16 @@
     }
 
     function resetForm() {
-        // Clear the filter form
         document.getElementById("filterForm").reset();
-
-        // Reset URL by removing all query parameters
-        const url = new URL(window.location.href);
-        url.search = "";
-        window.history.replaceState(null, "", url);
-
-        // Hide filter sections for a fresh view
+    
         document.querySelectorAll(".hidden-filter").forEach(filter => filter.classList.add("hidden-filter"));
+    
+        const baseUrl = window.location.pathname;
+        window.history.pushState({}, '', baseUrl);
+        window.location.reload();
     }
+    
+    
     </script>
 </body>
 </html>
