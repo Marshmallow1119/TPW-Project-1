@@ -185,6 +185,7 @@
             <button type="submit" class="btn btn-dark mt-3">Enviar Avaliação</button>
         </form>
       </div>
+    {% elif user.user_type == 'admin' or user.user_type == 'company'%}
     {% else %}
       <p>Por favor, <a href="{% url 'login' %}">faça login</a> para avaliar este produto.</p>
     {% endif %}
