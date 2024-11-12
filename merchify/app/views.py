@@ -859,7 +859,7 @@ def process_payment(request):
                     paymentMethod=payment_method,
                     shippingAddress=shipping_address,
                     total_amount=final_total,
-                    status='Processing',
+                    status='Em processamento',
                     discount_applied=discount_applied,
                     discount_value=discount_value
                 )
