@@ -236,13 +236,33 @@
 
     function resetForm() {
         document.getElementById("filterForm").reset();
-
+    
+        document.querySelectorAll(".hidden-filter").forEach(filter => filter.classList.add("hidden-filter"));
+    
         const url = new URL(window.location.href);
         url.search = "";
-        window.history.replaceState(null, "", url);
-
-        document.querySelectorAll(".hidden-filter").forEach(filter => filter.classList.add("hidden-filter"));
+        history.pushState({}, '', url.toString());
+    
+        fetch(url.toString(), {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.text())
+        .then(html => {
+            const parser = new DOMParser();
+            const newDocument = parser.parseFromString(html, 'text/html');
+            const newProducts = newDocument.querySelector('.row'); 
+            const productsContainer = document.querySelector('.row');
+    
+            if (newProducts && productsContainer) {
+                productsContainer.innerHTML = newProducts.innerHTML;
+            }
+        })
+        .catch(error => console.error('Erro ao atualizar os produtos:', error));
     }
+    
     </script>
 
     <style>
