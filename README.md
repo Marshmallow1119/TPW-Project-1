@@ -10,6 +10,12 @@ Neste primeiro projeto desenvolvemos uma aplicação web usando a framework Djan
 
 ## Principais Funcionalidades da Aplicação
 
+### Django Frameworks utilizadas:
+
+Forms - adição e edição de produtos e empresas
+Sessions - quando o cliente vê produtos, aparecem numa aba de visualizados recentemente
+Authentication - login e logout dos 3 tipos de utilizadores
+
 ### Utilizador sem login realizado
 
 - Fazer pesquisa de produtos e de artistas
