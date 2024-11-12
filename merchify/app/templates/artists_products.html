@@ -140,8 +140,7 @@
             flex: 0 0 33.333%;
             max-width: 33.333%;
         }
-
-
+        
         </style>
 </head>
 <body>
@@ -245,8 +244,20 @@
 
                             </div>
                 </div>
-
                 <div class="col-md-9">
+                    <div class="d-flex justify-content-between align-items-center mb-3 ordenar-por-container" >
+                        <p>{{ products.count }} produtos</p>
+                        <div class="dropdown ordenar-dropdown">
+                            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-expanded="false">
+                                Ordenar por:
+                            </button>                
+                            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                <li><a class="dropdown-item" href="?sort=featured">Em destaque</a></li>
+                                <li><a class="dropdown-item" href="?sort=priceAsc">Preço (ascendente)</a></li>
+                                <li><a class="dropdown-item" href="?sort=priceDesc">Preço (descendente)</a></li>
+                            </ul>
+                        </div>
+                    </div>
                     <div class="row">
                         {% for product in products %}
                         <div class="col-6 col-md-4 col-lg-3">
@@ -313,21 +324,19 @@
         }
     }
 
-    // Automatically call showFilters() based on the currently selected product type when the page loads
     document.addEventListener("DOMContentLoaded", function() {
         const selectedType = document.querySelector('input[name="type"]:checked');
         if (selectedType) {
-            showFilters(selectedType.value); // Pass the selected type's value
+            showFilters(selectedType.value); 
         }
     });
 
     function applyFilters(event) {
-        event.preventDefault(); // Prevent default form submission
+        event.preventDefault();
 
-        const url = new URL(window.location.href); // Get the current URL
-        const formData = new FormData(document.getElementById("filterForm")); // Get form data
+        const url = new URL(window.location.href);
+        const formData = new FormData(document.getElementById("filterForm")); 
 
-        // Append each filter to the URL
         formData.forEach((value, key) => {
             if (value) {
                 url.searchParams.set(key, value); // Set or update URL parameters
