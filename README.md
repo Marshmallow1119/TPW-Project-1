@@ -32,69 +32,79 @@ Neste primeiro projeto desenvolvemos uma aplicação web usando a framework Djan
 - Ver encomendas e os seus detalhes
 - Comprar um produto
 - Adicionar um avaliação a um produto
--
+- Receber um desconto de 10% na primeira compra com o código "PRIMEIRACOMPRA"
+- Encomendas com portes grátis em compras superiores a 100€
+- Encomendas com portes mais baratos se o seu país for Portugal
+- Ver os últimos 4 produtos vistos recentemente
 
 ### Admin
 
 - O mesmo que o utilizador com login
+- Ver o número de compras de um utilizador
 - Adicionar Companhias
-- Banir utilizadores e companhias
+- Banir Companhias
+- Adicionar Produtos
+- Editar Produtos
+- Adicionar Stock a um Produto
+- Ver o número de avaliações e a média de avaliações de um produto
 - Remover Produtos
+- Apagar Avaliações
 
 ### Companhia
 
 - O mesmo que o utilizador com login
 - Adicionar produtos
 - Remover produtos
-- Login
-- Logout
+- Adicionar stock a um produto
 - Ver dados sobre os próprios produtos
+- Ver as avaliações médias dos seus produtos
+- Ver o número de favoritos dos seus produtos
 
 ## Funcionalidades que poderiamos implementar no futuro
 
--
--
+- Sistema de Recomendações
+- Sistema de Chat
+- Sistema de Notificações
+- Promoções em específico para um utilizador
 
 ## Informação de autenticação de users;
 
 <table>
 <th>
-<td>Tipo</td>
 <td>Username</td>
 <td>Password</td>
 </th>
 <tr>
-<td>
+<td>Administrador</td>
 <td>admin</td>
 <td>admin123</td>
 </tr>
-
+<tr>
+<td>Cliente</td>
+<td>joao1</td>
+<td>testaruser123</td>
+</tr>
+<tr>
+<td>Empresas</td>
+<td>republic</td>
+<td>republic123</td>
+</tr>
 </table>
-### Admin
-| Username | Password |
-| -------- | -------- |
-| admin    | admin123 |
 
-### Utilizadores normais
+## Algumas funcionalidades Django usadas e onde foram usadas:
 
-| Username | Password       |
-| -------- | -------------- |
-| joao1    | usertestado123 |
-
-### Companhias
-
-| Username | Password           |
-| -------- | ------------------ |
-| mea123   | testarcompanhia123 |
-
-## Autores
-
-| Name            | Number | E-Mail                |
-| --------------- | ------ | --------------------- |
-| Tomás Brás      | 112665 | tomasbras@ua.pt       |
-| Afonso Ferreira | 113480 | afonso.ferreira@ua.pt |
-| Carolina Prata  | 114246 | carolinaprata@ua.pt   |
+- **DjangoModel** - Usámos para criar as tabelas da base de dados, como por exemplo, a tabela de utilizadores, produtos, artistas, encomendas, etc.
+- **DjangoViews** - Usámos para criar as views das páginas, como por exemplo, a página de login, registo, ver produtos, ver artistas, etc.
+- **DjangoTemplates** - Usámos para criar as páginas HTML, como por exemplo, a página de login, registo, ver produtos, ver artistas, etc.
+- **DjangoTemplatesTags** - Usámos para criar tags personalizadas, como por exemplo, a tag que calcula o preço total de uma encomenda.
+- **DjangoSessions** - Usámos para guardar os produtos que o utilizador viu recentemente.
+-
+- **DjangoForms** - Usámos para criar formulários de registo, login, atualização de perfil, adicionar produtos, adicionar companhias, adicionar avaliações.
 
 ## Deployment (PythonAnyWhere)
 
+https://alof.pythonanywhere.com/
+
 ## Conclusão
+
+Para concluir, o projeto Merchify foi bastante enriquecedor para todos os membros. Aprendemos a trabalhar com Django e a desenvolver uma aplicação web de raiz. A aplicação desenvolvida é bastante completa e oferece várias funcionalidades que permitem ao utilizador ter uma experiência agradável e intuitiva. À medida que fomos desenvolvendo a aplicação, fomos ganhando mais ideias, sempre com o objetivo de melhorar a experiência do utilizador. A aplicação Merchify é um projeto que nos orgulha e que nos deu a oportunidade de aplicar os conhecimentos adquiridos sobre Django.

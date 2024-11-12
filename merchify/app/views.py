@@ -267,6 +267,7 @@ def productDetails(request, identifier):
     average_rating = product.reviews.aggregate(Avg('rating'))['rating__avg'] or 0
     context['average_rating'] = average_rating
 
+    user = request.user
     return render(request, 'productDetails.html', context)
 
 
@@ -301,11 +302,14 @@ def search(request):
         'artists': artists,
         'query': query,
     })
-def register(request):
-    next_url = request.GET.get('next', None)  
 
+
+
+User = get_user_model()  # Get the custom user model
+
+def register_view(request):
+    next_url = request.GET.get('next', request.POST.get('next', ''))
     if request.method == 'POST':
-        next_url = request.POST.get('next', None)  
         form = RegisterForm(request.POST, request.FILES)
         if form.is_valid():
             user = User.objects.create_user(
@@ -328,12 +332,10 @@ def register(request):
             return redirect(next_url or 'home')
         else:
             messages.error(request, "Formulário inválido. Verifique os campos.")
-            return render(request, 'register_user.html', {'form': form})
+            return render(request, 'register_user.html', {'form': form, 'next': next_url})
     else:
         form = RegisterForm()
-    return render(request, 'register_user.html', {'form': form, 'next': next_url})
-
-    
+        return render(request, 'register_user.html', {'form': form, 'next': next_url})
 def login(request):
     if request.method == 'POST':
         next_url = request.GET.get('next', None)
@@ -978,6 +980,7 @@ def company_product_detail(request, company_id, product_id):
         }
     else:
         product.size_stock = product.get_stock()
+
     return render(request, 'company_product_detail.html', {
         'company': company,
         'product': product,

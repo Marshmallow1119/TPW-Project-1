@@ -24,6 +24,9 @@
             transform: scale(1.1);
             transform-origin: center center;
         }
+        .card-text:hover{
+            color: black !important;
+        }
         .artist-grid h5 {
             margin-top: 10px;
             font-weight: bold;
@@ -59,6 +62,7 @@
             max-width: 1400px;
             padding-left: 15px;
             padding-right: 15px;
+            
         }
     </style>
     {% endblock %}
@@ -69,12 +73,12 @@
         {% for artist in artists %}
         <div class="col-6 col-md-4 col-lg-3 mb-4">
             <div class="card card-hover position-relative" style="height: 400px;">
-                <a href="/products/{{ artist.name }}" class="card-link" style="display: block; height: 100%;">
+                <a href="/products/{{ artist.name }}/" class="card-link" style="display: block; height: 100%;">
                     <div class="card-img-wrapper" style="height: 85%;">
                         <img src="{{ artist.image.url }}" class="card-img-top" alt="{{ artist.name }}" style="height: 100%; object-fit: cover;">
                     </div>
                     <div class="card-body text-center" style="height: 15%;">
-                        <p class="card-text">{{ artist.name }}</p>
+                        <p class="card-text" style="color: black !important; ">{{ artist.name }}</p>
                     </div>
                 </a>
                 {% if not user.is_authenticated or user.user_type == 'individual' %}
