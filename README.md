@@ -37,18 +37,21 @@ Neste primeiro projeto desenvolvemos uma aplicação web usando a framework Djan
 ### Admin
 
 - O mesmo que o utilizador com login
-- Adicionar Companhias
-- Banir utilizadores e companhias
+- Adicionar Empresas
+- Banir utilizadores e empresas
 - Remover Produtos
 
-### Companhia
+### Empresa
 
 - O mesmo que o utilizador com login
+- Ver dados sobre os próprios produtos
 - Adicionar produtos
+- Editar produtos
 - Remover produtos
+- Analisar reviews dos seus produtos
+- Saber o número de favoritos dos seus produtos
 - Login
 - Logout
-- Ver dados sobre os próprios produtos
 
 ## Funcionalidades que poderiamos implementar no futuro
 
@@ -81,7 +84,7 @@ Neste primeiro projeto desenvolvemos uma aplicação web usando a framework Djan
 | -------- | -------------- |
 | joao1    | testaruser123  |
 
-### Companhias
+### Empresas
 
 | Username | Password           |
 | -------- | ------------------ |
