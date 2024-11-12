@@ -1018,6 +1018,7 @@ def company_product_detail(request, company_id, product_id):
     })
 
 
+
 def company_products_user(request, company_id):
     company = get_object_or_404(Company, id=company_id)
     products = Product.objects.filter(company=company)
@@ -1276,6 +1277,7 @@ def delete_product(request, product_id):
     product.delete()
     return redirect('company_products', company_id=company_id)
 
+@login_required
 def admin_home(request):
     users = User.objects.all()
     products = Product.objects.all()
@@ -1303,11 +1305,13 @@ def admin_home(request):
         user.number_of_purchases = Purchase.objects.filter(user=user).count()
     return render(request, 'admin_home.html', {'users': users, 'products': products, 'companies': companies})
 
+@login_required
 def delete_user(request, user_id):
     user = get_object_or_404(User, id=user_id)
     user.delete()
     return redirect('admin_home')
 
+@login_required
 def admin_product_delete(request, product_id):
     product = get_object_or_404(Product, id=product_id)
     product.delete()
@@ -1327,12 +1331,13 @@ def delete_review(request, review_id):
         messages.error(request, "Apenas administradores ou o proprietário da companhia podem remover avaliações.")
         return redirect('company_product_detail', company_id=company.id, product_id=product.id)
 
+@login_required
 def admin_company_delete(request, company_id):
     company = get_object_or_404(Company, id=company_id)
     company.delete()
     return redirect('admin_home')
 
-
+@login_required
 def add_company(request):
     if request.method == 'POST':
         company_form = CompanyForm(request.POST, request.FILES)
@@ -1411,6 +1416,7 @@ def apply_discount(request):
     
     return JsonResponse({"success": False, "message": "Método não permitido."}, status=405)
 
+@login_required
 def add_clothing_stock(request, product_id):
     if request.method == "POST":
         product = get_object_or_404(Clothing, id=product_id)
@@ -1439,6 +1445,7 @@ def add_clothing_stock(request, product_id):
         return redirect('productDetails', identifier=product.id)
     return redirect('product_list')
 
+@login_required
 def add_stock(request, product_id):
     product = get_object_or_404(Product, id=product_id)
 

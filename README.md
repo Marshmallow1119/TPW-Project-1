@@ -2,8 +2,6 @@
 
 ## Merchify
 
-#
-
 ## Introdução ao tema
 
 Neste primeiro projeto desenvolvemos uma aplicação web usando a framework Django. A aplicação chama-se Merchify e consiste numa plataforma online de venda de merchandising exclusivo de diversos artistas. A interface possui várias páginas que permitem ao utilizador navegar de forma eficiente e intuitiva. Todos os produtos estão numa página específica, sendo que estão apresentados de forma clara e categorizados por artistas, facilitando a busca por itens do artista favorito do utilizador. Para além das funcionalidades oferecidas pelo Django, usamos HTML, CSS e JS para garantir que a página tem um design atrativo e responsivo. Por fim, os utilizadores podem adicionar os produtos ao carrinho e completar a compra de maneira simples e rápida.
@@ -68,6 +66,10 @@ Neste primeiro projeto desenvolvemos uma aplicação web usando a framework Djan
 - Ver as avaliações médias dos seus produtos
 - Ver o número de favoritos dos seus produtos
 
+## Gerais
+
+- Página de erro caso o utilizador tente aceder a uma página que não existe
+
 ## Funcionalidades que poderiamos implementar no futuro
 
 - Sistema de Recomendações
@@ -78,10 +80,10 @@ Neste primeiro projeto desenvolvemos uma aplicação web usando a framework Djan
 ## Informação de autenticação de users;
 
 <table>
-<th>
+<th>Tipo de utilizador</th>
+
 <td>Username</td>
 <td>Password</td>
-</th>
 <tr>
 <td>Administrador</td>
 <td>admin</td>
