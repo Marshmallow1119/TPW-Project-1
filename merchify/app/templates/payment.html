@@ -6,12 +6,12 @@
     <div class="back-to-shop mt-4">
         <a href="{% url 'produtos' %}" class="text-decoration-none">
             <i class="fas fa-arrow-left"></i> 
-            <span class="text-muted">Continue Shopping</span>
+            <span class="text-muted">Continue a comprar</span>
         </a>
     </div>
     <div class="row mt-5">
         <div class="col-md-8 cart shadow-lg rounded bg-white p-4">
-            <h3 class="mb-4 font-weight-bold">Your Cart</h3>
+            <h3 class="mb-4 font-weight-bold">Carrinho:</h3>
             <div class="cart-items">
                 {% for item in cart_items %}
                     <div class="row border-bottom py-4 align-items-center">
@@ -33,7 +33,7 @@
                         </div>
                     </div>
                 {% empty %}
-                    <p class="text-center text-muted">Your cart is empty.</p>
+                    <p class="text-center text-muted">Carrinho Vazio</p>
                 {% endfor %}
             </div>
             <div class="d-flex justify-content-between mt-4">
@@ -43,30 +43,30 @@
         </div>
 
         <div class="col-md-4 summary shadow-lg rounded bg-light p-4">
-            <h4 class="mb-4 font-weight-bold">Payment Details</h4>
+            <h4 class="mb-4 font-weight-bold">Detalhes de pagamento</h4>
             <hr class="mb-4">
             <form method="POST" action="{% url 'process_payment' %}">
                 {% csrf_token %}
                 <div class="form-group">
-                    <label for="payment_method" class="font-weight-bold">Payment Method</label>
+                    <label for="payment_method" class="font-weight-bold">Métodos de Pagamento</label>
                     <select class="form-control" id="payment_method" name="payment_method" required>
-                        <option value="Credit Card">Credit Card</option>
+                        <option value="Credit Card">Cartão de Crédito</option>
                         <option value="PayPal">PayPal</option>
-                        <option value="Bank Transfer">Bank Transfer</option>
+                        <option value="Bank Transfer">Transferência bancária</option>
                     </select>
                 </div>
                 <div class="form-group mt-3">
-                    <label for="shipping_address" class="font-weight-bold">Shipping Address</label>
+                    <label for="shipping_address" class="font-weight-bold">Endereço</label>
                     <input type="text" class="form-control" id="shipping_address" name="shipping_address" required minlength="4" value="{{ user.address}}">
                     <div class="invalid-feedback">
                         The shipping address must be at least 4 characters long.
                     </div>
                 </div>
                 <div class="form-group mt-3">
-                    <label for="discount_code" class="font-weight-bold">Discount Code</label>
+                    <label for="discount_code" class="font-weight-bold">Código de Desconto</label>
                     <div class="input-group">
                         <input type="text" class="form-control" id="discount_code" name="discount_code">
-                        <button type="button" id="apply_discount" class="btn btn-secondary">Apply</button>
+                        <button type="button" id="apply_discount" class="btn btn-secondary">Aplicar</button>
                     </div>
                 </div>
                 <div class="border-top pt-3 mt-4">
@@ -93,7 +93,7 @@
                     </div>
                 </div>
                 <div class="text-end mt-4">
-                    <button name="complete_payment" type="submit" class="btn btn-primary">Complete Payment</button>
+                    <button name="complete_payment" type="submit" class="btn btn-primary">Concluir Pagamento</button>
                 </div>
                  
              </form>
