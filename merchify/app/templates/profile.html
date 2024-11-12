@@ -26,7 +26,9 @@
                 </div>
                 <span class="font-weight-bold">{{ user.username }}</span>
                 <span class="text-black-50">{{ user.email }}</span>
+                {% if user.user_type == 'individual' %}
                 <span>Número de Compras: {{ number_of_purchases }}</span>
+                {% endif %}
             </div>            
         </div>
         
