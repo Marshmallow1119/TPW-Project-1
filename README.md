@@ -41,10 +41,12 @@ Neste primeiro projeto desenvolvemos uma aplicação web usando a framework Djan
 - Ver os Artistas
 - Ver os Produtos e os seus detalhes
 - Ver as Empresas e respetivos produtos
-- Caso o utilizador tente adicionar ao carrinho sem login na página de produtos, é redirecionado para a página de login e depois para a página de produtos onde se encontrava
+- Ver o número de vezes que um produto foi visualizado.
+- Caso o utilizador tente adicionar ao carrinho como não tem login na página de produtos, é redirecionado para a página de login e depois para a página de produtos onde se encontrava anteriormente.
 
 ### Utilizador com login realizado
 
+- Tudo o que o utilizador sem login consegue fazer
 - Logout
 - Pesquisar por produto
 - Pesquisar por artistas
@@ -64,7 +66,7 @@ Neste primeiro projeto desenvolvemos uma aplicação web usando a framework Djan
 
 ### Admin
 
-- O mesmo que o utilizador com login
+- O mesmo que o utilizador sem login
 - Ver o número de compras de um utilizador
 - Adicionar Companhias
 - Banir Companhias
@@ -77,7 +79,7 @@ Neste primeiro projeto desenvolvemos uma aplicação web usando a framework Djan
 
 ### Empresa
 
-- O mesmo que o utilizador com login
+- O mesmo que o utilizador sem login
 - Ver dados sobre os próprios produtos
 - Adicionar produtos
 - Editar produtos
