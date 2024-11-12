@@ -17,7 +17,7 @@
     <div class="content bg-light p-5 rounded shadow">
         <form method="POST" action="{% url 'register' %}" enctype="multipart/form-data">
             {% csrf_token %}
-
+            <input type="hidden" name="next" value="{{ next }}">
             <div class="user-details">
                 <div class="input-box">
                     <span class="details">Primeiro Nome</span>

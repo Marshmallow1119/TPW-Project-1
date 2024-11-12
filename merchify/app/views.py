@@ -300,52 +300,43 @@ def search(request):
         'artists': artists,
         'query': query,
     })
-
 def register(request):
+    next_url = request.GET.get('next', None)  # Retrieve `next` from GET for the initial page load
+
     if request.method == 'POST':
-        form = RegisterForm(request.POST, request.FILES) 
+        next_url = request.POST.get('next', None)  # Retrieve `next` from POST data on form submission
+        form = RegisterForm(request.POST, request.FILES)
         if form.is_valid():
-            first_name = form.cleaned_data['first_name']
-            last_name = form.cleaned_data['last_name']
-            username = form.cleaned_data['username']
-            email = form.cleaned_data['email']
-            phone = form.cleaned_data['phone']
-            address = form.cleaned_data['address']
-            country = form.cleaned_data['country']
-            raw_password = form.cleaned_data['password1']
-            image = form.cleaned_data['image']
-            
-
-            if User.objects.filter(username=username).exists():
-                messages.error(request, "Usuário já existe.")
-                return render(request, 'register_user.html', {'form': form})
-
             user = User.objects.create_user(
-                first_name=first_name,
-                last_name=last_name,
-                username=username,
-                email=email,
-                phone=phone,
-                address=address,
-                country=country,
-                password=raw_password,
-                image=image
+                first_name=form.cleaned_data['first_name'],
+                last_name=form.cleaned_data['last_name'],
+                username=form.cleaned_data['username'],
+                email=form.cleaned_data['email'],
+                phone=form.cleaned_data['phone'],
+                address=form.cleaned_data['address'],
+                country=form.cleaned_data['country'],
+                password=form.cleaned_data['password1'],
+                image=form.cleaned_data['image']
             )
+
             group = Group.objects.get(name='client')
             user.groups.add(group)
             user.save()
 
             auth_login(request, user)
-            return redirect('home')
+            return redirect(next_url or 'home')
         else:
             messages.error(request, "Formulário inválido. Verifique os campos.")
             return render(request, 'register_user.html', {'form': form})
     else:
         form = RegisterForm()
-        return render(request, 'register_user.html', {'form': form})
+    return render(request, 'register_user.html', {'form': form, 'next': next_url})
+
     
 def login(request):
     if request.method == 'POST':
+        next_url = request.GET.get('next', None)
+        print(next_url)
         username = request.POST.get('username')
         password = request.POST.get('password')
 
@@ -358,7 +349,7 @@ def login(request):
             auth_login(request, user)
             if hasattr(user, 'user_type'):
                 if user.user_type == 'individual':
-                    return redirect('home')
+                    return redirect(next_url or 'home')
                 elif user.user_type == 'company':
                     company_id = user.company.id
                     return redirect('company_products', company_id=company_id)
