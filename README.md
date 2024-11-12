@@ -90,7 +90,7 @@ Neste primeiro projeto desenvolvemos uma aplicação web usando a framework Djan
 ## Gerais
 
 - Página de erro caso o utilizador tente aceder a uma página que não existe
-- Um
+- Um utilizador mesmo que adivinhe o URL de uma página do administrador ou de uma empresa, não consegue aceder a essa página.
 
 ## Funcionalidades que poderiamos implementar no futuro
 
