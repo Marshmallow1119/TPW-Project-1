@@ -76,7 +76,7 @@
                     <a class="nav-link" href="javascript:void(0);" onclick="showFavorites('artists')">Artistas</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="javascript:void(0);" onclick="showFavorites('companies')">Companhias</a>
+                    <a class="nav-link" href="javascript:void(0);" onclick="showFavorites('companies')">Empresas</a>
                 </li>
             </ul>
         </div>
@@ -164,7 +164,7 @@
     </div>
 
     <div id="companies" class="favorite-section {% if category == 'companies' %}active{% endif %}">
-        <h2 class="text-center">As minhas companhias favoritas:</h2>
+        <h2 class="text-center">As minhas Empresas favoritas:</h2>
         {% if favorite_companies %}
         <div class="d-flex justify-content-center">
             <table class="table text-center">
@@ -184,7 +184,7 @@
                             <a href="{% url 'remove_from_favorites_company' company_id=fav.id %}" class="btn btn-danger mr-2">
                                 <i class="fas fa-trash-alt"></i> Remover
                             </a>
-                            <a href="{% url 'artistsProducts' name=fav.name %}" class="btn btn-dark">Ver Companhia</a>
+                            <a href="{% url 'artistsProducts' name=fav.name %}" class="btn btn-dark">Ver Empresa</a>
                         </td>
                     </tr>
                     {% endfor %}
@@ -192,9 +192,9 @@
             </table>
         </div>
         {% else %}
-        <p class="text-muted text-center">Não há companhias favoritas. Adicione companhias aos seus favoritos.</p>
+        <p class="text-muted text-center">Não há empresas favoritas. Adicione empresas aos seus favoritos.</p>
         <div class="text-center">
-            <button class="btn btn-dark" type="button" onclick="window.location.href='{% url 'companhias' %}'">Ver Companhias</button>
+            <button class="btn btn-dark" type="button" onclick="window.location.href='{% url 'companhias' %}'">Ver Empresas</button>
         </div>
         {% endif %}
     </div>
