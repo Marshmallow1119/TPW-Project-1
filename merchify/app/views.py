@@ -304,9 +304,12 @@ def search(request):
     })
 def register(request):
     next_url = request.GET.get('next', 'home')  
+    form=None
 
     if request.method == 'POST':
-        next_url = request.POST.get('next', 'home') 
+        next_url = request.POST.get('next', 'home')
+        form = RegisterForm(request.POST, request.FILES) 
+
         if form.is_valid():
             user = User.objects.create_user(
                 first_name=form.cleaned_data['first_name'],
