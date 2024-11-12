@@ -109,18 +109,6 @@
         </div>
     </nav>  
     
-    {% if messages %}
-    <div class="alert-messages">
-        {% for message in messages %}
-            <div class="alert 
-                {% if message.tags == 'error' %}alert-error{% elif message.tags == 'success' %}alert-success{% else %}alert-info{% endif %} 
-                alert-dismissible fade show" role="alert">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        {% endfor %}
-    </div>
-    {% endif %}
 
     <div class="separar">
         <main role="main" class="main-content">
