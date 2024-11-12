@@ -558,7 +558,7 @@ def profile(request):
             old_password = request.POST.get('old_password')
             new_password = request.POST.get('new_password')
             confirm_new_password = request.POST.get('confirm_new_password')
-
+        
             if not old_password or not new_password or not confirm_new_password:
                 logger.warning("Campos de senha não preenchidos.")
                 messages.error(request, 'Todos os campos de senha são obrigatórios.')
