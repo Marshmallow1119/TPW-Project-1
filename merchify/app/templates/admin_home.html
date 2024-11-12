@@ -317,7 +317,9 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-light" data-dismiss="modal">Cancel</button>
-                    <a href="#" id="confirmDeleteButton2" class="btn btn-danger">Delete</a>
+                <a href="#" id="confirmDeleteButton2" class="btn btn-danger" onclick="deleteUser()">
+                    Delete
+                </a>
                 </div>
             </div>
         </div>
@@ -451,8 +453,74 @@
         form.action = `/product/${productId}/add_stock/`;
 
     });
-
 });
+            function deleteUser() {
+    const userId = $('#exampleModal2').data('user-id');  // retrieve user ID from modal data
+
+    // AJAX call to delete the user
+    $.ajax({
+        url: `/delete_user/`,  // use the correct URL for your view
+        type: 'POST',
+        data: {
+            'user_id': userId,
+            'csrfmiddlewaretoken': '{{ csrf_token }}'  // include CSRF token
+        },
+        success: function(response) {
+            // Close modal and remove user row if successful
+            $('#exampleModal2').modal('hide');
+            $(`#user-row-${userId}`).remove();
+        },
+        error: function(xhr, status, error) {
+            alert("An error occurred. Please try again.");
+        }
+    });
+}
+function deleteProduct(productId) {
+    $.ajax({
+        url: `/admin_home/delete_product/`,
+        type: 'POST',
+        data: {
+            'product_id': productId,
+            'csrfmiddlewaretoken': '{{ csrf_token }}'
+        },
+        success: function(response) {
+            if (response.success) {
+                alert("Produto apagado com sucesso!");
+                $(`#product-row-${productId}`).remove();
+            } else {
+                alert("Erro ao apagar o produto.");
+            }
+        },
+        error: function(error) {
+            console.error("Erro:", error);
+            alert("Erro ao apagar o produto.");
+        }
+    });
+}
+
+function deleteCompany(companyId) {
+    $.ajax({
+        url: `/admin_home/delete_company/`,
+        type: 'POST',
+        data: {
+            'company_id': companyId,
+            'csrfmiddlewaretoken': '{{ csrf_token }}'
+        },
+        success: function(response) {
+            if (response.success) {
+                alert("Empresa banida com sucesso!");
+                $(`#company-row-${companyId}`).remove();
+            } else {
+                alert("Erro ao banir a empresa.");
+            }
+        },
+        error: function(error) {
+            console.error("Erro:", error);
+            alert("Erro ao banir a empresa.");
+        }
+    });
+}
+
     </script>
 </body>
 </html>
