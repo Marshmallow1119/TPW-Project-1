@@ -3,14 +3,68 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Page Not Found</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+        .container {
+            text-align: center;
+            max-width: 600px;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            font-size: 2.5em;
+            color: #ff6b6b;
+            margin-bottom: 0.5em;
+        }
+        p {
+            font-size: 1.2em;
+            color: #666;
+        }
+        a {
+            text-decoration: none;
+            color: #ff6b6b;
+            font-weight: bold;
+            transition: color 0.3s ease;
+        }
+        a:hover {
+            color: #333;
+        }
+        .home-button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 1em;
+            background-color: #ff6b6b;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .home-button:hover {
+            background-color: #ff5252;
+        }
+    </style>
 </head>
 <body>
-    <h1>Oops! The page you're looking for does not exist.</h1>
-    <p>Try checking the URL, or go back to the <a href="/">home</a>.</p>
+    <div class="container">
+        <h1>Oops! Page Not Found</h1>
+        <p>The page you're looking for doesn't seem to exist. You may have mistyped the URL or the page may have been removed.</p>
+        <a href="/" class="home-button">Go Back to Home</a>
+    </div>
 </body>
 </html>
 {% endblock %}
