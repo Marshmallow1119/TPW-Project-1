@@ -361,7 +361,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Adicionar</button>
+                    <button type="submit" class="btn btn-primary" id="add1">Adicionar</button>
                 </div>
             </form>
         </div>
@@ -383,7 +383,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Adicionar</button>
+                    <button type="submit" class="btn btn-primary" id="add">Adicionar</button>
                 </div>
             </form>
         </div>
@@ -443,15 +443,16 @@
         const productId = button.getAttribute('data-product-id');
 
         const stock = button.getAttribute('data-stock');
-        console.log("Current stock for non-clothing product:", stock); 
+        console.log("Current stock for non-clothing product:", stock);
 
         document.getElementById('stock').value = stock !== null ? stock : 0;
 
         const form = document.getElementById('addStockOnlyForm');
         form.action = `/product/${productId}/add_stock/`;
-    });
-});
 
+    });
+
+});
     </script>
 </body>
 </html>
