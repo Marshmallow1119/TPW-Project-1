@@ -454,6 +454,14 @@ def remove_from_cart(request, product_id):
         cart = Cart.objects.get(user=request.user)
         cart_item = CartItem.objects.get(cart=cart, product_id=product_id)
         cart_item.delete()
+
+        if request.session.get('discount_applied', False):
+            request.session['discount_applied'] = False
+            request.session.pop('discount_value', None)
+            messages.info(request, "O código de desconto foi removido porque o carrinho foi alterado.")
+
+        messages.success(request, "Item removido do carrinho com sucesso.")
+
     except CartItem.DoesNotExist:
         raise Http404("CartItem does not exist")
     return redirect('cart')
@@ -796,6 +804,12 @@ def process_payment(request):
             payment_method = request.POST.get('payment_method')
             shipping_address = request.POST.get('shipping_address')
             discount_code = request.POST.get('discount_code')
+            
+            if not cart_items.exists() and 'discount_applied' in request.session:
+                request.session['discount_applied'] = False
+                request.session.pop('discount_value', None)
+                messages.info(request, "O código de desconto foi removido porque o carrinho está vazio.")
+
 
             if not payment_method or not shipping_address:
                 messages.error(request, "Por favor, preencha todos os campos obrigatórios.")
