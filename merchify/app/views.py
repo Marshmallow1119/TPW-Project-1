@@ -19,7 +19,6 @@ from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from .forms import ReviewForm
-
 from app.models import Product, Company, Cart, CartItem, Purchase, Vinil, CD, Clothing, Accessory, Size, Favorite, FavoriteArtist, FavoriteCompany, Artist, Review, PurchaseProduct
 from app.forms import RegisterForm, ProductForm, CompanyForm, UserForm, VinilForm, CDForm, ClothingForm, AccessoryForm, UploadUserProfilePicture, UpdatePassword, UpdateProfile
 
@@ -301,10 +300,10 @@ def search(request):
         'query': query,
     })
 def register(request):
-    next_url = request.GET.get('next', None)  # Retrieve `next` from GET for the initial page load
+    next_url = request.GET.get('next', None)  
 
     if request.method == 'POST':
-        next_url = request.POST.get('next', None)  # Retrieve `next` from POST data on form submission
+        next_url = request.POST.get('next', None)  
         form = RegisterForm(request.POST, request.FILES)
         if form.is_valid():
             user = User.objects.create_user(
@@ -934,7 +933,7 @@ def company_products(request, company_id):
     products = Product.objects.filter(company=company)
 
     for product in products:
-        if hasattr(product, 'clothing'):  # Check if it's a clothing product (with sizes)
+        if hasattr(product, 'clothing'): 
             sizes = product.clothing.sizes.all()
             product.size_stock = {
                 'XS': sizes.filter(size='XS').first().stock if sizes.filter(size='XS').exists() else 0,
@@ -1141,10 +1140,6 @@ def add_product_to_company(request, company_id):
     return render(request, 'add_product_to_company.html', context)
 
 
-from django.shortcuts import render, get_object_or_404, redirect
-from django.db import IntegrityError
-from django.contrib.auth.decorators import login_required
-
 
 @login_required
 def edit_product(request, company_id, product_id):
@@ -1172,7 +1167,6 @@ def edit_product(request, company_id, product_id):
 
             product_type = product_form.cleaned_data['product_type'].lower()
 
-            # Save the main product instance
             try:
                 product.save()
             except IntegrityError:
@@ -1183,41 +1177,34 @@ def edit_product(request, company_id, product_id):
                     'initial_product_type': initial_product_type,
                 })
 
-            # Handle specific forms based on product type
             if product_type == 'vinil':
-                vinil = getattr(product, 'vinil', None) or Vinil(product_ptr=product)
-                vinil_form = VinilForm(request.POST, instance=vinil)
-                if vinil_form.is_valid():
-                    vinil_instance = vinil_form.save(commit=False)
-                    vinil_instance.product_ptr = product
-                    vinil_instance.save()
+                vinil = getattr(product, 'vinil', None)
+                if vinil:
+                    vinil.name = product.name
+                    vinil.price = product.price
+                    vinil.save()
 
             elif product_type == 'cd':
-                cd = getattr(product, 'cd', None) or CD(product_ptr=product)
-                cd_form = CDForm(request.POST, instance=cd)
-                if cd_form.is_valid():
-                    cd_instance = cd_form.save(commit=False)
-                    cd_instance.product_ptr = product
-                    cd_instance.save()
+                cd = getattr(product, 'cd', None)
+                if cd:
+                    cd.name = product.name
+                    cd.price = product.price
+                    cd.save()
 
             elif product_type == 'clothing':
-                clothing = getattr(product, 'clothing', None) or Clothing(product_ptr=product)
-                clothing_form = ClothingForm(request.POST, instance=clothing)
-                if clothing_form.is_valid():
-                    clothing_instance = clothing_form.save(commit=False)
-                    clothing_instance.product_ptr = product
-                    clothing_instance.save()
-
+                clothing = getattr(product, 'clothing', None)
+                if clothing:
+                    clothing.name = product.name
+                    clothing.price = product.price
+                    clothing.save()
 
             elif product_type == 'accessory':
-                accessory = getattr(product, 'accessory', None) or Accessory(product_ptr=product)
-                accessory_form = AccessoryForm(request.POST, instance=accessory)
-                if accessory_form.is_valid():
-                    accessory_instance = accessory_form.save(commit=False)
-                    accessory_instance.product_ptr = product
-                    accessory_instance.save()
+                accessory = getattr(product, 'accessory', None)
+                if accessory:
+                    accessory.name = product.name
+                    accessory.price = product.price
+                    accessory.save()
 
-            # Redirect based on user type
             if request.user.user_type == 'admin':
                 return redirect('admin_home')
             else:
@@ -1233,13 +1220,6 @@ def edit_product(request, company_id, product_id):
         accessory_form = AccessoryForm(
             instance=getattr(product, 'accessory', None)) if initial_product_type == 'accessory' else AccessoryForm()
 
-    vinil_form = VinilForm(
-            instance=getattr(product, 'vinil', None)) if initial_product_type == 'vinil' else VinilForm()
-    cd_form = CDForm(instance=getattr(product, 'cd', None)) if initial_product_type == 'cd' else CDForm()
-    clothing_form = ClothingForm(
-            instance=getattr(product, 'clothing', None)) if initial_product_type == 'clothing' else ClothingForm()
-    accessory_form = AccessoryForm(
-            instance=getattr(product, 'accessory', None)) if initial_product_type == 'accessory' else AccessoryForm()
     context = {
         'company': company,
         'product': product,
@@ -1266,7 +1246,7 @@ def admin_home(request):
     products = Product.objects.all()
     companies = Company.objects.all()
     for product in products:
-        if hasattr(product, 'clothing'):  # Check if it's a clothing product (with sizes)
+        if hasattr(product, 'clothing'): 
             sizes = product.clothing.sizes.all()
             product.size_stock = {
                 'XS': sizes.filter(size='XS').first().stock if sizes.filter(size='XS').exists() else 0,
@@ -1409,7 +1389,6 @@ def add_clothing_stock(request, product_id):
             "XL": int(request.POST.get("size_xl", 0)),
         }
 
-        # Update stock for each size, or create new size if it doesn't exist
         for size, quantity in size_quantities.items():
             if quantity > 0:  # Only proceed if quantity is greater than zero
                 size_instance, created = Size.objects.get_or_create(
@@ -1428,40 +1407,34 @@ def add_clothing_stock(request, product_id):
 def add_stock(request, product_id):
     product = get_object_or_404(Product, id=product_id)
 
-    # Process the form data if the request method is POST
     if request.method == 'POST':
         stock = int(request.POST.get('stock', 0))
 
-        # Use the get_product_type method to determine the type of the product
         product_type = product.get_product_type()
 
-        # Check the product type and update the corresponding stock
         if product_type == 'Vinil':
-            vinil = product.vinil  # Get the related Vinil object
-            vinil.stock = stock   # Update stock
-            vinil.save()           # Save the Vinil object
+            vinil = product.vinil
+            vinil.stock = stock  
+            vinil.save()         
         elif product_type == 'CD':
-            cd = product.cd        # Get the related CD object
-            cd.stock = stock      # Update stock
-            cd.save()              # Save the CD object
+            cd = product.cd       
+            cd.stock = stock      
+            cd.save()             
         elif product_type == 'Accessory':
-            accessory = product.accessory  # Get the related Accessory object
-            accessory.stock = stock       # Update stock
-            accessory.save()               # Save the Accessory object
+            accessory = product.accessory  
+            accessory.stock = stock       
+            accessory.save()              
         elif product_type == 'Clothing':
-            clothing = product.clothing   # Get the related Clothing object
-            for size in clothing.sizes.all():  # For each size, update stock
+            clothing = product.clothing   
+            for size in clothing.sizes.all():  
                 size.stock = stock
                 size.save()
-            clothing.save()   # Save the Clothing object itself
+            clothing.save()   
         else:
-            # Handle case where no valid product type is found
             return JsonResponse({'error': 'Invalid product type for stock update'}, status=400)
 
-        # After updating, save the main product (if needed)
         product.save()
 
-        # Redirect to the product detail page (you can adjust the URL as needed)
         return redirect('company_product_detail', company_id=product.company.id, product_id=product.id)
 
     return JsonResponse({'error': 'Invalid request method'}, status=400)
