@@ -21,6 +21,7 @@ from django.views.decorators.http import require_POST
 from .forms import ReviewForm
 from app.models import Product, Company, Cart, CartItem, Purchase, Vinil, CD, Clothing, Accessory, Size, Favorite, FavoriteArtist, FavoriteCompany, Artist, Review, PurchaseProduct
 from app.forms import RegisterForm, ProductForm, CompanyForm, UserForm, VinilForm, CDForm, ClothingForm, AccessoryForm, UploadUserProfilePicture, UpdatePassword, UpdateProfile
+from django.urls import resolve, Resolver404
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
@@ -310,7 +311,9 @@ User = get_user_model()  # Get the custom user model
 def register_view(request):
     next_url = request.GET.get('next', request.POST.get('next', ''))
     if request.method == 'POST':
-        form = RegisterForm(request.POST, request.FILES)
+        next_url = request.POST.get('next', 'home')
+        form = RegisterForm(request.POST, request.FILES) 
+
         if form.is_valid():
             user = User.objects.create_user(
                 first_name=form.cleaned_data['first_name'],
@@ -329,13 +332,25 @@ def register_view(request):
             user.save()
 
             auth_login(request, user)
-            return redirect(next_url or 'home')
+            if not is_valid_url(next_url):
+                next_url = 'home'
+            
+            return redirect(next_url)
         else:
             messages.error(request, "Formulário inválido. Verifique os campos.")
             return render(request, 'register_user.html', {'form': form, 'next': next_url})
     else:
         form = RegisterForm()
-        return render(request, 'register_user.html', {'form': form, 'next': next_url})
+    return render(request, 'register_user.html', {'form': form, 'next': next_url})
+
+def is_valid_url(url_name):
+    try:
+        resolve(url_name)
+        return True
+    except Resolver404:
+        return False
+
+
 def login(request):
     if request.method == 'POST':
         next_url = request.GET.get('next', None)
@@ -456,6 +471,14 @@ def remove_from_cart(request, product_id):
         cart = Cart.objects.get(user=request.user)
         cart_item = CartItem.objects.get(cart=cart, product_id=product_id)
         cart_item.delete()
+
+        if request.session.get('discount_applied', False):
+            request.session['discount_applied'] = False
+            request.session.pop('discount_value', None)
+            messages.info(request, "O código de desconto foi removido porque o carrinho foi alterado.")
+
+        messages.success(request, "Item removido do carrinho com sucesso.")
+
     except CartItem.DoesNotExist:
         raise Http404("CartItem does not exist")
     return redirect('cart')
@@ -552,7 +575,7 @@ def profile(request):
             old_password = request.POST.get('old_password')
             new_password = request.POST.get('new_password')
             confirm_new_password = request.POST.get('confirm_new_password')
-
+        
             if not old_password or not new_password or not confirm_new_password:
                 logger.warning("Campos de senha não preenchidos.")
                 messages.error(request, 'Todos os campos de senha são obrigatórios.')
@@ -798,6 +821,12 @@ def process_payment(request):
             payment_method = request.POST.get('payment_method')
             shipping_address = request.POST.get('shipping_address')
             discount_code = request.POST.get('discount_code')
+            
+            if not cart_items.exists() and 'discount_applied' in request.session:
+                request.session['discount_applied'] = False
+                request.session.pop('discount_value', None)
+                messages.info(request, "O código de desconto foi removido porque o carrinho está vazio.")
+
 
             if not payment_method or not shipping_address:
                 messages.error(request, "Por favor, preencha todos os campos obrigatórios.")

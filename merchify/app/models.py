@@ -3,6 +3,7 @@ from django.db.models import Avg
 from django.template.defaultfilters import default
 from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
+from jsonschema import ValidationError
 
 class Company(models.Model):
     name = models.CharField(max_length=50)
@@ -10,6 +11,11 @@ class Company(models.Model):
     email = models.EmailField(max_length=50, unique=True)
     phone = models.CharField(max_length=50, blank=True, null=True)
     logo = models.ImageField(upload_to='company_logos', blank=True, null=True)
+
+    def clean(self):
+        if self.phone and Company.objects.filter(phone=self.phone).exclude(id=self.id).exists():
+            raise ValidationError("Este número de telefone já está em uso por outra empresa.")
+
 
     def getNumberOfProducts(self):
         return self.products.count()
