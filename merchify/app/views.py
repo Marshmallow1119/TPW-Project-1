@@ -332,6 +332,7 @@ def register_view(request):
             user.save()
 
             auth_login(request, user)
+            
             if not is_valid_url(next_url):
                 next_url = 'home'
             
