@@ -27,12 +27,6 @@ Neste primeiro projeto desenvolvemos uma aplicação web usando a framework Djan
 
 ## Principais Funcionalidades da Aplicação
 
-### Django Frameworks utilizadas:
-
-- Forms - adição e edição de produtos e empresas
-- Sessions - quando o cliente vê produtos, aparecem numa aba de visualizados recentemente
-- Authentication - login e logout dos 3 tipos de utilizadores
-
 ### Utilizador sem login realizado
 
 - Fazer pesquisa de produtos e de artistas
@@ -133,7 +127,9 @@ Neste primeiro projeto desenvolvemos uma aplicação web usando a framework Djan
 - **DjangoTemplatesTags** - Usámos para criar tags personalizadas, como por exemplo, a tag que calcula o preço total de uma encomenda.
 - **DjangoSessions** - Usámos para guardar os produtos que o utilizador viu recentemente.
 - **DjangoMiddleware** - Usámos para redirecionar o utilizador para uma página de erro default caso o utilizador tente aceder a uma página que não existe.
+- **DjangoAuthentication** - Usámos para autenticar os utilizadores, como por exemplo, o login, registo, logout.
 - **DjangoForms** - Usámos para criar formulários de registo, login, atualização de perfil, adicionar produtos, adicionar companhias, adicionar avaliações.
+- **DjangoMessages** - Usámos para mostrar mensagens ao utilizador, por exemplo quando o registo não foi bem sucedido.
 
 ## Deployment (PythonAnyWhere)
 
@@ -141,4 +137,4 @@ https://alof.pythonanywhere.com/
 
 ## Conclusão
 
-Para concluir, o projeto Merchify foi bastante enriquecedor para todos os membros. Aprendemos a trabalhar com Django e a desenvolver uma aplicação web de raiz. A aplicação desenvolvida é bastante completa e oferece várias funcionalidades que permitem ao utilizador ter uma experiência agradável e intuitiva. À medida que fomos desenvolvendo a aplicação, fomos ganhando mais ideias, sempre com o objetivo de melhorar a experiência do utilizador. A aplicação Merchify é um projeto que nos orgulha e que nos deu a oportunidade de aplicar os conhecimentos adquiridos sobre Django.
+Para concluir, o projeto Merchify foi bastante enriquecedor para todos os membros. Aprendemos a trabalhar com Django e a desenvolver uma aplicação web de raiz. A aplicação desenvolvida é bastante completa e oferece várias funcionalidades que permitem ao utilizador ter uma experiência agradável e intuitiva. À medida que fomos desenvolvendo a aplicação, fomos ganhando mais ideias e não conseguíamos parar de implementar novas funcionalides devido ao interesse pela linguagem. A aplicação Merchify é um projeto que nos orgulha e que nos deu a oportunidade de aplicar os conhecimentos adquiridos sobre Django.
