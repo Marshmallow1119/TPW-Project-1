@@ -61,9 +61,11 @@ def home(request):
         recently_viewed_products,
         key=lambda product: recently_viewed_ids.index(product.id)
     )
+
+    most_viewed_products = Product.objects.order_by('-count')[:8]
         
 
-    return render(request, 'home.html', {'artists': artists, 'products': recent_products, 'show_promotion': show_promotion, 'recently_viewed_products': recently_viewed_products})
+    return render(request, 'home.html', {'artists': artists, 'products': recent_products, 'show_promotion': show_promotion, 'recently_viewed_products': recently_viewed_products, 'most_viewed_products': most_viewed_products})
 
 
 def companhias(request):
